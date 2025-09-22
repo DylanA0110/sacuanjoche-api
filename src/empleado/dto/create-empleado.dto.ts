@@ -139,5 +139,5 @@ export class CreateEmpleadoDto {
   })
   @IsNumber()
   @IsPositive()
-  rolId: number;
+  rol: number;
 }

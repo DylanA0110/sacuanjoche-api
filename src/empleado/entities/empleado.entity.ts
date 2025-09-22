@@ -1,7 +1,13 @@
 import { Rol } from 'src/rol/entities/rol.entity';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { Factura } from 'src/factura/entities/factura.entity';
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('empleado')
 export class Empleado {
@@ -40,9 +46,6 @@ export class Empleado {
 
   @Column({ name: 'es_aprobado', type: 'boolean', default: false })
   esAprobado: boolean;
-
-  @Column({ name: 'rol_id' })
-  rolId: number;
 
   @ManyToOne(() => Rol, (rol) => rol.empleados)
   rol: Rol;

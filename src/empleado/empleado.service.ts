@@ -20,18 +20,17 @@ export class EmpleadoService {
 
   async create(createEmpleadoDto: CreateEmpleadoDto) {
     try {
-      const { rolId, ...empleado } = createEmpleadoDto;
+      const { rol, ...empleado } = createEmpleadoDto;
 
-      const rol = await findEntityOrFail(
+      const nuevoRol = await findEntityOrFail(
         this.rolRepository,
-        { idRol: rolId },
+        { idRol: rol },
         'Rol not found',
       );
 
       const nuevoEmpleado = this.empleadoRepository.create({
         ...empleado,
-        rol,
-        rolId,
+        rol: nuevoRol,
       });
 
       await this.empleadoRepository.save(nuevoEmpleado);
@@ -72,19 +71,18 @@ export class EmpleadoService {
   }
 
   async update(id: number, updateEmpleadoDto: UpdateEmpleadoDto) {
-    const { rolId, ...toUpdate } = updateEmpleadoDto;
+    const { rol, ...toUpdate } = updateEmpleadoDto;
 
-    const rol = await findEntityOrFail(
+    const nuevoRol = await findEntityOrFail(
       this.rolRepository,
-      { idRol: rolId },
+      { idRol: rol },
       'Rol not found',
     );
 
     const empleado = await this.empleadoRepository.preload({
       id: id,
       ...toUpdate,
-      rol,
-      rolId,
+      rol: nuevoRol,
     });
 
     if (!empleado) {
