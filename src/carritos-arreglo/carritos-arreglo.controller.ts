@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CarritosArregloService } from './carritos-arreglo.service';
 import { CreateCarritosArregloDto } from './dto/create-carritos-arreglo.dto';
 import { UpdateCarritosArregloDto } from './dto/update-carritos-arreglo.dto';
@@ -24,7 +19,9 @@ import { CarritosArreglo } from './entities/carritos-arreglo.entity';
 @ApiTags('Carritos Arreglos')
 @Controller('carritos-arreglo')
 export class CarritosArregloController {
-  constructor(private readonly carritosArregloService: CarritosArregloService) {}
+  constructor(
+    private readonly carritosArregloService: CarritosArregloService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo carrito arreglo' })
@@ -37,12 +34,14 @@ export class CarritosArregloController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createCarritosArregloDto: CreateCarritosArregloDto): Promise<CarritosArreglo> {
+  create(@Body() createCarritosArregloDto: CreateCarritosArregloDto) {
     return this.carritosArregloService.create(createCarritosArregloDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los carritos arreglos con paginación' })
+  @ApiOperation({
+    summary: 'Obtener todos los carritos arreglos con paginación',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de carritos arreglos obtenida exitosamente',
@@ -51,54 +50,14 @@ export class CarritosArregloController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/CarritosArreglo' }
+          items: { $ref: '#/components/schemas/CarritosArreglo' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.carritosArregloService.findAll(paginationDto);
-  }
-
-  @Get('carrito/:idCarrito')
-  @ApiOperation({ summary: 'Buscar carritos arreglos por carrito' })
-  @ApiParam({ name: 'idCarrito', description: 'ID del carrito', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Carritos arreglos encontrados por carrito',
-    type: [CarritosArreglo],
-  })
-  findByCarrito(@Param('idCarrito', ParseIntPipe) idCarrito: number) {
-    return this.carritosArregloService.findByCarrito(idCarrito);
-  }
-
-  @Get('arreglo/:idArreglo')
-  @ApiOperation({ summary: 'Buscar carritos arreglos por arreglo' })
-  @ApiParam({ name: 'idArreglo', description: 'ID del arreglo', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Carritos arreglos encontrados por arreglo',
-    type: [CarritosArreglo],
-  })
-  findByArreglo(@Param('idArreglo', ParseIntPipe) idArreglo: number) {
-    return this.carritosArregloService.findByArreglo(idArreglo);
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener un carrito arreglo por ID' })
-  @ApiParam({ name: 'id', description: 'ID del carrito arreglo', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Carrito arreglo encontrado exitosamente',
-    type: CarritosArreglo,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Carrito arreglo no encontrado',
-  })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<CarritosArreglo> {
-    return this.carritosArregloService.findOne(id);
   }
 
   @Patch(':id')
@@ -120,7 +79,7 @@ export class CarritosArregloController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCarritosArregloDto: UpdateCarritosArregloDto,
-  ): Promise<CarritosArreglo> {
+  ) {
     return this.carritosArregloService.update(id, updateCarritosArregloDto);
   }
 
@@ -135,10 +94,7 @@ export class CarritosArregloController {
     status: 404,
     description: 'Carrito arreglo no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.carritosArregloService.remove(id);
   }
 }
-
-
-

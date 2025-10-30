@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { FacturaService } from './factura.service';
 import { CreateFacturaDto } from './dto/create-factura.dto';
 import { UpdateFacturaDto } from './dto/update-factura.dto';
@@ -37,7 +32,7 @@ export class FacturaController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createFacturaDto: CreateFacturaDto): Promise<Factura> {
+  create(@Body() createFacturaDto: CreateFacturaDto) {
     return this.facturaService.create(createFacturaDto);
   }
 
@@ -51,38 +46,14 @@ export class FacturaController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Factura' }
+          items: { $ref: '#/components/schemas/Factura' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.facturaService.findAll(paginationDto);
-  }
-
-  @Get('estado/:estado')
-  @ApiOperation({ summary: 'Buscar facturas por estado' })
-  @ApiParam({ name: 'estado', description: 'Estado de la factura', example: 'Emitida' })
-  @ApiResponse({
-    status: 200,
-    description: 'Facturas encontradas por estado',
-    type: [Factura],
-  })
-  findByEstado(@Param('estado') estado: string) {
-    return this.facturaService.findByEstado(estado);
-  }
-
-  @Get('empleado/:idEmpleado')
-  @ApiOperation({ summary: 'Buscar facturas por empleado' })
-  @ApiParam({ name: 'idEmpleado', description: 'ID del empleado', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Facturas encontradas por empleado',
-    type: [Factura],
-  })
-  findByEmpleado(@Param('idEmpleado', ParseIntPipe) idEmpleado: number) {
-    return this.facturaService.findByEmpleado(idEmpleado);
   }
 
   @Get(':id')
@@ -97,7 +68,7 @@ export class FacturaController {
     status: 404,
     description: 'Factura no encontrada',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Factura> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.facturaService.findOne(id);
   }
 
@@ -120,7 +91,7 @@ export class FacturaController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFacturaDto: UpdateFacturaDto,
-  ): Promise<Factura> {
+  ) {
     return this.facturaService.update(id, updateFacturaDto);
   }
 
@@ -135,10 +106,7 @@ export class FacturaController {
     status: 404,
     description: 'Factura no encontrada',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.facturaService.remove(id);
   }
 }
-
-
-

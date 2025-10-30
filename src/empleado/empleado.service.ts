@@ -5,6 +5,7 @@ import { Empleado } from './entities/empleado.entity';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class EmpleadoService {
@@ -13,60 +14,62 @@ export class EmpleadoService {
     private readonly empleadoRepository: Repository<Empleado>,
   ) {}
 
-  async create(createEmpleadoDto: CreateEmpleadoDto): Promise<Empleado> {
-    const empleado = this.empleadoRepository.create(createEmpleadoDto);
-    return await this.empleadoRepository.save(empleado);
+  async create(createEmpleadoDto: CreateEmpleadoDto) {
+    try {
+      const newEmpleado = this.empleadoRepository.create({
+        ...createEmpleadoDto,
+      });
+
+      await this.empleadoRepository.save(newEmpleado);
+
+      return newEmpleado;
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Empleado[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.empleadoRepository.findAndCount({
+
+    return this.empleadoRepository.find({
       take: limit,
       skip: offset,
-      relations: ['pedidos', 'envios', 'facturas', 'users', 'pedidosHistorial'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<Empleado> {
-    const empleado = await this.empleadoRepository.findOne({
-      where: { idEmpleado: id },
-      relations: ['pedidos', 'envios', 'facturas', 'users', 'pedidosHistorial'],
+  async findOne(id: number) {
+    const empleado = await this.empleadoRepository.findOneBy({
+      idEmpleado: id,
     });
 
     if (!empleado) {
-      throw new NotFoundException(`Empleado con ID ${id} no encontrado`);
+      throw new NotFoundException(`El empleado con id ${id} no fue encontrado`);
     }
 
     return empleado;
   }
 
-  async update(id: number, updateEmpleadoDto: UpdateEmpleadoDto): Promise<Empleado> {
-    const empleado = await this.findOne(id);
-    
-    Object.assign(empleado, updateEmpleadoDto);
-    return await this.empleadoRepository.save(empleado);
+  async update(id: number, updateEmpleadoDto: UpdateEmpleadoDto) {
+    try {
+      const empleado = await this.empleadoRepository.preload({
+        idEmpleado: id,
+        ...updateEmpleadoDto,
+      });
+
+      if (!empleado) {
+        throw new NotFoundException(
+          `El empleado con id ${id} no fue encontrado`,
+        );
+      }
+
+      return this.empleadoRepository.save(empleado);
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const empleado = await this.findOne(id);
     await this.empleadoRepository.remove(empleado);
   }
-
-  async findActiveEmpleados(): Promise<Empleado[]> {
-    return await this.empleadoRepository.find({
-      where: { activo: true },
-    });
-  }
-
-  async findBySexo(sexo: string): Promise<Empleado[]> {
-    return await this.empleadoRepository.find({
-      where: { sexo, activo: true },
-    });
-  }
 }
-
-
-

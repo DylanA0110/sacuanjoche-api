@@ -5,79 +5,174 @@ import { Pedido } from './entities/pedido.entity';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { Cliente } from 'src/cliente/entities/cliente.entity';
+import { Empleado } from 'src/empleado/entities/empleado.entity';
+import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.entity';
+import { Direccion } from 'src/direccion/entities/direccion.entity';
+import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 
 @Injectable()
 export class PedidoService {
   constructor(
     @InjectRepository(Pedido)
     private readonly pedidoRepository: Repository<Pedido>,
+    @InjectRepository(Empleado)
+    private readonly empleadoRepository: Repository<Empleado>,
+    @InjectRepository(Cliente)
+    private readonly clienteRepository: Repository<Cliente>,
+    @InjectRepository(Direccion)
+    private readonly direccionRepository: Repository<Direccion>,
+    @InjectRepository(ContactoEntrega)
+    private readonly contactoEntregaRepository: Repository<ContactoEntrega>,
   ) {}
 
-  async create(createPedidoDto: CreatePedidoDto): Promise<Pedido> {
-    const pedido = this.pedidoRepository.create(createPedidoDto);
-    return await this.pedidoRepository.save(pedido);
+  async create(createPedidoDto: CreatePedidoDto) {
+    try {
+      const {
+        idEmpleado,
+        idCliente,
+        idDireccion,
+        idContactoEntrega,
+        ...pedido
+      } = createPedidoDto;
+
+      const empleado = await findEntityOrFail(
+        this.empleadoRepository,
+        { idEmpleado: idEmpleado },
+        `El empleado no fue encontrado o no existe`,
+      );
+
+      const cliente = await findEntityOrFail(
+        this.clienteRepository,
+        { idCliente: idCliente },
+        `El cliente no fue encontrado o no existe`,
+      );
+
+      const direccion = await findEntityOrFail(
+        this.direccionRepository,
+        { idDireccion: idDireccion },
+        `La dirección no fue encontrada o no existe`,
+      );
+
+      const contactoEntrega = await findEntityOrFail(
+        this.contactoEntregaRepository,
+        { idContactoEntrega: idContactoEntrega },
+        `El contacto de entrega no fue encontrado o no existe`,
+      );
+
+      const newPedido = this.pedidoRepository.create({
+        ...pedido,
+        empleado,
+        cliente,
+        direccion,
+        contactoEntrega,
+      });
+
+      await this.pedidoRepository.save(newPedido);
+
+      return await this.pedidoRepository.findOne({
+        where: { idPedido: newPedido.idPedido },
+        relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Pedido[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.pedidoRepository.findAndCount({
+
+    //take : la cantidad de registros que se toman
+    //skip : la cantidad de registros que se saltan
+    //relations : las relaciones que se quieren cargar de la base de datos en el json
+
+    const pedidos = await this.pedidoRepository.find({
       take: limit,
       skip: offset,
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'detallesPedido', 'pagos', 'envio', 'factura', 'historial'],
+      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
     });
 
-    return { data, total };
+    return pedidos;
   }
 
-  async findOne(id: number): Promise<Pedido> {
+  async findOne(id: number) {
     const pedido = await this.pedidoRepository.findOne({
       where: { idPedido: id },
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'detallesPedido', 'pagos', 'envio', 'factura', 'historial'],
+      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
     });
 
     if (!pedido) {
-      throw new NotFoundException(`Pedido con ID ${id} no encontrado`);
+      throw new NotFoundException(`El pedido con id ${id} no fue encontrado`);
     }
 
     return pedido;
   }
 
-  async update(id: number, updatePedidoDto: UpdatePedidoDto): Promise<Pedido> {
+  async update(id: number, updatePedidoDto: UpdatePedidoDto) {
+    try {
+      const {
+        idEmpleado,
+        idCliente,
+        idDireccion,
+        idContactoEntrega,
+        ...toUpdate
+      } = updatePedidoDto;
+
+      const empleado = await findEntityOrFail(
+        this.empleadoRepository,
+        { idEmpleado: idEmpleado },
+        `El empleado no fue encontrado o no existe`,
+      );
+
+      const cliente = await findEntityOrFail(
+        this.clienteRepository,
+        { idCliente: idCliente },
+        `El cliente no fue encontrado o no existe`,
+      );
+
+      const direccion = await findEntityOrFail(
+        this.direccionRepository,
+        { idDireccion: idDireccion },
+        `La dirección no fue encontrada o no existe`,
+      );
+
+      const contactoEntrega = await findEntityOrFail(
+        this.contactoEntregaRepository,
+        { idContactoEntrega: idContactoEntrega },
+        `El contacto de entrega no fue encontrado o no existe`,
+      );
+
+      const pedido = await this.pedidoRepository.preload({
+        idPedido: id,
+        ...toUpdate,
+        empleado,
+        cliente,
+        direccion,
+        contactoEntrega,
+      });
+
+      if (!pedido) {
+        throw new NotFoundException(`El pedido con id ${id} no fue encontrado`);
+      }
+
+      return this.pedidoRepository.save(pedido);
+    } catch (error) {
+      handleDbException(error);
+    }
+  }
+
+  async remove(id: number) {
     const pedido = await this.findOne(id);
-    
-    Object.assign(pedido, updatePedidoDto);
-    return await this.pedidoRepository.save(pedido);
+    await this.pedidoRepository.remove(pedido!);
   }
 
-  async remove(id: number): Promise<void> {
-    const pedido = await this.findOne(id);
-    await this.pedidoRepository.remove(pedido);
-  }
+  // async findByCliente(idCliente: number) {}
 
-  async findByCliente(idCliente: number): Promise<Pedido[]> {
-    return await this.pedidoRepository.find({
-      where: { idCliente },
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
-    });
-  }
+  // async findByEmpleado(idEmpleado: number) {}
 
-  async findByEmpleado(idEmpleado: number): Promise<Pedido[]> {
-    return await this.pedidoRepository.find({
-      where: { idEmpleado },
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
-    });
-  }
-
-  async findByDateRange(fechaInicio: Date, fechaFin: Date): Promise<Pedido[]> {
-    return await this.pedidoRepository
-      .createQueryBuilder('pedido')
-      .where('pedido.fechaCreacion BETWEEN :fechaInicio AND :fechaFin', { fechaInicio, fechaFin })
-      .leftJoinAndSelect('pedido.cliente', 'cliente')
-      .leftJoinAndSelect('pedido.empleado', 'empleado')
-      .getMany();
-  }
+  // async findByDateRange(fechaInicio: Date, fechaFin: Date) {}
 }
-
-
-

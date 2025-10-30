@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { ClienteDireccion } from '../../cliente-direccion/entities/cliente-direccion.entity';
@@ -24,14 +32,15 @@ export class Cliente {
   fechaCreacion: Date;
 
   // Relaciones
-  @OneToOne(() => User, user => user.cliente)
-  @JoinColumn({ name: 'id_cliente' })
+  @OneToOne(() => User, (user) => user.cliente)
   user: User;
 
-  @OneToMany(() => Pedido, pedido => pedido.cliente)
+  @OneToMany(() => Pedido, (pedido) => pedido.cliente)
   pedidos: Pedido[];
 
-  @OneToMany(() => ClienteDireccion, clienteDireccion => clienteDireccion.cliente)
+  @OneToMany(
+    () => ClienteDireccion,
+    (clienteDireccion) => clienteDireccion.cliente,
+  )
   direcciones: ClienteDireccion[];
 }
-

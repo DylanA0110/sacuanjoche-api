@@ -5,6 +5,7 @@ import { ContactoEntrega } from './entities/contacto-entrega.entity';
 import { CreateContactoEntregaDto } from './dto/create-contacto-entrega.dto';
 import { UpdateContactoEntregaDto } from './dto/update-contacto-entrega.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class ContactoEntregaService {
@@ -13,55 +14,64 @@ export class ContactoEntregaService {
     private readonly contactoEntregaRepository: Repository<ContactoEntrega>,
   ) {}
 
-  async create(createContactoEntregaDto: CreateContactoEntregaDto): Promise<ContactoEntrega> {
-    const contactoEntrega = this.contactoEntregaRepository.create(createContactoEntregaDto);
-    return await this.contactoEntregaRepository.save(contactoEntrega);
+  async create(createContactoEntregaDto: CreateContactoEntregaDto) {
+    try {
+      const newContacto = this.contactoEntregaRepository.create({
+        ...createContactoEntregaDto,
+      });
+
+      await this.contactoEntregaRepository.save(newContacto);
+
+      return newContacto;
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: ContactoEntrega[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.contactoEntregaRepository.findAndCount({
+
+    return this.contactoEntregaRepository.find({
       take: limit,
       skip: offset,
-      relations: ['pedidos'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<ContactoEntrega> {
-    const contactoEntrega = await this.contactoEntregaRepository.findOne({
-      where: { idContactoEntrega: id },
-      relations: ['pedidos'],
+  async findOne(id: number) {
+    const contacto = await this.contactoEntregaRepository.findOneBy({
+      idContactoEntrega: id,
     });
 
-    if (!contactoEntrega) {
-      throw new NotFoundException(`Contacto de entrega con ID ${id} no encontrado`);
+    if (!contacto) {
+      throw new NotFoundException(
+        `El contacto de entrega con id ${id} no fue encontrado`,
+      );
     }
 
-    return contactoEntrega;
+    return contacto;
   }
 
-  async update(id: number, updateContactoEntregaDto: UpdateContactoEntregaDto): Promise<ContactoEntrega> {
-    const contactoEntrega = await this.findOne(id);
-    
-    Object.assign(contactoEntrega, updateContactoEntregaDto);
-    return await this.contactoEntregaRepository.save(contactoEntrega);
+  async update(id: number, updateContactoEntregaDto: UpdateContactoEntregaDto) {
+    try {
+      const contacto = await this.contactoEntregaRepository.preload({
+        idContactoEntrega: id,
+        ...updateContactoEntregaDto,
+      });
+
+      if (!contacto) {
+        throw new NotFoundException(
+          `El contacto de entrega con id ${id} no fue encontrado`,
+        );
+      }
+
+      return this.contactoEntregaRepository.save(contacto);
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
-    const contactoEntrega = await this.findOne(id);
-    await this.contactoEntregaRepository.remove(contactoEntrega);
-  }
-
-  async findByTelefono(telefono: string): Promise<ContactoEntrega[]> {
-    return await this.contactoEntregaRepository.find({
-      where: { telefono },
-      relations: ['pedidos'],
-    });
+  async remove(id: number) {
+    const contacto = await this.findOne(id);
+    await this.contactoEntregaRepository.remove(contacto);
   }
 }
-
-
-

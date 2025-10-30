@@ -5,6 +5,7 @@ import { MetodoPago } from './entities/metodo-pago.entity';
 import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class MetodoPagoService {
@@ -13,54 +14,64 @@ export class MetodoPagoService {
     private readonly metodoPagoRepository: Repository<MetodoPago>,
   ) {}
 
-  async create(createMetodoPagoDto: CreateMetodoPagoDto): Promise<MetodoPago> {
-    const metodoPago = this.metodoPagoRepository.create(createMetodoPagoDto);
-    return await this.metodoPagoRepository.save(metodoPago);
+  async create(createMetodoPagoDto: CreateMetodoPagoDto) {
+    try {
+      const newMetodoPago = this.metodoPagoRepository.create({
+        ...createMetodoPagoDto,
+      });
+
+      await this.metodoPagoRepository.save(newMetodoPago);
+
+      return newMetodoPago;
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: MetodoPago[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.metodoPagoRepository.findAndCount({
+
+    return this.metodoPagoRepository.find({
       take: limit,
       skip: offset,
-      relations: ['pagos'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<MetodoPago> {
-    const metodoPago = await this.metodoPagoRepository.findOne({
-      where: { idMetodoPago: id },
-      relations: ['pagos'],
+  async findOne(id: number) {
+    const metodoPago = await this.metodoPagoRepository.findOneBy({
+      idMetodoPago: id,
     });
 
     if (!metodoPago) {
-      throw new NotFoundException(`Método de pago con ID ${id} no encontrado`);
+      throw new NotFoundException(
+        `El método de pago con id ${id} no fue encontrado`,
+      );
     }
 
     return metodoPago;
   }
 
-  async update(id: number, updateMetodoPagoDto: UpdateMetodoPagoDto): Promise<MetodoPago> {
-    const metodoPago = await this.findOne(id);
-    
-    Object.assign(metodoPago, updateMetodoPagoDto);
-    return await this.metodoPagoRepository.save(metodoPago);
+  async update(id: number, updateMetodoPagoDto: UpdateMetodoPagoDto) {
+    try {
+      const metodoPago = await this.metodoPagoRepository.preload({
+        idMetodoPago: id,
+        ...updateMetodoPagoDto,
+      });
+
+      if (!metodoPago) {
+        throw new NotFoundException(
+          `El método de pago con id ${id} no fue encontrado`,
+        );
+      }
+
+      return this.metodoPagoRepository.save(metodoPago);
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const metodoPago = await this.findOne(id);
     await this.metodoPagoRepository.remove(metodoPago);
   }
-
-  async findActiveMetodosPago(): Promise<MetodoPago[]> {
-    return await this.metodoPagoRepository.find({
-      where: { activo: true },
-    });
-  }
 }
-
-
-

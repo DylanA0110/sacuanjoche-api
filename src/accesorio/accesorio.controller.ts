@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { AccesorioService } from './accesorio.service';
 import { CreateAccesorioDto } from './dto/create-accesorio.dto';
 import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
@@ -37,7 +32,7 @@ export class AccesorioController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createAccesorioDto: CreateAccesorioDto): Promise<Accesorio> {
+  create(@Body() createAccesorioDto: CreateAccesorioDto) {
     return this.accesorioService.create(createAccesorioDto);
   }
 
@@ -51,37 +46,14 @@ export class AccesorioController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Accesorio' }
+          items: { $ref: '#/components/schemas/Accesorio' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.accesorioService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todos los accesorios activos' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de accesorios activos obtenida exitosamente',
-    type: [Accesorio],
-  })
-  findActiveAccesorios() {
-    return this.accesorioService.findActiveAccesorios();
-  }
-
-  @Get('categoria/:categoria')
-  @ApiOperation({ summary: 'Buscar accesorios por categoría' })
-  @ApiParam({ name: 'categoria', description: 'Categoría del accesorio', example: 'Decoración' })
-  @ApiResponse({
-    status: 200,
-    description: 'Accesorios encontrados por categoría',
-    type: [Accesorio],
-  })
-  findByCategoria(@Param('categoria') categoria: string) {
-    return this.accesorioService.findByCategoria(categoria);
   }
 
   @Get(':id')
@@ -96,7 +68,7 @@ export class AccesorioController {
     status: 404,
     description: 'Accesorio no encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Accesorio> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.accesorioService.findOne(id);
   }
 
@@ -119,7 +91,7 @@ export class AccesorioController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateAccesorioDto: UpdateAccesorioDto,
-  ): Promise<Accesorio> {
+  ) {
     return this.accesorioService.update(id, updateAccesorioDto);
   }
 
@@ -134,10 +106,7 @@ export class AccesorioController {
     status: 404,
     description: 'Accesorio no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.accesorioService.remove(id);
   }
 }
-
-
-

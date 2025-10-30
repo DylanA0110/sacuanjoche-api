@@ -38,14 +38,24 @@ export class FlorController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createFlorDto: CreateFlorDto): Promise<Flor> {
+  create(@Body() createFlorDto: CreateFlorDto) {
     return this.florService.create(createFlorDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Obtener todas las flores con paginación' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Número de elementos por página', example: 10 })
-  @ApiQuery({ name: 'offset', required: false, description: 'Número de elementos a omitir', example: 0 })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Número de elementos por página',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Número de elementos a omitir',
+    example: 0,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de flores obtenida exitosamente',
@@ -54,49 +64,14 @@ export class FlorController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Flor' }
+          items: { $ref: '#/components/schemas/Flor' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.florService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todas las flores activas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de flores activas obtenida exitosamente',
-    type: [Flor],
-  })
-  findActiveFlowers() {
-    return this.florService.findActiveFlowers();
-  }
-
-  @Get('tipo/:tipo')
-  @ApiOperation({ summary: 'Buscar flores por tipo' })
-  @ApiParam({ name: 'tipo', description: 'Tipo de flor', example: 'Tropical' })
-  @ApiResponse({
-    status: 200,
-    description: 'Flores encontradas por tipo',
-    type: [Flor],
-  })
-  findByTipo(@Param('tipo') tipo: string) {
-    return this.florService.findByTipo(tipo);
-  }
-
-  @Get('color/:color')
-  @ApiOperation({ summary: 'Buscar flores por color' })
-  @ApiParam({ name: 'color', description: 'Color de la flor', example: 'Rojo' })
-  @ApiResponse({
-    status: 200,
-    description: 'Flores encontradas por color',
-    type: [Flor],
-  })
-  findByColor(@Param('color') color: string) {
-    return this.florService.findByColor(color);
   }
 
   @Get(':id')
@@ -111,7 +86,7 @@ export class FlorController {
     status: 404,
     description: 'Flor no encontrada',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Flor> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.florService.findOne(id);
   }
 
@@ -134,7 +109,7 @@ export class FlorController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFlorDto: UpdateFlorDto,
-  ): Promise<Flor> {
+  ) {
     return this.florService.update(id, updateFlorDto);
   }
 
@@ -149,10 +124,7 @@ export class FlorController {
     status: 404,
     description: 'Flor no encontrada',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.florService.remove(id);
   }
 }
-
-
-

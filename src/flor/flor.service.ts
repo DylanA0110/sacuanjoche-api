@@ -5,6 +5,7 @@ import { Flor } from './entities/flor.entity';
 import { CreateFlorDto } from './dto/create-flor.dto';
 import { UpdateFlorDto } from './dto/update-flor.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class FlorService {
@@ -13,66 +14,58 @@ export class FlorService {
     private readonly florRepository: Repository<Flor>,
   ) {}
 
-  async create(createFlorDto: CreateFlorDto): Promise<Flor> {
-    const flor = this.florRepository.create(createFlorDto);
-    return await this.florRepository.save(flor);
+  async create(createFlorDto: CreateFlorDto) {
+    try {
+      const newFlor = this.florRepository.create({
+        ...createFlorDto,
+      });
+
+      await this.florRepository.save(newFlor);
+
+      return newFlor;
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Flor[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.florRepository.findAndCount({
+
+    return this.florRepository.find({
       take: limit,
       skip: offset,
-      relations: ['arreglosFlor'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<Flor> {
-    const flor = await this.florRepository.findOne({
-      where: { idFlor: id },
-      relations: ['arreglosFlor'],
-    });
+  async findOne(id: number) {
+    const flor = await this.florRepository.findOneBy({ idFlor: id });
 
     if (!flor) {
-      throw new NotFoundException(`Flor con ID ${id} no encontrada`);
+      throw new NotFoundException(`La flor con id ${id} no fue encontrada`);
     }
 
     return flor;
   }
 
-  async update(id: number, updateFlorDto: UpdateFlorDto): Promise<Flor> {
-    const flor = await this.findOne(id);
-    
-    Object.assign(flor, updateFlorDto);
-    return await this.florRepository.save(flor);
+  async update(id: number, updateFlorDto: UpdateFlorDto) {
+    try {
+      const flor = await this.florRepository.preload({
+        idFlor: id,
+        ...updateFlorDto,
+      });
+
+      if (!flor) {
+        throw new NotFoundException(`La flor con id ${id} no fue encontrada`);
+      }
+
+      return this.florRepository.save(flor);
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const flor = await this.findOne(id);
     await this.florRepository.remove(flor);
   }
-
-  async findByTipo(tipo: string): Promise<Flor[]> {
-    return await this.florRepository.find({
-      where: { tipo, activo: true },
-    });
-  }
-
-  async findByColor(color: string): Promise<Flor[]> {
-    return await this.florRepository.find({
-      where: { color, activo: true },
-    });
-  }
-
-  async findActiveFlowers(): Promise<Flor[]> {
-    return await this.florRepository.find({
-      where: { activo: true },
-    });
-  }
 }
-
-
-

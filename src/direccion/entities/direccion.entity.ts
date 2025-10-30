@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { ClienteDireccion } from '../../cliente-direccion/entities/cliente-direccion.entity';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 
@@ -13,22 +20,27 @@ export class Direccion {
   @Column({ name: 'country', type: 'varchar', length: 100 })
   country: string;
 
-  @Column({ name: 'admin_area', type: 'varchar', length: 100 })
+  @Column({ name: 'admin_area', type: 'varchar', length: 100, nullable: true })
   adminArea: string;
 
   @Column({ name: 'city', type: 'varchar', length: 100 })
   city: string;
 
-  @Column({ name: 'neighborhood', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'neighborhood',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   neighborhood: string;
 
-  @Column({ name: 'street', type: 'varchar', length: 200 , nullable: true})
+  @Column({ name: 'street', type: 'varchar', length: 200, nullable: true })
   street: string;
 
-  @Column({ name: 'house_number', type: 'varchar', length: 20 , nullable: true})
+  @Column({ name: 'house_number', type: 'varchar', length: 20, nullable: true })
   houseNumber: string;
 
-  @Column({ name: 'postal_code', type: 'varchar', length: 20 , nullable: true})
+  @Column({ name: 'postal_code', type: 'varchar', length: 20, nullable: true })
   postalCode: string;
 
   @Column({ name: 'referencia', type: 'text', nullable: true })
@@ -40,7 +52,7 @@ export class Direccion {
   @Column({ name: 'lng', type: 'decimal', precision: 11, scale: 8 })
   lng: number;
 
-  @Column({ name: 'provider', type: 'varchar', length: 50 , nullable: true})
+  @Column({ name: 'provider', type: 'varchar', length: 50, nullable: true })
   provider: string;
 
   @Column({ name: 'place_id', type: 'varchar', length: 200, nullable: true })
@@ -62,10 +74,12 @@ export class Direccion {
   fechaUltAct: Date;
 
   // Relaciones
-  @OneToMany(() => ClienteDireccion, clienteDireccion => clienteDireccion.direccion)
+  @OneToMany(
+    () => ClienteDireccion,
+    (clienteDireccion) => clienteDireccion.direccion,
+  )
   clienteDirecciones: ClienteDireccion[];
 
-  @OneToMany(() => Pedido, pedido => pedido.direccion)
+  @OneToMany(() => Pedido, (pedido) => pedido.direccion)
   pedidos: Pedido[];
 }
-

@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { DireccionService } from './direccion.service';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
 import { UpdateDireccionDto } from './dto/update-direccion.dto';
@@ -37,7 +32,7 @@ export class DireccionController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createDireccionDto: CreateDireccionDto): Promise<Direccion> {
+  create(@Body() createDireccionDto: CreateDireccionDto) {
     return this.direccionService.create(createDireccionDto);
   }
 
@@ -46,54 +41,9 @@ export class DireccionController {
   @ApiResponse({
     status: 200,
     description: 'Lista de direcciones obtenida exitosamente',
-    schema: {
-      type: 'object',
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/Direccion' }
-        },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.direccionService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todas las direcciones activas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de direcciones activas obtenida exitosamente',
-    type: [Direccion],
-  })
-  findActiveDirecciones() {
-    return this.direccionService.findActiveDirecciones();
-  }
-
-  @Get('city/:city')
-  @ApiOperation({ summary: 'Buscar direcciones por ciudad' })
-  @ApiParam({ name: 'city', description: 'Nombre de la ciudad', example: 'New York' })
-  @ApiResponse({
-    status: 200,
-    description: 'Direcciones encontradas por ciudad',
-    type: [Direccion],
-  })
-  findByCity(@Param('city') city: string) {
-    return this.direccionService.findByCity(city);
-  }
-
-  @Get('postal-code/:postalCode')
-  @ApiOperation({ summary: 'Buscar direcciones por código postal' })
-  @ApiParam({ name: 'postalCode', description: 'Código postal', example: '10001' })
-  @ApiResponse({
-    status: 200,
-    description: 'Direcciones encontradas por código postal',
-    type: [Direccion],
-  })
-  findByPostalCode(@Param('postalCode') postalCode: string) {
-    return this.direccionService.findByPostalCode(postalCode);
   }
 
   @Get(':id')
@@ -108,7 +58,7 @@ export class DireccionController {
     status: 404,
     description: 'Dirección no encontrada',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Direccion> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.direccionService.findOne(id);
   }
 
@@ -131,7 +81,7 @@ export class DireccionController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDireccionDto: UpdateDireccionDto,
-  ): Promise<Direccion> {
+  ) {
     return this.direccionService.update(id, updateDireccionDto);
   }
 
@@ -146,10 +96,7 @@ export class DireccionController {
     status: 404,
     description: 'Dirección no encontrada',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.direccionService.remove(id);
   }
 }
-
-
-

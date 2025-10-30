@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { FormaArregloService } from './forma-arreglo.service';
 import { CreateFormaArregloDto } from './dto/create-forma-arreglo.dto';
 import { UpdateFormaArregloDto } from './dto/update-forma-arreglo.dto';
@@ -37,12 +32,14 @@ export class FormaArregloController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createFormaArregloDto: CreateFormaArregloDto): Promise<FormaArreglo> {
+  create(@Body() createFormaArregloDto: CreateFormaArregloDto) {
     return this.formaArregloService.create(createFormaArregloDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las formas de arreglo con paginación' })
+  @ApiOperation({
+    summary: 'Obtener todas las formas de arreglo con paginación',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de formas de arreglo obtenida exitosamente',
@@ -51,11 +48,11 @@ export class FormaArregloController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/FormaArreglo' }
+          items: { $ref: '#/components/schemas/FormaArreglo' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.formaArregloService.findAll(paginationDto);
@@ -63,7 +60,11 @@ export class FormaArregloController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una forma de arreglo por ID' })
-  @ApiParam({ name: 'id', description: 'ID de la forma de arreglo', example: 1 })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la forma de arreglo',
+    example: 1,
+  })
   @ApiResponse({
     status: 200,
     description: 'Forma de arreglo encontrada exitosamente',
@@ -73,13 +74,17 @@ export class FormaArregloController {
     status: 404,
     description: 'Forma de arreglo no encontrada',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<FormaArreglo> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.formaArregloService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una forma de arreglo' })
-  @ApiParam({ name: 'id', description: 'ID de la forma de arreglo', example: 1 })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la forma de arreglo',
+    example: 1,
+  })
   @ApiResponse({
     status: 200,
     description: 'Forma de arreglo actualizada exitosamente',
@@ -96,13 +101,17 @@ export class FormaArregloController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFormaArregloDto: UpdateFormaArregloDto,
-  ): Promise<FormaArreglo> {
+  ) {
     return this.formaArregloService.update(id, updateFormaArregloDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una forma de arreglo' })
-  @ApiParam({ name: 'id', description: 'ID de la forma de arreglo', example: 1 })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la forma de arreglo',
+    example: 1,
+  })
   @ApiResponse({
     status: 200,
     description: 'Forma de arreglo eliminada exitosamente',
@@ -111,10 +120,7 @@ export class FormaArregloController {
     status: 404,
     description: 'Forma de arreglo no encontrada',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.formaArregloService.remove(id);
   }
 }
-
-
-

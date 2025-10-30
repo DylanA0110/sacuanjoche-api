@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Envio } from '../../envio/entities/envio.entity';
 import { Factura } from '../../factura/entities/factura.entity';
@@ -19,7 +26,12 @@ export class Empleado {
   @Column({ name: 'primer_apellido', type: 'varchar', length: 100 })
   primerApellido: string;
 
-  @Column({ name: 'segundo_apellido', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'segundo_apellido',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   segundoApellido: string;
 
   @Column({ name: 'sexo', type: 'varchar', length: 10 })
@@ -38,19 +50,21 @@ export class Empleado {
   fechaCreacion: Date;
 
   // Relaciones
-  @OneToMany(() => Pedido, pedido => pedido.empleado)
+  @OneToMany(() => Pedido, (pedido) => pedido.empleado)
   pedidos: Pedido[];
 
-  @OneToMany(() => Envio, envio => envio.empleado)
+  @OneToMany(() => Envio, (envio) => envio.empleado)
   envios: Envio[];
 
-  @OneToMany(() => Factura, factura => factura.empleado)
+  @OneToMany(() => Factura, (factura) => factura.empleado)
   facturas: Factura[];
 
-  @OneToMany(() => User, user => user.empleado)
-  users: User[];
+  @OneToOne(() => User, (user) => user.empleado)
+  user: User;
 
-  @OneToMany(() => PedidoHistorial, pedidoHistorial => pedidoHistorial.empleado)
+  @OneToMany(
+    () => PedidoHistorial,
+    (pedidoHistorial) => pedidoHistorial.empleado,
+  )
   pedidosHistorial: PedidoHistorial[];
 }
-

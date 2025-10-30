@@ -5,6 +5,7 @@ import { Direccion } from './entities/direccion.entity';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
 import { UpdateDireccionDto } from './dto/update-direccion.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class DireccionService {
@@ -13,66 +14,63 @@ export class DireccionService {
     private readonly direccionRepository: Repository<Direccion>,
   ) {}
 
-  async create(createDireccionDto: CreateDireccionDto): Promise<Direccion> {
-    const direccion = this.direccionRepository.create(createDireccionDto);
-    return await this.direccionRepository.save(direccion);
+  async create(createDireccionDto: CreateDireccionDto) {
+    try {
+      const { ...direccion } = createDireccionDto;
+
+      const newDireccion = this.direccionRepository.create({ ...direccion });
+
+      await this.direccionRepository.save(newDireccion);
+
+      return { ...newDireccion };
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Direccion[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.direccionRepository.findAndCount({
-      take: limit,
+    const direcciones = await this.direccionRepository.find({
       skip: offset,
-      relations: ['clienteDirecciones', 'pedidos'],
+      take: limit,
     });
 
-    return { data, total };
+    return direcciones;
   }
 
-  async findOne(id: number): Promise<Direccion> {
-    const direccion = await this.direccionRepository.findOne({
-      where: { idDireccion: id },
-      relations: ['clienteDirecciones', 'pedidos'],
+  async findOne(id: number) {
+    const direccion = await this.direccionRepository.findOneBy({
+      idDireccion: id,
     });
 
     if (!direccion) {
-      throw new NotFoundException(`Dirección con ID ${id} no encontrada`);
+      throw new NotFoundException(`Direccion with ID ${id} not found`);
     }
 
     return direccion;
   }
 
-  async update(id: number, updateDireccionDto: UpdateDireccionDto): Promise<Direccion> {
+  async update(id: number, updateDireccionDto: UpdateDireccionDto) {
+    try {
+      const { ...toUpdate } = updateDireccionDto;
+
+      const direccion = await this.direccionRepository.preload({
+        idDireccion: id,
+        ...toUpdate,
+      });
+
+      if (!direccion) {
+        throw new NotFoundException(`Direccion con id ${id} no encontrada`);
+      }
+
+      return this.direccionRepository.save(direccion);
+    } catch (error) {
+      handleDbException(error);
+    }
+  }
+
+  async remove(id: number) {
     const direccion = await this.findOne(id);
-    
-    Object.assign(direccion, updateDireccionDto);
-    return await this.direccionRepository.save(direccion);
-  }
-
-  async remove(id: number): Promise<void> {
-    const direccion = await this.findOne(id);
-    await this.direccionRepository.remove(direccion);
-  }
-
-  async findByCity(city: string): Promise<Direccion[]> {
-    return await this.direccionRepository.find({
-      where: { city, activo: true },
-    });
-  }
-
-  async findByPostalCode(postalCode: string): Promise<Direccion[]> {
-    return await this.direccionRepository.find({
-      where: { postalCode, activo: true },
-    });
-  }
-
-  async findActiveDirecciones(): Promise<Direccion[]> {
-    return await this.direccionRepository.find({
-      where: { activo: true },
-    });
+    await this.direccionRepository.remove(direccion!);
   }
 }
-
-
-

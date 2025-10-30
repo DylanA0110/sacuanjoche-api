@@ -38,14 +38,24 @@ export class PedidoController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createPedidoDto: CreatePedidoDto): Promise<Pedido> {
+  create(@Body() createPedidoDto: CreatePedidoDto) {
     return this.pedidoService.create(createPedidoDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los pedidos con paginación' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Número de elementos por página', example: 10 })
-  @ApiQuery({ name: 'offset', required: false, description: 'Número de elementos a omitir', example: 0 })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Número de elementos por página',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Número de elementos a omitir',
+    example: 0,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de pedidos obtenida exitosamente',
@@ -54,54 +64,14 @@ export class PedidoController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Pedido' }
+          items: { $ref: '#/components/schemas/Pedido' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.pedidoService.findAll(paginationDto);
-  }
-
-  @Get('cliente/:idCliente')
-  @ApiOperation({ summary: 'Buscar pedidos por cliente' })
-  @ApiParam({ name: 'idCliente', description: 'ID del cliente', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Pedidos encontrados por cliente',
-    type: [Pedido],
-  })
-  findByCliente(@Param('idCliente', ParseIntPipe) idCliente: number) {
-    return this.pedidoService.findByCliente(idCliente);
-  }
-
-  @Get('empleado/:idEmpleado')
-  @ApiOperation({ summary: 'Buscar pedidos por empleado' })
-  @ApiParam({ name: 'idEmpleado', description: 'ID del empleado', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Pedidos encontrados por empleado',
-    type: [Pedido],
-  })
-  findByEmpleado(@Param('idEmpleado', ParseIntPipe) idEmpleado: number) {
-    return this.pedidoService.findByEmpleado(idEmpleado);
-  }
-
-  @Get('date-range')
-  @ApiOperation({ summary: 'Buscar pedidos por rango de fechas' })
-  @ApiQuery({ name: 'fechaInicio', description: 'Fecha de inicio', example: '2024-01-01' })
-  @ApiQuery({ name: 'fechaFin', description: 'Fecha de fin', example: '2024-01-31' })
-  @ApiResponse({
-    status: 200,
-    description: 'Pedidos encontrados en el rango de fechas',
-    type: [Pedido],
-  })
-  findByDateRange(
-    @Query('fechaInicio') fechaInicio: string,
-    @Query('fechaFin') fechaFin: string,
-  ) {
-    return this.pedidoService.findByDateRange(new Date(fechaInicio), new Date(fechaFin));
   }
 
   @Get(':id')
@@ -116,7 +86,7 @@ export class PedidoController {
     status: 404,
     description: 'Pedido no encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Pedido> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.pedidoService.findOne(id);
   }
 
@@ -139,7 +109,7 @@ export class PedidoController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePedidoDto: UpdatePedidoDto,
-  ): Promise<Pedido> {
+  ) {
     return this.pedidoService.update(id, updatePedidoDto);
   }
 
@@ -154,10 +124,7 @@ export class PedidoController {
     status: 404,
     description: 'Pedido no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.pedidoService.remove(id);
   }
 }
-
-
-

@@ -29,153 +29,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    try {
-      const { password, clienteId, empleadoId, ...userData } = createUserDto;
+  async create(createUserDto: CreateUserDto) {}
 
-      if (clienteId && empleadoId) {
-        throw new BadRequestException(
-          'Un usuario no puede estar vinculado a cliente y empleado a la vez',
-        );
-      }
+  async login(loginUserDto: LoginUserDto) {}
 
-      let cliente: Cliente | undefined = undefined;
-      let empleado: Empleado | undefined = undefined;
+  async checkAuthStatus(user: User) {}
 
-      if (clienteId) {
-        const clienteEntity = await this.clienteRepository.findOne({
-          where: { idCliente: clienteId },
-        });
-        if (!clienteEntity) {
-          throw new BadRequestException(
-            `Cliente con id ${clienteId} no existe`,
-          );
-        }
-        cliente = clienteEntity;
-      }
+  private getJwtToken(payload: JwtPayload) {}
 
-      if (empleadoId) {
-        const empleadoEntity = await this.empleadoRepository.findOne({
-          where: { idEmpleado: empleadoId },
-        });
-        if (!empleadoEntity) {
-          throw new BadRequestException(
-            `Empleado con id ${empleadoId} no existe`,
-          );
-        }
-        empleado = empleadoEntity;
-      }
+  private handleDbErrors(error: any) {}
 
-      const user = this.userRepository.create({
-        ...userData,
-        password: bcrypt.hashSync(password, 10),
-        cliente,
-        empleado,
-      });
-
-      await this.userRepository.save(user);
-
-      // Ensure password is not exposed in the response
-      delete (user as any).password;
-
-      return {
-        ...user,
-        token: this.getJwtToken({ id: user.id }),
-      };
-    } catch (error) {
-      this.handleDbErrors(error);
-    }
-  }
-
-  async login(loginUserDto: LoginUserDto) {
-    try {
-      const { password, email } = loginUserDto;
-
-      const user = await this.userRepository.findOne({
-        where: { email },
-        select: { email: true, password: true, id: true, roles: true },
-        relations: ['cliente', 'empleado'],
-      });
-
-      if (!user) throw new UnauthorizedException('Credentials are not valid');
-
-      if (!bcrypt.compareSync(password, user.password)) {
-        throw new UnauthorizedException('Credentials are not valid');
-      }
-
-      const payload = {
-        sub: user.id,
-        roles: user.roles,
-        empleadoId: user.empleado?.idEmpleado ?? null,
-        clienteId: user.cliente?.idCliente ?? null,
-      };
-
-      //console.log({user});
-      // return {
-      //   ...user,
-      //   token: this.getJwtToken({ id: user.id }),
-      // };
-
-      return {
-        id: user.id,
-        email: user.email,
-        roles: user.roles,
-        empleado: user.empleado
-          ? {
-              id: user.empleado.idEmpleado,
-              nombreCompleto: `${user.empleado.primerNombre} ${user.empleado.primerApellido}`,
-            }
-          : null,
-        cliente: user.cliente
-          ? {
-              id: user.cliente.idCliente,
-              nombreCompleto: `${user.cliente.primerNombre} ${user.cliente.primerApellido}`,
-            }
-          : null,
-        token: this.getJwtToken({ id: user.id }),
-      };
-    } catch (error) {
-      this.handleDbErrors(error);
-    }
-  }
-
-  async checkAuthStatus(user: User) {
-    return {
-      ...user,
-      token: this.getJwtToken({ id: user.id }),
-    };
-  }
-
-  private getJwtToken(payload: JwtPayload) {
-    const token = this.jwtService.sign(payload);
-    return token;
-  }
-
-  private handleDbErrors(error: any): never {
-    if (error.code === '23505') {
-      throw new BadRequestException(error.detail);
-    }
-
-    console.log(error);
-
-    throw new InternalServerErrorException('Please check servers logs');
-  }
-
-  async updateUserRoles(userId: string, { roles }: UpdateUserRolesDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user)
-      throw new BadRequestException(`Usuario con id ${userId} no existe`);
-
-    // Ensure unique roles and preserve only valid ones
-    user.roles = Array.from(new Set(roles));
-
-    await this.userRepository.save(user);
-
-    return {
-      id: user.id,
-      email: user.email,
-      roles: user.roles,
-      isActive: user.isActive,
-    };
-  }
+  async updateUserRoles(userId: string, { roles }: UpdateUserRolesDto) {}
 }

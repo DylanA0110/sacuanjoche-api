@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { EmpleadoService } from './empleado.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -37,7 +32,7 @@ export class EmpleadoController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createEmpleadoDto: CreateEmpleadoDto): Promise<Empleado> {
+  create(@Body() createEmpleadoDto: CreateEmpleadoDto) {
     return this.empleadoService.create(createEmpleadoDto);
   }
 
@@ -51,37 +46,14 @@ export class EmpleadoController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Empleado' }
+          items: { $ref: '#/components/schemas/Empleado' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.empleadoService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todos los empleados activos' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de empleados activos obtenida exitosamente',
-    type: [Empleado],
-  })
-  findActiveEmpleados() {
-    return this.empleadoService.findActiveEmpleados();
-  }
-
-  @Get('sexo/:sexo')
-  @ApiOperation({ summary: 'Buscar empleados por sexo' })
-  @ApiParam({ name: 'sexo', description: 'Sexo del empleado', example: 'M' })
-  @ApiResponse({
-    status: 200,
-    description: 'Empleados encontrados por sexo',
-    type: [Empleado],
-  })
-  findBySexo(@Param('sexo') sexo: string) {
-    return this.empleadoService.findBySexo(sexo);
   }
 
   @Get(':id')
@@ -96,7 +68,7 @@ export class EmpleadoController {
     status: 404,
     description: 'Empleado no encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Empleado> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.empleadoService.findOne(id);
   }
 
@@ -119,7 +91,7 @@ export class EmpleadoController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEmpleadoDto: UpdateEmpleadoDto,
-  ): Promise<Empleado> {
+  ) {
     return this.empleadoService.update(id, updateEmpleadoDto);
   }
 
@@ -134,9 +106,7 @@ export class EmpleadoController {
     status: 404,
     description: 'Empleado no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.empleadoService.remove(id);
   }
 }
-
-

@@ -3,14 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CarritoService } from './carrito.service';
 import { CarritoController } from './carrito.controller';
 import { Carrito } from './entities/carrito.entity';
+import { User } from 'src/auth/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Carrito])],
+  imports: [TypeOrmModule.forFeature([Carrito, User])],
   controllers: [CarritoController],
   providers: [CarritoService],
   exports: [CarritoService],
 })
 export class CarritoModule {}
-
-
-

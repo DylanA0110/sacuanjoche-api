@@ -5,6 +5,7 @@ import { Accesorio } from './entities/accesorio.entity';
 import { CreateAccesorioDto } from './dto/create-accesorio.dto';
 import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class AccesorioService {
@@ -13,60 +14,68 @@ export class AccesorioService {
     private readonly accesorioRepository: Repository<Accesorio>,
   ) {}
 
-  async create(createAccesorioDto: CreateAccesorioDto): Promise<Accesorio> {
-    const accesorio = this.accesorioRepository.create(createAccesorioDto);
-    return await this.accesorioRepository.save(accesorio);
+  async create(createAccesorioDto: CreateAccesorioDto) {
+    try {
+      const newAccesorio = this.accesorioRepository.create({
+        ...createAccesorioDto,
+      });
+
+      await this.accesorioRepository.save(newAccesorio);
+
+      return newAccesorio;
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Accesorio[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.accesorioRepository.findAndCount({
+
+    return this.accesorioRepository.find({
       take: limit,
       skip: offset,
-      relations: ['accesoriosArreglo'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<Accesorio> {
-    const accesorio = await this.accesorioRepository.findOne({
-      where: { idAccesorio: id },
-      relations: ['accesoriosArreglo'],
+  async findOne(id: number) {
+    const accesorio = await this.accesorioRepository.findOneBy({
+      idAccesorio: id,
     });
 
     if (!accesorio) {
-      throw new NotFoundException(`Accesorio con ID ${id} no encontrado`);
+      throw new NotFoundException(
+        `El accesorio con id ${id} no fue encontrado`,
+      );
     }
 
     return accesorio;
   }
 
-  async update(id: number, updateAccesorioDto: UpdateAccesorioDto): Promise<Accesorio> {
-    const accesorio = await this.findOne(id);
-    
-    Object.assign(accesorio, updateAccesorioDto);
-    return await this.accesorioRepository.save(accesorio);
+  async update(id: number, updateAccesorioDto: UpdateAccesorioDto) {
+    try {
+      const accesorio = await this.accesorioRepository.preload({
+        idAccesorio: id,
+        ...updateAccesorioDto,
+      });
+
+      if (!accesorio) {
+        throw new NotFoundException(
+          `El accesorio con id ${id} no fue encontrado`,
+        );
+      }
+
+      return this.accesorioRepository.save(accesorio);
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const accesorio = await this.findOne(id);
     await this.accesorioRepository.remove(accesorio);
   }
 
-  async findByCategoria(categoria: string): Promise<Accesorio[]> {
-    return await this.accesorioRepository.find({
-      where: { categoria, activo: true },
-    });
-  }
+  // async findByCategoria(categoria: string) {}
 
-  async findActiveAccesorios(): Promise<Accesorio[]> {
-    return await this.accesorioRepository.find({
-      where: { activo: true },
-    });
-  }
+  // async findActiveAccesorios() {}
 }
-
-
-

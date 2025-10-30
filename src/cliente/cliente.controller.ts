@@ -38,14 +38,24 @@ export class ClienteController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createClienteDto: CreateClienteDto): Promise<Cliente> {
+  create(@Body() createClienteDto: CreateClienteDto) {
     return this.clienteService.create(createClienteDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los clientes con paginación' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Número de elementos por página', example: 10 })
-  @ApiQuery({ name: 'offset', required: false, description: 'Número de elementos a omitir', example: 0 })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Número de elementos por página',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Número de elementos a omitir',
+    example: 0,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de clientes obtenida exitosamente',
@@ -54,25 +64,14 @@ export class ClienteController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Cliente' }
+          items: { $ref: '#/components/schemas/Cliente' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.clienteService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todos los clientes activos' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de clientes activos obtenida exitosamente',
-    type: [Cliente],
-  })
-  findActiveClients() {
-    return this.clienteService.findActiveClients();
   }
 
   @Get(':id')
@@ -87,7 +86,7 @@ export class ClienteController {
     status: 404,
     description: 'Cliente no encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Cliente> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.clienteService.findOne(id);
   }
 
@@ -110,7 +109,7 @@ export class ClienteController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateClienteDto: UpdateClienteDto,
-  ): Promise<Cliente> {
+  ) {
     return this.clienteService.update(id, updateClienteDto);
   }
 
@@ -125,24 +124,7 @@ export class ClienteController {
     status: 404,
     description: 'Cliente no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.clienteService.remove(id);
   }
-
-  @Get('telefono/:telefono')
-  @ApiOperation({ summary: 'Buscar cliente por teléfono' })
-  @ApiParam({ name: 'telefono', description: 'Número de teléfono del cliente', example: '+1234567890' })
-  @ApiResponse({
-    status: 200,
-    description: 'Cliente encontrado por teléfono',
-    type: Cliente,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Cliente no encontrado',
-  })
-  findByTelefono(@Param('telefono') telefono: string) {
-    return this.clienteService.findByTelefono(telefono);
-  }
 }
-

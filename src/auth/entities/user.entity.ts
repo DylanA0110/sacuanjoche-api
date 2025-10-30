@@ -42,7 +42,7 @@ export class User {
   })
   roles: string[];
 
-  @OneToOne(() => Empleado, (empleado) => empleado.users, {
+  @OneToOne(() => Empleado, (empleado) => empleado.user, {
     nullable: true,
     cascade: true,
   })

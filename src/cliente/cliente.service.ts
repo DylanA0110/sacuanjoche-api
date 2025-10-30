@@ -5,6 +5,7 @@ import { Cliente } from './entities/cliente.entity';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class ClienteService {
@@ -13,59 +14,62 @@ export class ClienteService {
     private readonly clienteRepository: Repository<Cliente>,
   ) {}
 
-  async create(createClienteDto: CreateClienteDto): Promise<Cliente> {
-    const cliente = this.clienteRepository.create(createClienteDto);
-    return await this.clienteRepository.save(cliente);
+  async create(createClienteDto: CreateClienteDto) {
+    try {
+      const newCliente = this.clienteRepository.create({
+        ...createClienteDto,
+      });
+
+      await this.clienteRepository.save(newCliente);
+
+      return newCliente;
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Cliente[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.clienteRepository.findAndCount({
+
+    return this.clienteRepository.find({
       take: limit,
       skip: offset,
-      relations: ['user', 'pedidos', 'direcciones'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<Cliente> {
-    const cliente = await this.clienteRepository.findOne({
-      where: { idCliente: id },
-      relations: ['user', 'pedidos', 'direcciones'],
+  async findOne(id: number) {
+    const cliente = await this.clienteRepository.findOneBy({
+      idCliente: id,
     });
 
     if (!cliente) {
-      throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+      throw new NotFoundException(`El cliente con id ${id} no fue encontrado`);
     }
 
     return cliente;
   }
 
-  async update(id: number, updateClienteDto: UpdateClienteDto): Promise<Cliente> {
-    const cliente = await this.findOne(id);
-    
-    Object.assign(cliente, updateClienteDto);
-    return await this.clienteRepository.save(cliente);
+  async update(id: number, updateClienteDto: UpdateClienteDto) {
+    try {
+      const cliente = await this.clienteRepository.preload({
+        idCliente: id,
+        ...updateClienteDto,
+      });
+
+      if (!cliente) {
+        throw new NotFoundException(
+          `El cliente con id ${id} no fue encontrado`,
+        );
+      }
+
+      return this.clienteRepository.save(cliente);
+    } catch (error) {
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const cliente = await this.findOne(id);
     await this.clienteRepository.remove(cliente);
   }
-
-  async findByTelefono(telefono: string): Promise<Cliente | null> {
-    return await this.clienteRepository.findOne({
-      where: { telefono },
-    });
-  }
-
-  async findActiveClients(): Promise<Cliente[]> {
-    return await this.clienteRepository.find({
-      where: { activo: true },
-      relations: ['user'],
-    });
-  }
 }
-

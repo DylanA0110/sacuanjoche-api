@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { MetodoPagoService } from './metodo-pago.service';
 import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
@@ -37,7 +32,7 @@ export class MetodoPagoController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createMetodoPagoDto: CreateMetodoPagoDto): Promise<MetodoPago> {
+  create(@Body() createMetodoPagoDto: CreateMetodoPagoDto) {
     return this.metodoPagoService.create(createMetodoPagoDto);
   }
 
@@ -51,25 +46,14 @@ export class MetodoPagoController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/MetodoPago' }
+          items: { $ref: '#/components/schemas/MetodoPago' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.metodoPagoService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todos los métodos de pago activos' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de métodos de pago activos obtenida exitosamente',
-    type: [MetodoPago],
-  })
-  findActiveMetodosPago() {
-    return this.metodoPagoService.findActiveMetodosPago();
   }
 
   @Get(':id')
@@ -84,7 +68,7 @@ export class MetodoPagoController {
     status: 404,
     description: 'Método de pago no encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<MetodoPago> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.metodoPagoService.findOne(id);
   }
 
@@ -107,7 +91,7 @@ export class MetodoPagoController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMetodoPagoDto: UpdateMetodoPagoDto,
-  ): Promise<MetodoPago> {
+  ) {
     return this.metodoPagoService.update(id, updateMetodoPagoDto);
   }
 
@@ -122,10 +106,7 @@ export class MetodoPagoController {
     status: 404,
     description: 'Método de pago no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.metodoPagoService.remove(id);
   }
 }
-
-
-

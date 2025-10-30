@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CarritoService } from './carrito.service';
 import { CreateCarritoDto } from './dto/create-carrito.dto';
 import { UpdateCarritoDto } from './dto/update-carrito.dto';
@@ -37,7 +32,7 @@ export class CarritoController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createCarritoDto: CreateCarritoDto): Promise<Carrito> {
+  create(@Body() createCarritoDto: CreateCarritoDto) {
     return this.carritoService.create(createCarritoDto);
   }
 
@@ -51,41 +46,14 @@ export class CarritoController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Carrito' }
+          items: { $ref: '#/components/schemas/Carrito' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.carritoService.findAll(paginationDto);
-  }
-
-  @Get('active')
-  @ApiOperation({ summary: 'Obtener todos los carritos activos' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de carritos activos obtenida exitosamente',
-    type: [Carrito],
-  })
-  findActiveCarritos() {
-    return this.carritoService.findActiveCarritos();
-  }
-
-  @Get('user/:idUser')
-  @ApiOperation({ summary: 'Buscar carrito por usuario' })
-  @ApiParam({ name: 'idUser', description: 'ID del usuario', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Carrito encontrado por usuario',
-    type: Carrito,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Carrito no encontrado',
-  })
-  findByUser(@Param('idUser', ParseIntPipe) idUser: number) {
-    return this.carritoService.findByUser(idUser);
   }
 
   @Get(':id')
@@ -100,7 +68,7 @@ export class CarritoController {
     status: 404,
     description: 'Carrito no encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Carrito> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.carritoService.findOne(id);
   }
 
@@ -123,7 +91,7 @@ export class CarritoController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCarritoDto: UpdateCarritoDto,
-  ): Promise<Carrito> {
+  ) {
     return this.carritoService.update(id, updateCarritoDto);
   }
 
@@ -138,10 +106,7 @@ export class CarritoController {
     status: 404,
     description: 'Carrito no encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.carritoService.remove(id);
   }
 }
-
-
-

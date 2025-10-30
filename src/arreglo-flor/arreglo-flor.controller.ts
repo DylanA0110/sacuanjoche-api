@@ -9,12 +9,7 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ArregloFlorService } from './arreglo-flor.service';
 import { CreateArregloFlorDto } from './dto/create-arreglo-flor.dto';
 import { UpdateArregloFlorDto } from './dto/update-arreglo-flor.dto';
@@ -37,7 +32,7 @@ export class ArregloFlorController {
     status: 400,
     description: 'Datos de entrada inválidos',
   })
-  create(@Body() createArregloFlorDto: CreateArregloFlorDto): Promise<ArregloFlor> {
+  create(@Body() createArregloFlorDto: CreateArregloFlorDto) {
     return this.arregloFlorService.create(createArregloFlorDto);
   }
 
@@ -51,38 +46,14 @@ export class ArregloFlorController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/ArregloFlor' }
+          items: { $ref: '#/components/schemas/ArregloFlor' },
         },
-        total: { type: 'number', description: 'Total de registros' }
-      }
-    }
+        total: { type: 'number', description: 'Total de registros' },
+      },
+    },
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.arregloFlorService.findAll(paginationDto);
-  }
-
-  @Get('arreglo/:idArreglo')
-  @ApiOperation({ summary: 'Buscar arreglo flores por arreglo' })
-  @ApiParam({ name: 'idArreglo', description: 'ID del arreglo', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Arreglo flores encontradas por arreglo',
-    type: [ArregloFlor],
-  })
-  findByArreglo(@Param('idArreglo', ParseIntPipe) idArreglo: number) {
-    return this.arregloFlorService.findByArreglo(idArreglo);
-  }
-
-  @Get('flor/:idFlor')
-  @ApiOperation({ summary: 'Buscar arreglo flores por flor' })
-  @ApiParam({ name: 'idFlor', description: 'ID de la flor', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Arreglo flores encontradas por flor',
-    type: [ArregloFlor],
-  })
-  findByFlor(@Param('idFlor', ParseIntPipe) idFlor: number) {
-    return this.arregloFlorService.findByFlor(idFlor);
   }
 
   @Get(':id')
@@ -97,7 +68,7 @@ export class ArregloFlorController {
     status: 404,
     description: 'Arreglo flor no encontrada',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<ArregloFlor> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.arregloFlorService.findOne(id);
   }
 
@@ -120,7 +91,7 @@ export class ArregloFlorController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateArregloFlorDto: UpdateArregloFlorDto,
-  ): Promise<ArregloFlor> {
+  ) {
     return this.arregloFlorService.update(id, updateArregloFlorDto);
   }
 
@@ -135,10 +106,7 @@ export class ArregloFlorController {
     status: 404,
     description: 'Arreglo flor no encontrada',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.arregloFlorService.remove(id);
   }
 }
-
-
-

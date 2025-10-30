@@ -5,79 +5,107 @@ import { Arreglo } from './entities/arreglo.entity';
 import { CreateArregloDto } from './dto/create-arreglo.dto';
 import { UpdateArregloDto } from './dto/update-arreglo.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { FormaArreglo } from 'src/forma-arreglo/entities/forma-arreglo.entity';
+import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { handleDbException } from 'src/common/helpers/db-exception.helper';
 
 @Injectable()
 export class ArregloService {
   constructor(
     @InjectRepository(Arreglo)
     private readonly arregloRepository: Repository<Arreglo>,
+    @InjectRepository(FormaArreglo)
+    private readonly formaArregloRepository: Repository<FormaArreglo>,
   ) {}
 
-  async create(createArregloDto: CreateArregloDto): Promise<Arreglo> {
-    const arreglo = this.arregloRepository.create(createArregloDto);
-    return await this.arregloRepository.save(arreglo);
+  async create(createArregloDto: CreateArregloDto) {
+    try {
+      const { idFormaArreglo, ...arregloData } = createArregloDto;
+
+      const formaArreglo = await findEntityOrFail(
+        this.formaArregloRepository,
+        { idFormaArreglo },
+        'La forma de arreglo no fue encontrada o no existe',
+      );
+
+      const newArreglo = this.arregloRepository.create({
+        ...arregloData,
+        formaArreglo,
+      });
+
+      await this.arregloRepository.save(newArreglo);
+
+      return this.arregloRepository.findOne({
+        where: { idArreglo: newArreglo.idArreglo },
+        relations: ['formaArreglo'],
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      handleDbException(error);
+    }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<{ data: Arreglo[]; total: number }> {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    
-    const [data, total] = await this.arregloRepository.findAndCount({
+
+    return this.arregloRepository.find({
       take: limit,
       skip: offset,
-      relations: ['formaArreglo', 'arreglosFlor', 'accesoriosArreglo', 'carritosArreglo', 'detallesPedido'],
+      relations: ['formaArreglo'],
     });
-
-    return { data, total };
   }
 
-  async findOne(id: number): Promise<Arreglo> {
+  async findOne(id: number) {
     const arreglo = await this.arregloRepository.findOne({
       where: { idArreglo: id },
-      relations: ['formaArreglo', 'arreglosFlor', 'accesoriosArreglo', 'carritosArreglo', 'detallesPedido'],
+      relations: ['formaArreglo'],
     });
 
     if (!arreglo) {
-      throw new NotFoundException(`Arreglo con ID ${id} no encontrado`);
+      throw new NotFoundException(`El arreglo con id ${id} no fue encontrado`);
     }
 
     return arreglo;
   }
 
-  async update(id: number, updateArregloDto: UpdateArregloDto): Promise<Arreglo> {
-    const arreglo = await this.findOne(id);
-    
-    Object.assign(arreglo, updateArregloDto);
-    return await this.arregloRepository.save(arreglo);
+  async update(id: number, updateArregloDto: UpdateArregloDto) {
+    try {
+      const { idFormaArreglo, ...toUpdate } = updateArregloDto;
+
+      const formaArreglo =
+        idFormaArreglo !== undefined
+          ? await findEntityOrFail(
+              this.formaArregloRepository,
+              { idFormaArreglo },
+              'La forma de arreglo no fue encontrada o no existe',
+            )
+          : undefined;
+
+      const arreglo = await this.arregloRepository.preload({
+        idArreglo: id,
+        ...toUpdate,
+        formaArreglo,
+      });
+
+      if (!arreglo) {
+        throw new NotFoundException(
+          `El arreglo con id ${id} no fue encontrado`,
+        );
+      }
+
+      return this.arregloRepository.save(arreglo);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      handleDbException(error);
+    }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number) {
     const arreglo = await this.findOne(id);
     await this.arregloRepository.remove(arreglo);
   }
-
-  async findByFormaArreglo(idFormaArreglo: number): Promise<Arreglo[]> {
-    return await this.arregloRepository.find({
-      where: { idFormaArreglo, activo: true },
-      relations: ['formaArreglo'],
-    });
-  }
-
-  async findActiveArreglos(): Promise<Arreglo[]> {
-    return await this.arregloRepository.find({
-      where: { activo: true },
-      relations: ['formaArreglo'],
-    });
-  }
-
-  async findByPriceRange(minPrice: number, maxPrice: number): Promise<Arreglo[]> {
-    return await this.arregloRepository
-      .createQueryBuilder('arreglo')
-      .where('arreglo.precioUnitario BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice })
-      .andWhere('arreglo.activo = :activo', { activo: true })
-      .leftJoinAndSelect('arreglo.formaArreglo', 'formaArreglo')
-      .getMany();
-  }
 }
-
-
-

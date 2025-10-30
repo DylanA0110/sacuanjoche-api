@@ -1,10 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsBoolean, MaxLength, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  MaxLength,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateArregloDto {
   @ApiProperty({
     description: 'ID de la forma de arreglo',
-    example: 1
+    example: 1,
   })
   @IsNumber()
   idFormaArreglo: number;
@@ -12,7 +18,7 @@ export class CreateArregloDto {
   @ApiProperty({
     description: 'Nombre del arreglo',
     example: 'Ramo de Rosas Rojas',
-    maxLength: 200
+    maxLength: 200,
   })
   @IsString()
   @MaxLength(200)
@@ -21,22 +27,29 @@ export class CreateArregloDto {
   @ApiProperty({
     description: 'Descripción del arreglo',
     example: 'Hermoso ramo de rosas rojas para ocasiones especiales',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
   descripcion?: string;
 
   @ApiProperty({
+    description: 'URL del recurso multimedia del arreglo',
+    example: 'https://example.com/images/arreglo-rosas.jpg',
+  })
+  @IsString()
+  url: string;
+
+  @ApiProperty({
     description: 'Precio unitario del arreglo',
-    example: 25.99
+    example: 25.99,
   })
   @IsNumber()
   precioUnitario: number;
 
   @ApiProperty({
     description: 'Cantidad de flores en el arreglo',
-    example: 12
+    example: 12,
   })
   @IsNumber()
   cantidadFlores: number;
@@ -45,10 +58,9 @@ export class CreateArregloDto {
     description: 'Estado activo del arreglo',
     example: true,
     default: true,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsBoolean()
   activo?: boolean;
 }
-
