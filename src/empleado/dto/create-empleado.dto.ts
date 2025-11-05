@@ -12,6 +12,15 @@ export class CreateEmpleadoDto {
   primerNombre: string;
 
   @ApiProperty({
+    description: 'Segundo nombre del empleado',
+    example: 'Pedro',
+    maxLength: 100
+  })
+  @IsString()
+  @MaxLength(100)
+  segundoNombre: string;
+
+  @ApiProperty({
     description: 'Primer apellido del empleado',
     example: 'Pérez',
     maxLength: 100

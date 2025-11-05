@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsBoolean, MaxLength } from 'class-validator';
+import { IsString, IsBoolean, MaxLength, IsNumber, IsPositive } from 'class-validator';
 
 export class CreateFlorDto {
   @ApiProperty({
@@ -19,6 +19,14 @@ export class CreateFlorDto {
   @IsString()
   @MaxLength(50)
   color: string;
+  @ApiProperty({
+    description: 'Precio unitario de la flor',
+    example: 100,
+    type: Number
+  })
+  @IsNumber()
+  @IsPositive()
+  precioUnitario: number;
 
   @ApiProperty({
     description: 'Tipo de flor',
