@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { ClienteDireccion } from './entities/cliente-direccion.entity';
 import { CreateClienteDireccionDto } from './dto/create-cliente-direccion.dto';
 import { UpdateClienteDireccionDto } from './dto/update-cliente-direccion.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindClienteDireccionesDto } from './dto/find-cliente-direcciones.dto';
 
 @Injectable()
 export class ClienteDireccionService {
@@ -61,14 +61,27 @@ export class ClienteDireccionService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindClienteDireccionesDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.clienteDireccionRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['cliente', 'direccion'],
-    });
+    const qb = this.clienteDireccionRepository
+      .createQueryBuilder('clienteDireccion')
+      .leftJoinAndSelect('clienteDireccion.cliente', 'cliente')
+      .leftJoinAndSelect('clienteDireccion.direccion', 'direccion');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(clienteDireccion.etiqueta ILIKE :search OR cliente.primerNombre ILIKE :search OR cliente.primerApellido ILIKE :search OR direccion.formattedAddress ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('clienteDireccion.idClienteDireccion', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

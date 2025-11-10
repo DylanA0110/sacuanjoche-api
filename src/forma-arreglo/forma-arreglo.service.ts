@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { FormaArreglo } from './entities/forma-arreglo.entity';
 import { CreateFormaArregloDto } from './dto/create-forma-arreglo.dto';
 import { UpdateFormaArregloDto } from './dto/update-forma-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindFormasArregloDto } from './dto/find-formas-arreglo.dto';
 
 @Injectable()
 export class FormaArregloService {
@@ -28,13 +28,24 @@ export class FormaArregloService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindFormasArregloDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.formaArregloRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.formaArregloRepository.createQueryBuilder('formaArreglo');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere('(formaArreglo.descripcion ILIKE :search)', { search });
+    }
+
+    qb.orderBy('formaArreglo.descripcion', 'ASC').addOrderBy(
+      'formaArreglo.idFormaArreglo',
+      'ASC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { Factura } from './entities/factura.entity';
 import { CreateFacturaDto } from './dto/create-factura.dto';
 import { UpdateFacturaDto } from './dto/update-factura.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindFacturasDto } from './dto/find-facturas.dto';
 
 @Injectable()
 export class FacturaService {
@@ -58,14 +58,30 @@ export class FacturaService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindFacturasDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.facturaRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['pedido', 'empleado'],
-    });
+    const qb = this.facturaRepository
+      .createQueryBuilder('factura')
+      .leftJoinAndSelect('factura.pedido', 'pedido')
+      .leftJoinAndSelect('factura.empleado', 'empleado');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(factura.numFactura ILIKE :search OR factura.estado ILIKE :search OR CAST(pedido.idPedido AS TEXT) ILIKE :search OR empleado.primerNombre ILIKE :search OR empleado.primerApellido ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('factura.fechaEmision', 'DESC').addOrderBy(
+      'factura.idFactura',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ContactoEntregaService } from './contacto-entrega.service';
 import { CreateContactoEntregaDto } from './dto/create-contacto-entrega.dto';
 import { UpdateContactoEntregaDto } from './dto/update-contacto-entrega.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { ContactoEntrega } from './entities/contacto-entrega.entity';
+import { FindContactosEntregaDto } from './dto/find-contactos-entrega.dto';
 
 @ApiTags('Contactos de Entrega')
 @Controller('contacto-entrega')
@@ -56,8 +62,15 @@ export class ContactoEntregaController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.contactoEntregaService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en el nombre, apellido o teléfono del contacto de entrega',
+    example: 'María López',
+  })
+  findAll(@Query() filters: FindContactosEntregaDto) {
+    return this.contactoEntregaService.findAll(filters);
   }
 
   @Get(':id')

@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { EnvioService } from './envio.service';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { UpdateEnvioDto } from './dto/update-envio.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Envio } from './entities/envio.entity';
+import { FindEnviosDto } from './dto/find-envios.dto';
 
 @ApiTags('Envíos')
 @Controller('envio')
@@ -35,8 +41,15 @@ export class EnvioController {
   @Get()
   @ApiOperation({ summary: 'Obtener todos los envíos con paginación' })
   @ApiResponse({ status: 200, description: 'Lista obtenida exitosamente' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.envioService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en estado, pedido o nombre del empleado asignado',
+    example: 'Entregado',
+  })
+  findAll(@Query() filters: FindEnviosDto) {
+    return this.envioService.findAll(filters);
   }
 
   @Get(':id')

@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { DireccionService } from './direccion.service';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
 import { UpdateDireccionDto } from './dto/update-direccion.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Direccion } from './entities/direccion.entity';
+import { FindDireccionesDto } from './dto/find-direcciones.dto';
 
 @ApiTags('Direcciones')
 @Controller('direccion')
@@ -42,8 +48,14 @@ export class DireccionController {
     status: 200,
     description: 'Lista de direcciones obtenida exitosamente',
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.direccionService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en la dirección, país, ciudad o código postal',
+    example: 'Managua',
+  })
+  findAll(@Query() filters: FindDireccionesDto) {
+    return this.direccionService.findAll(filters);
   }
 
   @Get(':id')

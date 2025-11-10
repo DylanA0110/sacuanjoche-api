@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { MetodoPago } from './entities/metodo-pago.entity';
 import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindMetodosPagoDto } from './dto/find-metodos-pago.dto';
 
 @Injectable()
 export class MetodoPagoService {
@@ -28,13 +28,24 @@ export class MetodoPagoService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindMetodosPagoDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.metodoPagoRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.metodoPagoRepository.createQueryBuilder('metodoPago');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere('(metodoPago.descripcion ILIKE :search)', { search });
+    }
+
+    qb.orderBy('metodoPago.descripcion', 'ASC').addOrderBy(
+      'metodoPago.idMetodoPago',
+      'ASC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

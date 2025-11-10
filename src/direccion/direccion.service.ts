@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { Direccion } from './entities/direccion.entity';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
 import { UpdateDireccionDto } from './dto/update-direccion.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindDireccionesDto } from './dto/find-direcciones.dto';
 
 @Injectable()
 export class DireccionService {
@@ -28,14 +28,27 @@ export class DireccionService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
-    const direcciones = await this.direccionRepository.find({
-      skip: offset,
-      take: limit,
-    });
+  async findAll(filters: FindDireccionesDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return direcciones;
+    const qb = this.direccionRepository.createQueryBuilder('direccion');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(direccion.formattedAddress ILIKE :search OR direccion.country ILIKE :search OR direccion.city ILIKE :search OR direccion.postalCode ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('direccion.fechaCreacion', 'DESC').addOrderBy(
+      'direccion.idDireccion',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

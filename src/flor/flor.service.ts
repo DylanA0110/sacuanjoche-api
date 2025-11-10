@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { Flor } from './entities/flor.entity';
 import { CreateFlorDto } from './dto/create-flor.dto';
 import { UpdateFlorDto } from './dto/update-flor.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindFloresDto } from './dto/find-flores.dto';
 
 @Injectable()
 export class FlorService {
@@ -28,13 +28,24 @@ export class FlorService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindFloresDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.florRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.florRepository.createQueryBuilder('flor');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(flor.nombre ILIKE :search OR flor.color ILIKE :search OR flor.tipo ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('flor.nombre', 'ASC').addOrderBy('flor.idFlor', 'ASC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

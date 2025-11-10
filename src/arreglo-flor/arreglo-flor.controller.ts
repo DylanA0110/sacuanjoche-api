@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ArregloFlorService } from './arreglo-flor.service';
 import { CreateArregloFlorDto } from './dto/create-arreglo-flor.dto';
 import { UpdateArregloFlorDto } from './dto/update-arreglo-flor.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { ArregloFlor } from './entities/arreglo-flor.entity';
+import { FindArreglosFlorDto } from './dto/find-arreglos-flor.dto';
 
 @ApiTags('Arreglo Flores')
 @Controller('arreglo-flor')
@@ -38,6 +44,13 @@ export class ArregloFlorController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todas las arreglo flores con paginación' })
+  @ApiQuery({
+    name: 'q',
+    description:
+      'Texto a buscar en el nombre del arreglo o de la flor asociada',
+    example: 'Rosa',
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de arreglo flores obtenida exitosamente',
@@ -52,8 +65,8 @@ export class ArregloFlorController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.arregloFlorService.findAll(paginationDto);
+  findAll(@Query() filters: FindArreglosFlorDto) {
+    return this.arregloFlorService.findAll(filters);
   }
 
   @Get(':id')

@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { Empleado } from './entities/empleado.entity';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindEmpleadosDto } from './dto/find-empleados.dto';
 
 @Injectable()
 export class EmpleadoService {
@@ -28,13 +28,27 @@ export class EmpleadoService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindEmpleadosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.empleadoRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.empleadoRepository.createQueryBuilder('empleado');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(empleado.primerNombre ILIKE :search OR empleado.primerApellido ILIKE :search OR empleado.telefono ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('empleado.fechaCreacion', 'DESC').addOrderBy(
+      'empleado.idEmpleado',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

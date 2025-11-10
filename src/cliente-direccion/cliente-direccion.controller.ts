@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ClienteDireccionService } from './cliente-direccion.service';
 import { CreateClienteDireccionDto } from './dto/create-cliente-direccion.dto';
 import { UpdateClienteDireccionDto } from './dto/update-cliente-direccion.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { ClienteDireccion } from './entities/cliente-direccion.entity';
+import { FindClienteDireccionesDto } from './dto/find-cliente-direcciones.dto';
 
 @ApiTags('Cliente Direcciones')
 @Controller('cliente-direccion')
@@ -56,8 +62,15 @@ export class ClienteDireccionController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.clienteDireccionService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en la etiqueta, nombre del cliente o dirección formateada',
+    example: 'Casa principal',
+  })
+  findAll(@Query() filters: FindClienteDireccionesDto) {
+    return this.clienteDireccionService.findAll(filters);
   }
 
   @Get(':id')

@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AccesorioService } from './accesorio.service';
 import { CreateAccesorioDto } from './dto/create-accesorio.dto';
 import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Accesorio } from './entities/accesorio.entity';
+import { FindAccesoriosDto } from './dto/find-accesorios.dto';
 
 @ApiTags('Accesorios')
 @Controller('accesorio')
@@ -38,6 +44,12 @@ export class AccesorioController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los accesorios con paginación' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en la descripción o categoría del accesorio',
+    example: 'Cinta decorativa',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de accesorios obtenida exitosamente',
@@ -52,8 +64,8 @@ export class AccesorioController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.accesorioService.findAll(paginationDto);
+  findAll(@Query() filters: FindAccesoriosDto) {
+    return this.accesorioService.findAll(filters);
   }
 
   @Get(':id')

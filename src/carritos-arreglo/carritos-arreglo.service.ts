@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { CarritosArreglo } from './entities/carritos-arreglo.entity';
 import { CreateCarritosArregloDto } from './dto/create-carritos-arreglo.dto';
 import { UpdateCarritosArregloDto } from './dto/update-carritos-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Carrito } from 'src/carrito/entities/carrito.entity';
 import { Arreglo } from 'src/arreglo/entities/arreglo.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindCarritosArregloDto } from './dto/find-carritos-arreglo.dto';
 
 @Injectable()
 export class CarritosArregloService {
@@ -58,14 +58,28 @@ export class CarritosArregloService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindCarritosArregloDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.carritosArregloRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['carrito', 'arreglo'],
-    });
+    const qb = this.carritosArregloRepository
+      .createQueryBuilder('carritoArreglo')
+      .leftJoinAndSelect('carritoArreglo.carrito', 'carrito')
+      .leftJoinAndSelect('carrito.user', 'user')
+      .leftJoinAndSelect('carritoArreglo.arreglo', 'arreglo');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(arreglo.nombre ILIKE :search OR user.email ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('carritoArreglo.idCarritoArreglo', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

@@ -19,8 +19,8 @@ import {
 import { ClienteService } from './cliente.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Cliente } from './entities/cliente.entity';
+import { FindClientesDto } from './dto/find-clientes.dto';
 
 @ApiTags('Clientes')
 @Controller('cliente')
@@ -56,6 +56,12 @@ export class ClienteController {
     description: 'Número de elementos a omitir',
     example: 0,
   })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en el nombre, apellido o teléfono del cliente',
+    example: 'María',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de clientes obtenida exitosamente',
@@ -70,8 +76,8 @@ export class ClienteController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.clienteService.findAll(paginationDto);
+  findAll(@Query() filters: FindClientesDto) {
+    return this.clienteService.findAll(filters);
   }
 
   @Get(':id')

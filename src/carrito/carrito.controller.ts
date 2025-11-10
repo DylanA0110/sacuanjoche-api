@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CarritoService } from './carrito.service';
 import { CreateCarritoDto } from './dto/create-carrito.dto';
 import { UpdateCarritoDto } from './dto/update-carrito.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Carrito } from './entities/carrito.entity';
+import { FindCarritosDto } from './dto/find-carritos.dto';
 
 @ApiTags('Carritos')
 @Controller('carrito')
@@ -38,6 +44,12 @@ export class CarritoController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los carritos con paginación' })
+  @ApiQuery({
+    name: 'q',
+    description: 'Texto a buscar en el correo del usuario asociado',
+    example: 'cliente@example.com',
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de carritos obtenida exitosamente',
@@ -52,8 +64,8 @@ export class CarritoController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.carritoService.findAll(paginationDto);
+  findAll(@Query() filters: FindCarritosDto) {
+    return this.carritoService.findAll(filters);
   }
 
   @Get(':id')

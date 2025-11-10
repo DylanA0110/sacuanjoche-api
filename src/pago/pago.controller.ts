@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { PagoService } from './pago.service';
 import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Pago } from './entities/pago.entity';
+import { FindPagosDto } from './dto/find-pagos.dto';
 
 @ApiTags('Pagos')
 @Controller('pago')
@@ -38,6 +44,13 @@ export class PagoController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los pagos con paginación' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en estado, referencia, gateway o pedido asociado',
+    example: 'Pagado',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de pagos obtenida exitosamente',
@@ -52,8 +65,8 @@ export class PagoController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.pagoService.findAll(paginationDto);
+  findAll(@Query() filters: FindPagosDto) {
+    return this.pagoService.findAll(filters);
   }
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un pago por ID' })

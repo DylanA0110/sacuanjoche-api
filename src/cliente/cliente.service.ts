@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindClientesDto } from './dto/find-clientes.dto';
 
 @Injectable()
 export class ClienteService {
@@ -28,13 +28,27 @@ export class ClienteService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindClientesDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.clienteRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.clienteRepository.createQueryBuilder('cliente');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(cliente.primerNombre ILIKE :search OR cliente.primerApellido ILIKE :search OR cliente.telefono ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('cliente.fechaCreacion', 'DESC').addOrderBy(
+      'cliente.idCliente',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

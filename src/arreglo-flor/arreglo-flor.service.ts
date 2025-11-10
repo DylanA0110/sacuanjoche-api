@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { ArregloFlor } from './entities/arreglo-flor.entity';
 import { CreateArregloFlorDto } from './dto/create-arreglo-flor.dto';
 import { UpdateArregloFlorDto } from './dto/update-arreglo-flor.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Arreglo } from 'src/arreglo/entities/arreglo.entity';
 import { Flor } from 'src/flor/entities/flor.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindArreglosFlorDto } from './dto/find-arreglos-flor.dto';
 
 @Injectable()
 export class ArregloFlorService {
@@ -58,14 +58,27 @@ export class ArregloFlorService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindArreglosFlorDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.arregloFlorRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['arreglo', 'flor'],
-    });
+    const qb = this.arregloFlorRepository
+      .createQueryBuilder('arregloFlor')
+      .leftJoinAndSelect('arregloFlor.arreglo', 'arreglo')
+      .leftJoinAndSelect('arregloFlor.flor', 'flor');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(arreglo.nombre ILIKE :search OR flor.nombre ILIKE :search OR flor.color ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('arregloFlor.idArregloFlor', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

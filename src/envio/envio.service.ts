@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { Envio } from './entities/envio.entity';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { UpdateEnvioDto } from './dto/update-envio.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindEnviosDto } from './dto/find-envios.dto';
 
 @Injectable()
 export class EnvioService {
@@ -58,14 +58,30 @@ export class EnvioService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindEnviosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.envioRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['pedido', 'empleado'],
-    });
+    const qb = this.envioRepository
+      .createQueryBuilder('envio')
+      .leftJoinAndSelect('envio.pedido', 'pedido')
+      .leftJoinAndSelect('envio.empleado', 'empleado');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(envio.estadoEnvio ILIKE :search OR CAST(pedido.idPedido AS TEXT) ILIKE :search OR empleado.primerNombre ILIKE :search OR empleado.primerApellido ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('envio.fechaProgramada', 'DESC').addOrderBy(
+      'envio.idEnvio',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

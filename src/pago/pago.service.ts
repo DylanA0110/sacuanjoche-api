@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { Pago } from './entities/pago.entity';
 import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { MetodoPago } from 'src/metodo-pago/entities/metodo-pago.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindPagosDto } from './dto/find-pagos.dto';
 
 @Injectable()
 export class PagoService {
@@ -58,14 +58,35 @@ export class PagoService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindPagosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.pagoRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['pedido', 'metodoPago'],
-    });
+    const qb = this.pagoRepository
+      .createQueryBuilder('pago')
+      .leftJoinAndSelect('pago.pedido', 'pedido')
+      .leftJoinAndSelect('pago.metodoPago', 'metodoPago');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        `(
+          CAST(pago.idPago AS TEXT) ILIKE :search OR
+          pago.estado ILIKE :search OR
+          pago.referencia ILIKE :search OR
+          pago.gateway ILIKE :search OR
+          pago.idGateway ILIKE :search OR
+          CAST(pedido.idPedido AS TEXT) ILIKE :search OR
+          metodoPago.descripcion ILIKE :search
+        )`,
+        { search },
+      );
+    }
+
+    qb.orderBy('pago.fechaPago', 'DESC').addOrderBy('pago.idPago', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { FormaArregloService } from './forma-arreglo.service';
 import { CreateFormaArregloDto } from './dto/create-forma-arreglo.dto';
 import { UpdateFormaArregloDto } from './dto/update-forma-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { FormaArreglo } from './entities/forma-arreglo.entity';
+import { FindFormasArregloDto } from './dto/find-formas-arreglo.dto';
 
 @ApiTags('Formas de Arreglo')
 @Controller('forma-arreglo')
@@ -40,6 +46,12 @@ export class FormaArregloController {
   @ApiOperation({
     summary: 'Obtener todas las formas de arreglo con paginación',
   })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en la descripción de la forma de arreglo',
+    example: 'Centro de mesa',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de formas de arreglo obtenida exitosamente',
@@ -54,8 +66,8 @@ export class FormaArregloController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.formaArregloService.findAll(paginationDto);
+  findAll(@Query() filters: FindFormasArregloDto) {
+    return this.formaArregloService.findAll(filters);
   }
 
   @Get(':id')

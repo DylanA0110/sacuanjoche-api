@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { DetallePedido } from './entities/detalle-pedido.entity';
 import { CreateDetallePedidoDto } from './dto/create-detalle-pedido.dto';
 import { UpdateDetallePedidoDto } from './dto/update-detalle-pedido.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { Arreglo } from 'src/arreglo/entities/arreglo.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindDetallesPedidoDto } from './dto/find-detalles-pedido.dto';
 
 @Injectable()
 export class DetallePedidoService {
@@ -58,14 +58,27 @@ export class DetallePedidoService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindDetallesPedidoDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.detallePedidoRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['pedido', 'arreglo'],
-    });
+    const qb = this.detallePedidoRepository
+      .createQueryBuilder('detalle')
+      .leftJoinAndSelect('detalle.pedido', 'pedido')
+      .leftJoinAndSelect('detalle.arreglo', 'arreglo');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(arreglo.nombre ILIKE :search OR CAST(pedido.idPedido AS TEXT) ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('detalle.idDetallePedido', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

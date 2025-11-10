@@ -19,8 +19,8 @@ import {
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Pedido } from './entities/pedido.entity';
+import { FindPedidosDto } from './dto/find-pedidos.dto';
 
 @ApiTags('Pedidos')
 @Controller('pedido')
@@ -45,16 +45,11 @@ export class PedidoController {
   @Get()
   @ApiOperation({ summary: 'Obtener todos los pedidos con paginación' })
   @ApiQuery({
-    name: 'limit',
+    name: 'q',
     required: false,
-    description: 'Número de elementos por página',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'offset',
-    required: false,
-    description: 'Número de elementos a omitir',
-    example: 0,
+    description:
+      'Texto a buscar en dirección, cliente, empleado o contacto de entrega',
+    example: 'Juan',
   })
   @ApiResponse({
     status: 200,
@@ -70,8 +65,8 @@ export class PedidoController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.pedidoService.findAll(paginationDto);
+  findAll(@Query() filters: FindPedidosDto) {
+    return this.pedidoService.findAll(filters);
   }
 
   @Get(':id')

@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { ContactoEntrega } from './entities/contacto-entrega.entity';
 import { CreateContactoEntregaDto } from './dto/create-contacto-entrega.dto';
 import { UpdateContactoEntregaDto } from './dto/update-contacto-entrega.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindContactosEntregaDto } from './dto/find-contactos-entrega.dto';
 
 @Injectable()
 export class ContactoEntregaService {
@@ -28,13 +28,24 @@ export class ContactoEntregaService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindContactosEntregaDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.contactoEntregaRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.contactoEntregaRepository.createQueryBuilder('contacto');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(contacto.nombre ILIKE :search OR contacto.apellido ILIKE :search OR contacto.telefono ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('contacto.nombre', 'ASC').addOrderBy('contacto.apellido', 'ASC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { EmpleadoService } from './empleado.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Empleado } from './entities/empleado.entity';
+import { FindEmpleadosDto } from './dto/find-empleados.dto';
 
 @ApiTags('Empleados')
 @Controller('empleado')
@@ -52,8 +58,14 @@ export class EmpleadoController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.empleadoService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en nombres, apellidos o teléfono del empleado',
+    example: 'Juan Pérez',
+  })
+  findAll(@Query() filters: FindEmpleadosDto) {
+    return this.empleadoService.findAll(filters);
   }
 
   @Get(':id')

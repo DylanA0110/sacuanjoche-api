@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { FacturaService } from './factura.service';
 import { CreateFacturaDto } from './dto/create-factura.dto';
 import { UpdateFacturaDto } from './dto/update-factura.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Factura } from './entities/factura.entity';
+import { FindFacturasDto } from './dto/find-facturas.dto';
 
 @ApiTags('Facturas')
 @Controller('factura')
@@ -52,8 +58,15 @@ export class FacturaController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.facturaService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en número, estado, pedido o nombre del empleado',
+    example: 'FAC-2025-001',
+  })
+  findAll(@Query() filters: FindFacturasDto) {
+    return this.facturaService.findAll(filters);
   }
 
   @Get(':id')

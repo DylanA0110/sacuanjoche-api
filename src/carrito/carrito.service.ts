@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import { Carrito } from './entities/carrito.entity';
 import { CreateCarritoDto } from './dto/create-carrito.dto';
 import { UpdateCarritoDto } from './dto/update-carrito.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { User } from 'src/auth/entities/user.entity';
+import { FindCarritosDto } from './dto/find-carritos.dto';
 
 @Injectable()
 export class CarritoService {
@@ -47,14 +47,27 @@ export class CarritoService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindCarritosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.carritoRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['user', 'carritosArreglo'],
-    });
+    const qb = this.carritoRepository
+      .createQueryBuilder('carrito')
+      .leftJoinAndSelect('carrito.user', 'user')
+      .leftJoinAndSelect('carrito.carritosArreglo', 'carritosArreglo');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere('(user.email ILIKE :search)', { search });
+    }
+
+    qb.orderBy('carrito.fechaUltAct', 'DESC').addOrderBy(
+      'carrito.idCarrito',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

@@ -1,0 +1,23 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+
+export class FindPedidosDto extends PaginationDto {
+  @ApiPropertyOptional({
+    description:
+      'Texto a buscar en dirección, nombre del cliente, empleado o contacto de entrega',
+    example: 'Juan Pérez',
+  })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  })
+  q?: string;
+}

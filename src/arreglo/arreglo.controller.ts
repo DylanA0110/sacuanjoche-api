@@ -19,8 +19,8 @@ import {
 import { ArregloService } from './arreglo.service';
 import { CreateArregloDto } from './dto/create-arreglo.dto';
 import { UpdateArregloDto } from './dto/update-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Arreglo } from './entities/arreglo.entity';
+import { FindArreglosDto } from './dto/find-arreglos.dto';
 
 @ApiTags('Arreglos')
 @Controller('arreglo')
@@ -56,6 +56,12 @@ export class ArregloController {
     description: 'Número de elementos a omitir',
     example: 0,
   })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en el nombre, descripción o forma del arreglo',
+    example: 'Bouquet',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de arreglos obtenida exitosamente',
@@ -70,8 +76,8 @@ export class ArregloController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.arregloService.findAll(paginationDto);
+  findAll(@Query() filters: FindArreglosDto) {
+    return this.arregloService.findAll(filters);
   }
 
   @Get(':id')

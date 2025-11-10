@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AccesoriosArregloService } from './accesorios-arreglo.service';
 import { CreateAccesoriosArregloDto } from './dto/create-accesorios-arreglo.dto';
 import { UpdateAccesoriosArregloDto } from './dto/update-accesorios-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { AccesoriosArreglo } from './entities/accesorios-arreglo.entity';
+import { FindAccesoriosArregloDto } from './dto/find-accesorios-arreglo.dto';
 
 @ApiTags('Accesorios Arreglos')
 @Controller('accesorios-arreglo')
@@ -42,6 +48,13 @@ export class AccesoriosArregloController {
   @ApiOperation({
     summary: 'Obtener todas las accesorios arreglos con paginación',
   })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en la descripción del accesorio o el nombre del arreglo',
+    example: 'Ramo Primavera',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de accesorios arreglos obtenida exitosamente',
@@ -56,8 +69,8 @@ export class AccesoriosArregloController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.accesoriosArregloService.findAll(paginationDto);
+  findAll(@Query() filters: FindAccesoriosArregloDto) {
+    return this.accesoriosArregloService.findAll(filters);
   }
 
   @Get(':id')

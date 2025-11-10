@@ -19,8 +19,8 @@ import {
 import { FlorService } from './flor.service';
 import { CreateFlorDto } from './dto/create-flor.dto';
 import { UpdateFlorDto } from './dto/update-flor.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Flor } from './entities/flor.entity';
+import { FindFloresDto } from './dto/find-flores.dto';
 
 @ApiTags('Flores')
 @Controller('flor')
@@ -45,16 +45,10 @@ export class FlorController {
   @Get()
   @ApiOperation({ summary: 'Obtener todas las flores con paginación' })
   @ApiQuery({
-    name: 'limit',
+    name: 'q',
     required: false,
-    description: 'Número de elementos por página',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'offset',
-    required: false,
-    description: 'Número de elementos a omitir',
-    example: 0,
+    description: 'Texto a buscar en nombre, color o tipo de la flor',
+    example: 'Rosa',
   })
   @ApiResponse({
     status: 200,
@@ -70,8 +64,8 @@ export class FlorController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.florService.findAll(paginationDto);
+  findAll(@Query() filters: FindFloresDto) {
+    return this.florService.findAll(filters);
   }
 
   @Get(':id')

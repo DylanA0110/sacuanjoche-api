@@ -4,13 +4,13 @@ import { Repository } from 'typeorm';
 import { Pedido } from './entities/pedido.entity';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.entity';
 import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindPedidosDto } from './dto/find-pedidos.dto';
 
 @Injectable()
 export class PedidoService {
@@ -83,20 +83,42 @@ export class PedidoService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindPedidosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    //take : la cantidad de registros que se toman
-    //skip : la cantidad de registros que se saltan
-    //relations : las relaciones que se quieren cargar de la base de datos en el json
+    const qb = this.pedidoRepository
+      .createQueryBuilder('pedido')
+      .leftJoinAndSelect('pedido.empleado', 'empleado')
+      .leftJoinAndSelect('pedido.cliente', 'cliente')
+      .leftJoinAndSelect('pedido.direccion', 'direccion')
+      .leftJoinAndSelect('pedido.contactoEntrega', 'contactoEntrega');
 
-    const pedidos = await this.pedidoRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
-    });
+    qb.take(limit).skip(offset);
 
-    return pedidos;
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        `(
+          pedido.direccionTxt ILIKE :search OR
+          CAST(pedido.idPedido AS TEXT) ILIKE :search OR
+          cliente.primerNombre ILIKE :search OR
+          cliente.primerApellido ILIKE :search OR
+          empleado.primerNombre ILIKE :search OR
+          empleado.primerApellido ILIKE :search OR
+          contactoEntrega.nombre ILIKE :search OR
+          contactoEntrega.apellido ILIKE :search OR
+          contactoEntrega.telefono ILIKE :search
+        )`,
+        { search },
+      );
+    }
+
+    qb.orderBy('pedido.fechaCreacion', 'DESC').addOrderBy(
+      'pedido.idPedido',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

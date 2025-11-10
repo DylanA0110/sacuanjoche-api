@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { Accesorio } from './entities/accesorio.entity';
 import { CreateAccesorioDto } from './dto/create-accesorio.dto';
 import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindAccesoriosDto } from './dto/find-accesorios.dto';
 
 @Injectable()
 export class AccesorioService {
@@ -28,13 +28,27 @@ export class AccesorioService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindAccesoriosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.accesorioRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const qb = this.accesorioRepository.createQueryBuilder('accesorio');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(accesorio.descripcion ILIKE :search OR accesorio.categoria ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('accesorio.descripcion', 'ASC').addOrderBy(
+      'accesorio.idAccesorio',
+      'ASC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

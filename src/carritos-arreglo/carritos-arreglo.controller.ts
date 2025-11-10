@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CarritosArregloService } from './carritos-arreglo.service';
 import { CreateCarritosArregloDto } from './dto/create-carritos-arreglo.dto';
 import { UpdateCarritosArregloDto } from './dto/update-carritos-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { CarritosArreglo } from './entities/carritos-arreglo.entity';
+import { FindCarritosArregloDto } from './dto/find-carritos-arreglo.dto';
 
 @ApiTags('Carritos Arreglos')
 @Controller('carritos-arreglo')
@@ -42,6 +48,13 @@ export class CarritosArregloController {
   @ApiOperation({
     summary: 'Obtener todos los carritos arreglos con paginación',
   })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en el nombre del arreglo o en el correo del usuario',
+    example: 'Ramo de rosas',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de carritos arreglos obtenida exitosamente',
@@ -56,8 +69,8 @@ export class CarritosArregloController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.carritosArregloService.findAll(paginationDto);
+  findAll(@Query() filters: FindCarritosArregloDto) {
+    return this.carritosArregloService.findAll(filters);
   }
 
   @Patch(':id')

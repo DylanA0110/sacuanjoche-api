@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import { Arreglo } from './entities/arreglo.entity';
 import { CreateArregloDto } from './dto/create-arreglo.dto';
 import { UpdateArregloDto } from './dto/update-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { FormaArreglo } from 'src/forma-arreglo/entities/forma-arreglo.entity';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
+import { FindArreglosDto } from './dto/find-arreglos.dto';
 
 @Injectable()
 export class ArregloService {
@@ -47,14 +47,29 @@ export class ArregloService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindArreglosDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.arregloRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['formaArreglo'],
-    });
+    const qb = this.arregloRepository
+      .createQueryBuilder('arreglo')
+      .leftJoinAndSelect('arreglo.formaArreglo', 'formaArreglo');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        `(arreglo.nombre ILIKE :search OR arreglo.descripcion ILIKE :search OR formaArreglo.descripcion ILIKE :search)`,
+        { search },
+      );
+    }
+
+    qb.orderBy('arreglo.fechaCreacion', 'DESC').addOrderBy(
+      'arreglo.idArreglo',
+      'DESC',
+    );
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

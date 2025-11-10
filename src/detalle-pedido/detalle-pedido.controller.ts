@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { DetallePedidoService } from './detalle-pedido.service';
 import { CreateDetallePedidoDto } from './dto/create-detalle-pedido.dto';
 import { UpdateDetallePedidoDto } from './dto/update-detalle-pedido.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { DetallePedido } from './entities/detalle-pedido.entity';
+import { FindDetallesPedidoDto } from './dto/find-detalles-pedido.dto';
 
 @ApiTags('Detalle Pedidos')
 @Controller('detalle-pedido')
@@ -37,8 +43,15 @@ export class DetallePedidoController {
     summary: 'Obtener todos los detalles de pedido con paginación',
   })
   @ApiResponse({ status: 200, description: 'Lista obtenida exitosamente' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.detallePedidoService.findAll(paginationDto);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description:
+      'Texto a buscar en el nombre del arreglo o identificador del pedido',
+    example: 'Ramo Rosas',
+  })
+  findAll(@Query() filters: FindDetallesPedidoDto) {
+    return this.detallePedidoService.findAll(filters);
   }
 
   @Get(':id')

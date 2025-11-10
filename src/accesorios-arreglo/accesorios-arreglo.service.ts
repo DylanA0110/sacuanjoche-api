@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { AccesoriosArreglo } from './entities/accesorios-arreglo.entity';
 import { CreateAccesoriosArregloDto } from './dto/create-accesorios-arreglo.dto';
 import { UpdateAccesoriosArregloDto } from './dto/update-accesorios-arreglo.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { Accesorio } from 'src/accesorio/entities/accesorio.entity';
 import { Arreglo } from 'src/arreglo/entities/arreglo.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
+import { FindAccesoriosArregloDto } from './dto/find-accesorios-arreglo.dto';
 
 @Injectable()
 export class AccesoriosArregloService {
@@ -59,14 +59,27 @@ export class AccesoriosArregloService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+  async findAll(filters: FindAccesoriosArregloDto) {
+    const { limit = 10, offset = 0, q } = filters;
 
-    return this.accesoriosArregloRepository.find({
-      take: limit,
-      skip: offset,
-      relations: ['accesorio', 'arreglo'],
-    });
+    const qb = this.accesoriosArregloRepository
+      .createQueryBuilder('accesorioArreglo')
+      .leftJoinAndSelect('accesorioArreglo.accesorio', 'accesorio')
+      .leftJoinAndSelect('accesorioArreglo.arreglo', 'arreglo');
+
+    qb.take(limit).skip(offset);
+
+    if (q) {
+      const search = `%${q}%`;
+      qb.andWhere(
+        '(accesorio.descripcion ILIKE :search OR arreglo.nombre ILIKE :search)',
+        { search },
+      );
+    }
+
+    qb.orderBy('accesorioArreglo.idAccesorioArreglo', 'DESC');
+
+    return qb.getMany();
   }
 
   async findOne(id: number) {

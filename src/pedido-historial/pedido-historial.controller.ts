@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { PedidoHistorialService } from './pedido-historial.service';
 import { CreatePedidoHistorialDto } from './dto/create-pedido-historial.dto';
 import { UpdatePedidoHistorialDto } from './dto/update-pedido-historial.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { PedidoHistorial } from './entities/pedido-historial.entity';
+import { FindPedidosHistorialDto } from './dto/find-pedidos-historial.dto';
 
 @ApiTags('Pedido Historial')
 @Controller('pedido-historial')
@@ -36,9 +42,15 @@ export class PedidoHistorialController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los historiales con paginación' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en estado, nota, pedido o empleado asociado',
+    example: 'Entregado',
+  })
   @ApiResponse({ status: 200, description: 'Lista obtenida exitosamente' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.pedidoHistorialService.findAll(paginationDto);
+  findAll(@Query() filters: FindPedidosHistorialDto) {
+    return this.pedidoHistorialService.findAll(filters);
   }
 
   @Get('pedido/:idPedido')

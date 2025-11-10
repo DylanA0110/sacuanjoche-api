@@ -9,12 +9,18 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { MetodoPagoService } from './metodo-pago.service';
 import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { MetodoPago } from './entities/metodo-pago.entity';
+import { FindMetodosPagoDto } from './dto/find-metodos-pago.dto';
 
 @ApiTags('Métodos de Pago')
 @Controller('metodo-pago')
@@ -38,6 +44,12 @@ export class MetodoPagoController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los métodos de pago con paginación' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar en la descripción del método de pago',
+    example: 'Tarjeta de crédito',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de métodos de pago obtenida exitosamente',
@@ -52,8 +64,8 @@ export class MetodoPagoController {
       },
     },
   })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.metodoPagoService.findAll(paginationDto);
+  findAll(@Query() filters: FindMetodosPagoDto) {
+    return this.metodoPagoService.findAll(filters);
   }
 
   @Get(':id')
