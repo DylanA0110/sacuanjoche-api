@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AccesorioModule } from './accesorio/accesorio.module';
 import { AccesoriosArregloModule } from './accesorios-arreglo/accesorios-arreglo.module';
 import { ArregloModule } from './arreglo/arreglo.module';
@@ -32,26 +34,27 @@ import { PedidoHistorialModule } from './pedido-historial/pedido-historial.modul
       envFilePath: '.env',
     }),
 
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        database: configService.get<string>('DB_NAME'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        autoLoadEntities: true,
-        synchronize: configService.get<string>('STAGE') !== 'prod',
-        ssl: configService.get<string>('STAGE') === 'prod',
-        extra: {
-          ssl:
-            configService.get<string>('STAGE') === 'prod'
-              ? { rejectUnauthorized: false }
-              : null,
-        },
-      }),
+    TypeOrmModule.forRoot({
+      ssl: process.env.STAGE === 'prod',
+      extra: {
+        ssl:
+          process.env.STAGE === 'prod' ? { rejectUnauthorized: false } : null,
+      },
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT!,
+      database: process.env.DB_NAME,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      autoLoadEntities: true,
+
+      // IMPORTANT: Never synchronize schema automatically in production
+      // Control with env var to allow sync only in local development
+      synchronize: process.env.TYPEORM_SYNC === 'true',
+    }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
     }),
     AccesorioModule,
     AccesoriosArregloModule,

@@ -1,5 +1,5 @@
 export enum ValidRoles {
-  gerente = 'gerente',
+  conductor = 'conductor',
   admin = 'admin',
   vendedor = 'vendedor',
   cliente = 'cliente',

@@ -29,6 +29,19 @@ export class User {
   })
   password: string;
 
+  @Column('int', {
+    name: 'login_attempts',
+    default: 0,
+  })
+  loginAttempts: number;
+
+  @Column({
+    name: 'blocked_until',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  blockedUntil: Date | null;
+
   @Column('bool', {
     name: 'is_active',
     default: true,

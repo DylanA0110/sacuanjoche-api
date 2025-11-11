@@ -85,7 +85,6 @@ export class AuthController {
   // }
 
   @Patch('users/:id/roles')
-  @Auth(ValidRoles.gerente)
   @ApiTags('Users')
   @ApiOperation({ summary: 'Actualizar roles de un usuario' })
   @ApiParam({
