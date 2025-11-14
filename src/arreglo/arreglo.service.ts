@@ -37,7 +37,13 @@ export class ArregloService {
 
       return this.arregloRepository.findOne({
         where: { idArreglo: newArreglo.idArreglo },
-        relations: ['formaArreglo'],
+        relations: ['formaArreglo', 'media'],
+        order: {
+          media: {
+            orden: 'ASC',
+            idArregloMedia: 'ASC',
+          },
+        },
       });
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -52,7 +58,10 @@ export class ArregloService {
 
     const qb = this.arregloRepository
       .createQueryBuilder('arreglo')
-      .leftJoinAndSelect('arreglo.formaArreglo', 'formaArreglo');
+      .leftJoinAndSelect('arreglo.formaArreglo', 'formaArreglo')
+      .leftJoinAndSelect('arreglo.media', 'media', 'media.activo = true');
+
+    qb.distinct(true);
 
     qb.take(limit).skip(offset);
 
@@ -64,10 +73,10 @@ export class ArregloService {
       );
     }
 
-    qb.orderBy('arreglo.fechaCreacion', 'DESC').addOrderBy(
-      'arreglo.idArreglo',
-      'DESC',
-    );
+    qb.orderBy('arreglo.fechaCreacion', 'DESC')
+      .addOrderBy('arreglo.idArreglo', 'DESC')
+      .addOrderBy('media.orden', 'ASC')
+      .addOrderBy('media.idArregloMedia', 'ASC');
 
     return qb.getMany();
   }
@@ -75,7 +84,13 @@ export class ArregloService {
   async findOne(id: number) {
     const arreglo = await this.arregloRepository.findOne({
       where: { idArreglo: id },
-      relations: ['formaArreglo'],
+      relations: ['formaArreglo', 'media'],
+      order: {
+        media: {
+          orden: 'ASC',
+          idArregloMedia: 'ASC',
+        },
+      },
     });
 
     if (!arreglo) {

@@ -45,6 +45,23 @@ MAPBOX_PROFILE=driving
 
 `ROUTING_ORIGIN_LAT/LNG` representan las coordenadas de la floristería (punto de partida).
 
+Para gestionar las imágenes de los arreglos utilizando DigitalOcean Spaces configura también:
+
+```
+DO_SPACES_BUCKET=
+DO_SPACES_REGION=
+DO_SPACES_ENDPOINT= # opcional, se deriva si se omite
+DO_SPACES_KEY=
+DO_SPACES_SECRET=
+# Opcional: habilita CDN o dominio personalizado
+DO_SPACES_CDN_URL=
+DO_SPACES_PUBLIC_BASE_URL=
+# Opcional: segundos de validez de la URL firmada (por defecto 3600)
+DO_SPACES_UPLOAD_EXPIRATION=
+# Opcional: ACL por defecto (public-read | private)
+DO_SPACES_DEFAULT_ACL=
+```
+
 ## Compile and run the project
 
 ```bash

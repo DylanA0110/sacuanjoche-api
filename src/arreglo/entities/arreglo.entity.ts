@@ -1,9 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { FormaArreglo } from '../../forma-arreglo/entities/forma-arreglo.entity';
 import { ArregloFlor } from '../../arreglo-flor/entities/arreglo-flor.entity';
 import { AccesoriosArreglo } from '../../accesorios-arreglo/entities/accesorios-arreglo.entity';
 import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arreglo.entity';
 import { DetallePedido } from '../../detalle-pedido/entities/detalle-pedido.entity';
+import { ArregloMedia } from './arreglo-media.entity';
 
 @Entity('arreglo')
 export class Arreglo {
@@ -19,8 +28,8 @@ export class Arreglo {
   @Column({ name: 'descripcion', type: 'text', nullable: true })
   descripcion: string;
 
-  @Column({ name: 'url', type: 'text'})
-  url: string;
+  @Column({ name: 'url', type: 'text', nullable: true })
+  url: string | null;
 
   @Column({ name: 'precio_unitario', type: 'decimal', precision: 10, scale: 2 })
   precioUnitario: number;
@@ -35,20 +44,28 @@ export class Arreglo {
   fechaCreacion: Date;
 
   // Relaciones
-  @ManyToOne(() => FormaArreglo, formaArreglo => formaArreglo.arreglos)
+  @ManyToOne(() => FormaArreglo, (formaArreglo) => formaArreglo.arreglos)
   @JoinColumn({ name: 'id_forma_arreglo' })
   formaArreglo: FormaArreglo;
 
-  @OneToMany(() => ArregloFlor, arregloFlor => arregloFlor.arreglo)
+  @OneToMany(() => ArregloFlor, (arregloFlor) => arregloFlor.arreglo)
   arreglosFlor: ArregloFlor[];
 
-  @OneToMany(() => AccesoriosArreglo, accesoriosArreglo => accesoriosArreglo.arreglo)
+  @OneToMany(
+    () => AccesoriosArreglo,
+    (accesoriosArreglo) => accesoriosArreglo.arreglo,
+  )
   accesoriosArreglo: AccesoriosArreglo[];
 
-  @OneToMany(() => CarritosArreglo, carritosArreglo => carritosArreglo.arreglo)
+  @OneToMany(
+    () => CarritosArreglo,
+    (carritosArreglo) => carritosArreglo.arreglo,
+  )
   carritosArreglo: CarritosArreglo[];
 
-  @OneToMany(() => DetallePedido, detallePedido => detallePedido.arreglo)
+  @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.arreglo)
   detallesPedido: DetallePedido[];
-}
 
+  @OneToMany(() => ArregloMedia, (media) => media.arreglo)
+  media: ArregloMedia[];
+}
