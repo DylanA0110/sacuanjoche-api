@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Direccion } from './entities/direccion.entity';
@@ -6,19 +10,102 @@ import { CreateDireccionDto } from './dto/create-direccion.dto';
 import { UpdateDireccionDto } from './dto/update-direccion.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { FindDireccionesDto } from './dto/find-direcciones.dto';
+import { MapboxService } from 'src/common/mapbox/mapbox.service';
 
 @Injectable()
 export class DireccionService {
   constructor(
     @InjectRepository(Direccion)
     private readonly direccionRepository: Repository<Direccion>,
+    private readonly mapboxService: MapboxService,
   ) {}
 
   async create(createDireccionDto: CreateDireccionDto) {
     try {
-      const { ...direccion } = createDireccionDto;
+      const direccionData = {
+        ...createDireccionDto,
+      } as CreateDireccionDto & { adminArea?: string };
 
-      const newDireccion = this.direccionRepository.create({ ...direccion });
+      const hasCoordinates =
+        Number.isFinite(direccionData.lat) &&
+        Number.isFinite(direccionData.lng);
+
+      const fieldsToAutofill: Array<keyof CreateDireccionDto> = [
+        'formattedAddress',
+        'country',
+        'stateProv',
+        'city',
+        'neighborhood',
+        'street',
+        'houseNumber',
+        'postalCode',
+        'placeId',
+        'accuracy',
+      ];
+
+      const needsAutofill = fieldsToAutofill.some((field) => {
+        const value = direccionData[field];
+        return (
+          value === undefined ||
+          value === null ||
+          (typeof value === 'string' && value.trim().length === 0)
+        );
+      });
+
+      if (hasCoordinates && needsAutofill) {
+        const reverseResult = await this.mapboxService.reverseGeocode({
+          lat: direccionData.lat,
+          lng: direccionData.lng,
+        });
+
+        if (reverseResult) {
+          direccionData.formattedAddress ??= reverseResult.formattedAddress;
+          direccionData.country ??= reverseResult.country;
+          direccionData.stateProv ??= reverseResult.adminArea;
+          direccionData.city ??= reverseResult.city;
+          direccionData.neighborhood ??= reverseResult.neighborhood;
+          direccionData.street ??= reverseResult.street;
+          direccionData.houseNumber ??= reverseResult.houseNumber;
+          direccionData.postalCode ??= reverseResult.postalCode;
+          direccionData.provider ??= reverseResult.provider;
+          direccionData.placeId ??= reverseResult.placeId;
+          direccionData.accuracy ??= reverseResult.accuracy;
+          (direccionData as { adminArea?: string }).adminArea ??=
+            reverseResult.adminArea;
+
+          if (reverseResult.context && !direccionData.geolocation) {
+            direccionData.geolocation = JSON.stringify(reverseResult.context);
+          }
+        }
+      }
+
+      if (
+        hasCoordinates &&
+        (!direccionData.provider || direccionData.provider.trim().length === 0)
+      ) {
+        direccionData.provider = 'mapbox';
+      }
+
+      if (
+        !direccionData.formattedAddress ||
+        !direccionData.country ||
+        !direccionData.city
+      ) {
+        throw new BadRequestException(
+          'No se pudo completar la dirección con Mapbox. Por favor envía los datos obligatorios manualmente.',
+        );
+      }
+
+      const { stateProv, ...direccionToPersist } = direccionData;
+      const adminArea =
+        (direccionToPersist as { adminArea?: string }).adminArea ??
+        stateProv ??
+        null;
+
+      const newDireccion = this.direccionRepository.create({
+        ...direccionToPersist,
+        adminArea,
+      });
 
       await this.direccionRepository.save(newDireccion);
 
@@ -65,11 +152,15 @@ export class DireccionService {
 
   async update(id: number, updateDireccionDto: UpdateDireccionDto) {
     try {
-      const { ...toUpdate } = updateDireccionDto;
+      const { stateProv, ...toUpdate } = updateDireccionDto;
 
       const direccion = await this.direccionRepository.preload({
         idDireccion: id,
         ...toUpdate,
+        adminArea:
+          (toUpdate as { adminArea?: string }).adminArea ??
+          stateProv ??
+          undefined,
       });
 
       if (!direccion) {

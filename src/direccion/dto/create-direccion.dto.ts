@@ -1,19 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsBoolean, MaxLength, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  MaxLength,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateDireccionDto {
   @ApiProperty({
     description: 'Dirección formateada completa',
-    example: '123 Main St, New York, NY 10001, USA'
+    example: '123 Main St, New York, NY 10001, USA',
+    required: false,
   })
+  @IsOptional()
   @IsString()
   formattedAddress: string;
 
   @ApiProperty({
     description: 'País',
     example: 'USA',
-    maxLength: 100
+    maxLength: 100,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   country: string;
@@ -21,8 +32,10 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Estado o provincia',
     example: 'New York',
-    maxLength: 100
+    maxLength: 100,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   stateProv: string;
@@ -30,8 +43,10 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Ciudad',
     example: 'New York',
-    maxLength: 100
+    maxLength: 100,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   city: string;
@@ -40,7 +55,7 @@ export class CreateDireccionDto {
     description: 'Barrio o colonia',
     example: 'Manhattan',
     maxLength: 100,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -50,8 +65,10 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Calle',
     example: 'Main Street',
-    maxLength: 200
+    maxLength: 200,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(200)
   street: string;
@@ -59,8 +76,10 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Número de casa',
     example: '123',
-    maxLength: 20
+    maxLength: 20,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(20)
   houseNumber: string;
@@ -68,8 +87,10 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Código postal',
     example: '10001',
-    maxLength: 20
+    maxLength: 20,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(20)
   postalCode: string;
@@ -77,7 +98,7 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Referencia adicional',
     example: 'Cerca del parque central',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -85,23 +106,27 @@ export class CreateDireccionDto {
 
   @ApiProperty({
     description: 'Latitud',
-    example: 40.7128
+    example: 40.7128,
   })
+  @Type(() => Number)
   @IsNumber()
   lat: number;
 
   @ApiProperty({
     description: 'Longitud',
-    example: -74.0060
+    example: -74.006,
   })
+  @Type(() => Number)
   @IsNumber()
   lng: number;
 
   @ApiProperty({
     description: 'Proveedor de geocodificación',
     example: 'Google Maps',
-    maxLength: 50
+    maxLength: 50,
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(50)
   provider: string;
@@ -110,7 +135,7 @@ export class CreateDireccionDto {
     description: 'ID del lugar en el proveedor',
     example: 'ChIJd8BlQ2BZwokRAFUEcm_qrcA',
     maxLength: 200,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -121,7 +146,7 @@ export class CreateDireccionDto {
     description: 'Precisión de la geocodificación',
     example: 'ROOFTOP',
     maxLength: 50,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -131,7 +156,7 @@ export class CreateDireccionDto {
   @ApiProperty({
     description: 'Datos de geolocalización adicionales',
     example: '{"accuracy": 10, "timestamp": 1640995200000}',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -141,10 +166,10 @@ export class CreateDireccionDto {
     description: 'Estado activo de la dirección',
     example: true,
     default: true,
-    required: false
+    required: false,
   })
   @IsOptional()
+  @Type(() => Boolean)
   @IsBoolean()
   activo?: boolean;
 }
-

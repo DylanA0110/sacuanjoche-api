@@ -34,6 +34,23 @@ export interface ForwardGeocodeResult {
   accuracy?: string;
 }
 
+export interface ReverseGeocodeResult {
+  formattedAddress: string;
+  country?: string;
+  adminArea?: string;
+  city?: string;
+  neighborhood?: string;
+  street?: string;
+  houseNumber?: string;
+  postalCode?: string;
+  placeId?: string;
+  accuracy?: string;
+  lat: number;
+  lng: number;
+  provider: string;
+  context?: Record<string, string | undefined>;
+}
+
 export interface MapboxWaypoint {
   name: string;
   location: [number, number];
