@@ -25,6 +25,10 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Gestión de imágenes de arreglos
+
+La documentación sobre el flujo completo de subida de imágenes a DigitalOcean Spaces y uso de los endpoints se encuentra en `docs/imagenes-arreglos.md`.
+
 ## Project setup
 
 ```bash
