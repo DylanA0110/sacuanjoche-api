@@ -11,6 +11,7 @@ import { Envio } from '../../envio/entities/envio.entity';
 import { Factura } from '../../factura/entities/factura.entity';
 import { User } from '../../auth/entities/user.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
+import { Ruta } from '../../ruta/entities/ruta.entity';
 
 @Entity('empleado')
 export class Empleado {
@@ -67,4 +68,7 @@ export class Empleado {
     (pedidoHistorial) => pedidoHistorial.empleado,
   )
   pedidosHistorial: PedidoHistorial[];
+
+  @OneToMany(() => Ruta, (ruta) => ruta.empleado)
+  rutas: Ruta[];
 }

@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Cliente } from '../../cliente/entities/cliente.entity';
 import { Direccion } from '../../direccion/entities/direccion.entity';
 
@@ -22,18 +29,22 @@ export class ClienteDireccion {
   @Column({ name: 'activo', type: 'boolean', default: true })
   activo: boolean;
 
-  @Column({name: 'fecha_creacion', type: 'timestamp'})
+  @Column({
+    name: 'fecha_creacion',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   fechaCreacion: Date;
 
   @UpdateDateColumn({ name: 'fecha_ult_act', type: 'timestamp' })
   fechaUltAct: Date;
 
   // Relaciones
-  @ManyToOne(() => Cliente, cliente => cliente.direcciones)
+  @ManyToOne(() => Cliente, (cliente) => cliente.direcciones)
   @JoinColumn({ name: 'id_cliente' })
   cliente: Cliente;
 
-  @ManyToOne(() => Direccion, direccion => direccion.clienteDirecciones)
+  @ManyToOne(() => Direccion, (direccion) => direccion.clienteDirecciones)
   @JoinColumn({ name: 'id_direccion' })
   direccion: Direccion;
 }

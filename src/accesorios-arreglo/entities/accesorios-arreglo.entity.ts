@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Accesorio } from '../../accesorio/entities/accesorio.entity';
 import { Arreglo } from '../../arreglo/entities/arreglo.entity';
 
@@ -13,13 +19,15 @@ export class AccesoriosArreglo {
   @Column({ name: 'id_arreglo' })
   idArreglo: number;
 
+  @Column({ name: 'cantidad', type: 'int' })
+  cantidad: number;
+
   // Relaciones
-  @ManyToOne(() => Accesorio, accesorio => accesorio.accesoriosArreglo)
+  @ManyToOne(() => Accesorio, (accesorio) => accesorio.accesoriosArreglo)
   @JoinColumn({ name: 'id_accesorio' })
   accesorio: Accesorio;
 
-  @ManyToOne(() => Arreglo, arreglo => arreglo.accesoriosArreglo)
+  @ManyToOne(() => Arreglo, (arreglo) => arreglo.accesoriosArreglo)
   @JoinColumn({ name: 'id_arreglo' })
   arreglo: Arreglo;
 }
-

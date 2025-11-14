@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { AccesorioModule } from './accesorio/accesorio.module';
@@ -26,6 +26,8 @@ import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
 import { PagoModule } from './pago/pago.module';
 import { PedidoModule } from './pedido/pedido.module';
 import { PedidoHistorialModule } from './pedido-historial/pedido-historial.module';
+import { RutaModule } from './ruta/ruta.module';
+import { MapboxModule } from './common/mapbox/mapbox.module';
 
 @Module({
   imports: [
@@ -77,6 +79,8 @@ import { PedidoHistorialModule } from './pedido-historial/pedido-historial.modul
     PagoModule,
     PedidoModule,
     PedidoHistorialModule,
+    RutaModule,
+    MapboxModule,
   ],
   controllers: [AppController],
   providers: [AppService],

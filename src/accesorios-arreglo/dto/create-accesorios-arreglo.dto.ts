@@ -4,16 +4,22 @@ import { IsNumber } from 'class-validator';
 export class CreateAccesoriosArregloDto {
   @ApiProperty({
     description: 'ID del accesorio',
-    example: 1
+    example: 1,
   })
   @IsNumber()
   idAccesorio: number;
 
   @ApiProperty({
     description: 'ID del arreglo',
-    example: 1
+    example: 1,
   })
   @IsNumber()
   idArreglo: number;
-}
 
+  @ApiProperty({
+    description: 'Cantidad del tipo especificado',
+    example: 12,
+  })
+  @IsNumber()
+  cantidad: number;
+}

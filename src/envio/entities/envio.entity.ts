@@ -1,6 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToOne,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
+import { Ruta } from '../../ruta/entities/ruta.entity';
 
 @Entity('envio')
 export class Envio {
@@ -43,13 +52,19 @@ export class Envio {
   @Column({ name: 'observaciones', type: 'text', nullable: true })
   observaciones: string;
 
+  @Column({ name: 'id_ruta', type: 'int', nullable: true })
+  idRuta?: number;
+
   // Relaciones
-  @OneToOne(() => Pedido, pedido => pedido.envio)
+  @OneToOne(() => Pedido, (pedido) => pedido.envio)
   @JoinColumn({ name: 'id_pedido' })
   pedido: Pedido;
 
-  @ManyToOne(() => Empleado, empleado => empleado.envios)
+  @ManyToOne(() => Empleado, (empleado) => empleado.envios)
   @JoinColumn({ name: 'id_empleado' })
   empleado: Empleado;
-}
 
+  @ManyToOne(() => Ruta, (ruta) => ruta.envios, { nullable: true })
+  @JoinColumn({ name: 'id_ruta' })
+  ruta?: Ruta;
+}

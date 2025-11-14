@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Empleado } from '../../empleado/entities/empleado.entity';
 import { Cliente } from '../../cliente/entities/cliente.entity';
 import { Direccion } from '../../direccion/entities/direccion.entity';
@@ -8,6 +18,7 @@ import { Pago } from '../../pago/entities/pago.entity';
 import { Envio } from '../../envio/entities/envio.entity';
 import { Factura } from '../../factura/entities/factura.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
+import { RutaPedido } from '../../ruta/entities/ruta-pedido.entity';
 
 @Entity('pedido')
 export class Pedido {
@@ -48,35 +59,40 @@ export class Pedido {
   totalPedido: number;
 
   // Relaciones
-  @ManyToOne(() => Empleado, empleado => empleado.pedidos)
+  @ManyToOne(() => Empleado, (empleado) => empleado.pedidos)
   @JoinColumn({ name: 'id_empleado' })
   empleado: Empleado;
 
-  @ManyToOne(() => Cliente, cliente => cliente.pedidos)
+  @ManyToOne(() => Cliente, (cliente) => cliente.pedidos)
   @JoinColumn({ name: 'id_cliente' })
   cliente: Cliente;
 
-  @ManyToOne(() => Direccion, direccion => direccion.pedidos)
+  @ManyToOne(() => Direccion, (direccion) => direccion.pedidos)
   @JoinColumn({ name: 'id_direccion' })
   direccion: Direccion;
 
-  @ManyToOne(() => ContactoEntrega, contactoEntrega => contactoEntrega.pedidos)
+  @ManyToOne(
+    () => ContactoEntrega,
+    (contactoEntrega) => contactoEntrega.pedidos,
+  )
   @JoinColumn({ name: 'id_contacto_entrega' })
   contactoEntrega: ContactoEntrega;
 
-  @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido)
+  @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.pedido)
   detallesPedido: DetallePedido[];
 
-  @OneToMany(() => Pago, pago => pago.pedido)
+  @OneToMany(() => Pago, (pago) => pago.pedido)
   pagos: Pago[];
 
-  @OneToOne(() => Envio, envio => envio.pedido)
+  @OneToOne(() => Envio, (envio) => envio.pedido)
   envio: Envio;
 
-  @OneToOne(() => Factura, factura => factura.pedido)
+  @OneToOne(() => Factura, (factura) => factura.pedido)
   factura: Factura;
 
-  @OneToMany(() => PedidoHistorial, pedidoHistorial => pedidoHistorial.pedido)
+  @OneToMany(() => PedidoHistorial, (pedidoHistorial) => pedidoHistorial.pedido)
   historial: PedidoHistorial[];
-}
 
+  @OneToMany(() => RutaPedido, (rutaPedido) => rutaPedido.pedido)
+  rutaPedidos: RutaPedido[];
+}

@@ -31,6 +31,20 @@
 $ npm install
 ```
 
+### Variables de entorno necesarias
+
+Para habilitar la optimización de rutas con Mapbox define las siguientes variables en tu archivo `.env`:
+
+```
+MAPBOX_ACCESS_TOKEN=tu_token_privado
+ROUTING_ORIGIN_LAT=12.345678
+ROUTING_ORIGIN_LNG=-86.123456
+# Opcional: perfil de viaje (driving, walking, cycling, etc.)
+MAPBOX_PROFILE=driving
+```
+
+`ROUTING_ORIGIN_LAT/LNG` representan las coordenadas de la floristería (punto de partida).
+
 ## Compile and run the project
 
 ```bash

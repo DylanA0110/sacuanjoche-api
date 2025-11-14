@@ -47,6 +47,8 @@ export class DireccionController {
   @ApiResponse({
     status: 200,
     description: 'Lista de direcciones obtenida exitosamente',
+    isArray: true,
+    type: Direccion,
   })
   @ApiQuery({
     name: 'q',

@@ -1,20 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, IsPositive, Min } from 'class-validator';
 
 export class PaginationDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     default: 10,
-    description: 'Number of items to return',
+    description: 'Número máximo de registros a devolver',
   })
   @IsOptional()
   @IsPositive()
   @Type(() => Number)
   limit?: number;
 
-  @ApiProperty({
-    default: 10,
-    description: 'Number of items to skip',
+  @ApiPropertyOptional({
+    default: 0,
+    description: 'Número de registros a saltar (desplazamiento)',
   })
   @IsOptional()
   @Min(0)
