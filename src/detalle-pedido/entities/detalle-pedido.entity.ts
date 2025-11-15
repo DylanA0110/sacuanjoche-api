@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Arreglo } from '../../arreglo/entities/arreglo.entity';
 
@@ -23,12 +31,25 @@ export class DetallePedido {
   subtotal: number;
 
   // Relaciones
-  @ManyToOne(() => Pedido, pedido => pedido.detallesPedido)
+  @ManyToOne(() => Pedido, (pedido) => pedido.detallesPedido)
   @JoinColumn({ name: 'id_pedido' })
   pedido: Pedido;
 
-  @ManyToOne(() => Arreglo, arreglo => arreglo.detallesPedido)
+  @ManyToOne(() => Arreglo, (arreglo) => arreglo.detallesPedido)
   @JoinColumn({ name: 'id_arreglo' })
   arreglo: Arreglo;
-}
 
+  @BeforeInsert()
+  @BeforeUpdate()
+  private updateSubtotal(): void {
+    const cantidad = Number(this.cantidad);
+    const precio = Number(this.precioUnitario);
+
+    const subtotal =
+      Number.isFinite(cantidad) && Number.isFinite(precio)
+        ? cantidad * precio
+        : 0;
+
+    this.subtotal = Number(subtotal.toFixed(2));
+  }
+}

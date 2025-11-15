@@ -46,6 +46,7 @@ export class SpacesService {
   private readonly defaultExpirySeconds: number;
   private readonly defaultAcl: 'public-read' | 'private';
   private readonly isConfigured: boolean;
+  private readonly maxUploadBytes: number;
 
   constructor(private readonly configService: ConfigService) {
     const bucket = this.configService.get<string>('DO_SPACES_BUCKET');
@@ -97,6 +98,13 @@ export class SpacesService {
     this.defaultAcl = (this.configService.get<string>(
       'DO_SPACES_DEFAULT_ACL',
     ) ?? 'public-read') as 'public-read' | 'private';
+
+    const configuredMaxBytes = this.configService.get<string>(
+      'DO_SPACES_MAX_UPLOAD_BYTES',
+    );
+    const parsedMax = configuredMaxBytes ? Number(configuredMaxBytes) : NaN;
+    this.maxUploadBytes =
+      Number.isFinite(parsedMax) && parsedMax > 0 ? parsedMax : 5 * 1024 * 1024;
   }
 
   async generateUploadUrl(
@@ -113,6 +121,12 @@ export class SpacesService {
     if (!Number.isFinite(params.contentLength) || params.contentLength <= 0) {
       throw new InternalServerErrorException(
         'El tamaño del archivo (contentLength) debe ser un número positivo.',
+      );
+    }
+
+    if (params.contentLength > this.maxUploadBytes) {
+      throw new InternalServerErrorException(
+        `El archivo excede el tamaño máximo permitido de ${this.maxUploadBytes} bytes.`,
       );
     }
 

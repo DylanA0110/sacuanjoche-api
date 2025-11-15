@@ -19,20 +19,25 @@ export class Envio {
   @Column({ name: 'id_pedido' })
   idPedido: number;
 
-  @Column({ name: 'id_empleado' })
-  idEmpleado: number;
+  @Column({ name: 'id_empleado', type: 'int', nullable: true })
+  idEmpleado?: number;
 
-  @Column({ name: 'estado_envio', type: 'varchar', length: 50 })
+  @Column({
+    name: 'estado_envio',
+    type: 'varchar',
+    length: 50,
+    default: 'pendiente',
+  })
   estadoEnvio: string;
 
-  @Column({ name: 'fecha_programada', type: 'timestamp' })
-  fechaProgramada: Date;
+  @Column({ name: 'fecha_programada', type: 'timestamp', nullable: true })
+  fechaProgramada?: Date;
 
   @Column({ name: 'fecha_salida', type: 'timestamp', nullable: true })
-  fechaSalida: Date;
+  fechaSalida?: Date;
 
   @Column({ name: 'fecha_entrega', type: 'timestamp', nullable: true })
-  fechaEntrega: Date;
+  fechaEntrega?: Date;
 
   @Column({ name: 'origen_lat', type: 'decimal', precision: 10, scale: 8 })
   origenLat: number;
@@ -46,11 +51,26 @@ export class Envio {
   @Column({ name: 'destino_lng', type: 'decimal', precision: 11, scale: 8 })
   destinoLng: number;
 
-  @Column({ name: 'costo_envio', type: 'decimal', precision: 10, scale: 2 })
-  costoEnvio: number;
+  @Column({
+    name: 'costo_envio',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  costoEnvio?: number;
+
+  @Column({
+    name: 'distancia_km',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  distanciaKm?: number;
 
   @Column({ name: 'observaciones', type: 'text', nullable: true })
-  observaciones: string;
+  observaciones?: string;
 
   @Column({ name: 'id_ruta', type: 'int', nullable: true })
   idRuta?: number;

@@ -5,9 +5,10 @@ import { EnvioController } from './envio.controller';
 import { Envio } from './entities/envio.entity';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
+import { MapboxModule } from 'src/common/mapbox/mapbox.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Envio, Pedido, Empleado])],
+  imports: [TypeOrmModule.forFeature([Envio, Pedido, Empleado]), MapboxModule],
   controllers: [EnvioController],
   providers: [EnvioService],
   exports: [EnvioService],

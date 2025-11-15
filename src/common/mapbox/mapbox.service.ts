@@ -8,11 +8,14 @@ import { ConfigService } from '@nestjs/config';
 import { catchError, firstValueFrom } from 'rxjs';
 import {
   Coordinates,
+  ForwardGeocodeOptions,
+  ForwardGeocodeResponse,
   ForwardGeocodeResult,
   MapboxLeg,
   MapboxWaypoint,
   OptimizeRouteInput,
   OptimizeRouteResult,
+  PointToPointMetrics,
   ReverseGeocodeResult,
 } from './mapbox.interfaces';
 
@@ -52,6 +55,16 @@ interface MapboxForwardGeocodingResponse {
   features?: MapboxForwardFeature[];
 }
 
+interface MapboxDirectionsResponse {
+  code?: string;
+  message?: string;
+  routes?: Array<{
+    distance: number;
+    duration: number;
+    geometry?: string;
+  }>;
+}
+
 @Injectable()
 export class MapboxService {
   private readonly logger = new Logger(MapboxService.name);
@@ -59,6 +72,8 @@ export class MapboxService {
     'https://api.mapbox.com/optimized-trips/v1/mapbox';
   private readonly geocodingBaseUrl =
     'https://api.mapbox.com/geocoding/v5/mapbox.places';
+  private readonly directionsBaseUrl =
+    'https://api.mapbox.com/directions/v5/mapbox';
 
   constructor(
     private readonly httpService: HttpService,
@@ -138,11 +153,8 @@ export class MapboxService {
 
   async forwardGeocode(
     query: string,
-    options?: {
-      limit?: number;
-      proximity?: Coordinates;
-    },
-  ): Promise<ForwardGeocodeResult[]> {
+    options: ForwardGeocodeOptions = {},
+  ): Promise<ForwardGeocodeResponse> {
     const accessToken = this.configService.get<string>('MAPBOX_ACCESS_TOKEN');
 
     if (!accessToken) {
@@ -152,70 +164,101 @@ export class MapboxService {
     }
 
     const sanitizedQuery = query.trim();
-    if (!sanitizedQuery) return [];
+    if (!sanitizedQuery) {
+      return { results: [], primary: null };
+    }
 
-    const limit = Math.max(1, Math.min(options?.limit ?? 5, 10));
+    const limit = Math.max(1, Math.min(options.limit ?? 5, 10));
 
-    // Detecta consultas cortas vs largas
+    const language = ((options.language ?? 'es').trim() || 'es').toLowerCase();
+    const country = ((options.country ?? 'ni').trim() || 'ni').toLowerCase();
+    const countryCodes = country
+      .split(',')
+      .map((code) => code.trim().toLowerCase())
+      .filter((code) => code.length);
+    const types =
+      options.types?.length && options.types.some((value) => value.trim())
+        ? options.types
+            .map((value) => value.trim().toLowerCase())
+            .filter((value) => value.length)
+        : ['poi', 'address'];
+
+    const typesParam = Array.from(new Set(types)).join(',');
+
     const isLongQuery =
       sanitizedQuery.length >= 7 || sanitizedQuery.includes(' ');
 
-    // BBOX reducido para MANAGUA
     const managuaBbox = '-86.40,12.03,-86.10,12.20';
+    const bboxOption =
+      options.bbox === undefined
+        ? managuaBbox
+        : options.bbox === null
+          ? undefined
+          : options.bbox;
 
-    const strictParams: Record<string, string | number> = {
+    const autocompleteParam =
+      options.autocomplete ?? (isLongQuery ? false : true);
+    const fuzzyParam = options.fuzzyMatch ?? false;
+
+    const strictParams: Record<string, string | number | undefined> = {
       access_token: accessToken,
-      country: 'ni',
-      language: 'es',
+      country,
+      language,
       limit,
-      types: 'poi,address',
-      fuzzyMatch: 'false',
-      autocomplete: isLongQuery ? 'false' : 'true',
-      bbox: managuaBbox,
+      types: typesParam,
+      fuzzyMatch: fuzzyParam ? 'true' : 'false',
+      autocomplete: autocompleteParam ? 'true' : 'false',
+      bbox: bboxOption,
     };
 
-    if (options?.proximity) {
+    if (options.proximity) {
       strictParams.proximity = `${options.proximity.lng},${options.proximity.lat}`;
     }
 
-    // PRIMER INTENTO — búsqueda estricta
     const strictFeatures = await this.fetchForwardFeatures(
       sanitizedQuery,
       strictParams,
     );
 
-    if (strictFeatures.length > 0) {
-      return strictFeatures.map(this.mapForwardFeatureToResult);
+    let features = strictFeatures;
+
+    if (!features.length && !options.skipRelaxed) {
+      // Allow a relaxed attempt when the strict search returned nothing.
+      const relaxedParams: Record<string, string | number | undefined> = {
+        ...strictParams,
+        fuzzyMatch: 'true',
+        autocomplete: 'true',
+      };
+
+      if (options.bbox === undefined) {
+        delete relaxedParams.bbox;
+      }
+
+      features = await this.fetchForwardFeatures(sanitizedQuery, relaxedParams);
+
+      const restrictToNi =
+        options.country === undefined ||
+        (countryCodes.length === 1 && countryCodes[0] === 'ni');
+
+      if (features.length && restrictToNi) {
+        features = features.filter((feature) =>
+          feature.context?.some((context) => {
+            if (!context.id.startsWith('country')) {
+              return false;
+            }
+            const text = context.text_es ?? context.text;
+            return text?.toLowerCase().includes('nicaragua');
+          }),
+        );
+      }
     }
 
-    // SEGUNDO INTENTO — relajado (aún dentro de Nicaragua)
-    const relaxedParams: Record<string, string | number> = {
-      ...strictParams,
-      fuzzyMatch: 'true',
-      autocomplete: 'true',
-      bbox: undefined,
+    const results = features.map(this.mapForwardFeatureToResult);
+
+    return {
+      results,
+      primary: results[0] ?? null,
     };
-    delete relaxedParams.bbox;
-
-    const relaxedFeatures = await this.fetchForwardFeatures(
-      sanitizedQuery,
-      relaxedParams,
-    );
-
-    if (relaxedFeatures.length > 0) {
-      // Filtra para quedarse SOLO con Nicaragua
-      const filtered = relaxedFeatures.filter((f) =>
-        f.context?.some((c) => {
-          if (!c.id.startsWith('country')) return false;
-          const txt = c.text_es ?? c.text;
-          return txt?.toLowerCase().includes('nicaragua');
-        }),
-      );
-
-      return filtered.map(this.mapForwardFeatureToResult);
-    }
-
-    return [];
   }
 
   async reverseGeocode(
@@ -285,6 +328,89 @@ export class MapboxService {
     return this.mapReverseFeatureToResult(feature);
   }
 
+  async getDistanceBetween(
+    origin: Coordinates,
+    destination: Coordinates,
+    profile?: string,
+  ): Promise<PointToPointMetrics> {
+    const accessToken = this.configService.get<string>('MAPBOX_ACCESS_TOKEN');
+
+    if (!accessToken) {
+      throw new InternalServerErrorException(
+        'MAPBOX_ACCESS_TOKEN no está configurado en las variables de entorno.',
+      );
+    }
+
+    const sanitizedOrigin = this.validateCoordinate(origin, 'origen');
+    const sanitizedDestination = this.validateCoordinate(
+      destination,
+      'destino',
+    );
+    const resolvedProfile =
+      profile ?? this.configService.get<string>('MAPBOX_PROFILE') ?? 'driving';
+
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService
+          .get<MapboxDirectionsResponse>(
+            `${this.directionsBaseUrl}/${resolvedProfile}/${sanitizedOrigin.lng},${sanitizedOrigin.lat};${sanitizedDestination.lng},${sanitizedDestination.lat}`,
+            {
+              params: {
+                access_token: accessToken,
+                alternatives: 'false',
+                geometries: 'polyline6',
+                overview: 'simplified',
+                steps: 'false',
+              },
+            },
+          )
+          .pipe(
+            catchError((error) => {
+              this.logger.error(
+                'Mapbox directions failed',
+                error?.response?.data || error.message,
+              );
+              throw error;
+            }),
+          ),
+      );
+
+      const route = data.routes?.[0];
+
+      if (route && typeof route.distance === 'number') {
+        return {
+          distanceKm: Number((route.distance / 1000).toFixed(2)),
+          durationMin:
+            typeof route.duration === 'number'
+              ? Number((route.duration / 60).toFixed(2))
+              : null,
+          geometry: route.geometry ?? null,
+          source: 'mapbox',
+        };
+      }
+
+      this.logger.warn(
+        `Mapbox no devolvió rutas para ${sanitizedOrigin.lat},${sanitizedOrigin.lng} -> ${sanitizedDestination.lat},${sanitizedDestination.lng}.`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Fallo al obtener la distancia con Mapbox (${resolvedProfile}). Se usará un cálculo aproximado.`,
+      );
+    }
+
+    const fallbackDistance = this.calculateHaversineDistance(
+      sanitizedOrigin,
+      sanitizedDestination,
+    );
+
+    return {
+      distanceKm: Number(fallbackDistance.toFixed(2)),
+      durationMin: null,
+      geometry: null,
+      source: 'haversine',
+    };
+  }
+
   private buildCoordinatesString(
     origin: Coordinates,
     stops: OptimizeRouteInput['stops'],
@@ -300,14 +426,16 @@ export class MapboxService {
 
   private async fetchForwardFeatures(
     query: string,
-    params: Record<string, string | number>,
+    params: Record<string, string | number | undefined>,
   ): Promise<MapboxForwardFeature[]> {
+    const sanitizedParams = this.sanitizeParams(params);
+
     const { data } = await firstValueFrom(
       this.httpService
         .get<MapboxForwardGeocodingResponse>(
           `${this.geocodingBaseUrl}/${encodeURIComponent(query)}.json`,
           {
-            params,
+            params: sanitizedParams,
           },
         )
         .pipe(
@@ -325,6 +453,22 @@ export class MapboxService {
     );
 
     return data.features ?? [];
+  }
+
+  private sanitizeParams(
+    params: Record<string, string | number | undefined>,
+  ): Record<string, string | number> {
+    return Object.fromEntries(
+      Object.entries(params).filter(([, value]) => {
+        if (value === undefined || value === null) {
+          return false;
+        }
+        if (typeof value === 'string') {
+          return value.trim().length > 0;
+        }
+        return true;
+      }),
+    );
   }
 
   private mapForwardFeatureToResult(
@@ -407,5 +551,42 @@ export class MapboxService {
     }
 
     return contextMap;
+  }
+
+  private validateCoordinate(
+    value: Coordinates,
+    kind: 'origen' | 'destino',
+  ): Coordinates {
+    const lat = Number(value.lat);
+    const lng = Number(value.lng);
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+      throw new InternalServerErrorException(
+        `Coordenadas inválidas para el ${kind} proporcionado.`,
+      );
+    }
+
+    return { lat, lng };
+  }
+
+  private calculateHaversineDistance(a: Coordinates, b: Coordinates): number {
+    const toRad = (degrees: number) => (degrees * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const originLatRad = toRad(a.lat);
+    const destLatRad = toRad(b.lat);
+
+    const haversine =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLng / 2) *
+        Math.sin(dLng / 2) *
+        Math.cos(originLatRad) *
+        Math.cos(destLatRad);
+
+    const angularDistance =
+      2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+    return earthRadiusKm * angularDistance;
   }
 }

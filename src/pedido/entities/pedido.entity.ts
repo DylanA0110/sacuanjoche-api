@@ -40,10 +40,18 @@ export class Pedido {
   @Column({ name: 'total_productos', type: 'decimal', precision: 10, scale: 2 })
   totalProductos: number;
 
-  @CreateDateColumn({ name: 'fecha_creacion', type: 'timestamp' })
+  @CreateDateColumn({
+    name: 'fecha_creacion',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   fechaCreacion: Date;
 
-  @UpdateDateColumn({ name: 'fecha_actualizacion', type: 'timestamp' })
+  @UpdateDateColumn({
+    name: 'fecha_actualizacion',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   fechaActualizacion: Date;
 
   @Column({ name: 'fecha_entrega_estimada', type: 'timestamp' })
@@ -52,10 +60,13 @@ export class Pedido {
   @Column({ name: 'direccion_txt', type: 'text' })
   direccionTxt: string;
 
-  @Column({ name: 'costo_envio', type: 'decimal', precision: 10, scale: 2 })
-  costoEnvio: number;
-
-  @Column({ name: 'total_pedido', type: 'decimal', precision: 10, scale: 2 })
+  @Column({
+    name: 'total_pedido',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
   totalPedido: number;
 
   // Relaciones

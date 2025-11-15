@@ -34,6 +34,23 @@ export interface ForwardGeocodeResult {
   accuracy?: string;
 }
 
+export interface ForwardGeocodeResponse {
+  results: ForwardGeocodeResult[];
+  primary: ForwardGeocodeResult | null;
+}
+
+export interface ForwardGeocodeOptions {
+  limit?: number;
+  proximity?: Coordinates;
+  country?: string;
+  language?: string;
+  types?: string[];
+  bbox?: string | null;
+  fuzzyMatch?: boolean;
+  autocomplete?: boolean;
+  skipRelaxed?: boolean;
+}
+
 export interface ReverseGeocodeResult {
   formattedAddress: string;
   country?: string;
@@ -49,6 +66,13 @@ export interface ReverseGeocodeResult {
   lng: number;
   provider: string;
   context?: Record<string, string | undefined>;
+}
+
+export interface PointToPointMetrics {
+  distanceKm: number;
+  durationMin: number | null;
+  geometry?: string | null;
+  source: 'mapbox' | 'haversine';
 }
 
 export interface MapboxWaypoint {

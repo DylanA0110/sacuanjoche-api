@@ -46,6 +46,8 @@ export class DetallePedidoService {
 
       await this.detallePedidoRepository.save(newDetalle);
 
+      await this.recalculatePedidoTotals(pedido.idPedido);
+
       return this.detallePedidoRepository.findOne({
         where: { idDetallePedido: newDetalle.idDetallePedido },
         relations: ['pedido', 'arreglo'],
@@ -100,6 +102,19 @@ export class DetallePedidoService {
     try {
       const { idPedido, idArreglo, ...toUpdate } = updateDetallePedidoDto;
 
+      const current = await this.detallePedidoRepository.findOne({
+        where: { idDetallePedido: id },
+        relations: ['pedido', 'arreglo'],
+      });
+
+      if (!current) {
+        throw new NotFoundException(
+          `El detalle de pedido con id ${id} no fue encontrado`,
+        );
+      }
+
+      const previousPedidoId = current.pedido?.idPedido;
+
       const pedido =
         idPedido !== undefined
           ? await findEntityOrFail(
@@ -118,20 +133,34 @@ export class DetallePedidoService {
             )
           : undefined;
 
-      const detalle = await this.detallePedidoRepository.preload({
-        idDetallePedido: id,
-        ...toUpdate,
-        pedido,
-        arreglo,
-      });
-
-      if (!detalle) {
-        throw new NotFoundException(
-          `El detalle de pedido con id ${id} no fue encontrado`,
-        );
+      if (pedido) {
+        current.pedido = pedido;
+        current.idPedido = pedido.idPedido;
       }
 
-      return this.detallePedidoRepository.save(detalle);
+      if (arreglo) {
+        current.arreglo = arreglo;
+        current.idArreglo = arreglo.idArreglo;
+      }
+
+      Object.assign(current, toUpdate);
+
+      await this.detallePedidoRepository.save(current);
+
+      const nextPedidoId = current.idPedido;
+
+      if (previousPedidoId !== undefined && previousPedidoId !== nextPedidoId) {
+        await this.recalculatePedidoTotals(previousPedidoId);
+      }
+
+      if (nextPedidoId !== undefined) {
+        await this.recalculatePedidoTotals(nextPedidoId);
+      }
+
+      return this.detallePedidoRepository.findOne({
+        where: { idDetallePedido: current.idDetallePedido },
+        relations: ['pedido', 'arreglo'],
+      });
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -143,5 +172,31 @@ export class DetallePedidoService {
   async remove(id: number) {
     const detalle = await this.findOne(id);
     await this.detallePedidoRepository.remove(detalle);
+
+    if (detalle.pedido?.idPedido !== undefined) {
+      await this.recalculatePedidoTotals(detalle.pedido.idPedido);
+    }
+  }
+
+  private async recalculatePedidoTotals(
+    idPedido: number | undefined,
+  ): Promise<void> {
+    if (idPedido === undefined) {
+      return;
+    }
+
+    const aggregate = await this.detallePedidoRepository
+      .createQueryBuilder('detalle')
+      .select('COALESCE(SUM(detalle.subtotal), 0)', 'total')
+      .where('detalle.idPedido = :idPedido', { idPedido })
+      .getRawOne<{ total: string }>();
+
+    const total = Number(aggregate?.total ?? 0);
+    const rounded = Number(total.toFixed(2));
+
+    await this.pedidoRepository.update(idPedido, {
+      totalProductos: rounded,
+      totalPedido: rounded,
+    });
   }
 }

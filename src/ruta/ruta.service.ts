@@ -13,6 +13,7 @@ import { Pedido } from '../pedido/entities/pedido.entity';
 import { MapboxService } from '../common/mapbox/mapbox.service';
 import { ConfigService } from '@nestjs/config';
 import { Empleado } from '../empleado/entities/empleado.entity';
+import { Envio } from '../envio/entities/envio.entity';
 
 interface RutaStopInfo {
   pedido: Pedido;
@@ -34,6 +35,8 @@ export class RutaService {
     private readonly pedidoRepository: Repository<Pedido>,
     @InjectRepository(Empleado)
     private readonly empleadoRepository: Repository<Empleado>,
+    @InjectRepository(Envio)
+    private readonly envioRepository: Repository<Envio>,
     private readonly mapboxService: MapboxService,
     private readonly configService: ConfigService,
   ) {}
@@ -198,7 +201,11 @@ export class RutaService {
       rutaPedidos,
     });
 
-    return this.rutaRepository.save(ruta);
+    const savedRuta = await this.rutaRepository.save(ruta);
+
+    await this.syncEnviosForRuta(savedRuta, orderedStops, origin, empleado);
+
+    return this.findOne(savedRuta.idRuta);
   }
 
   async findAll(): Promise<Ruta[]> {
@@ -365,5 +372,88 @@ export class RutaService {
       }
     }
     return null;
+  }
+
+  private async syncEnviosForRuta(
+    ruta: Ruta,
+    stops: RutaStopInfo[],
+    origin: { lat: number; lng: number },
+    empleado: Empleado | null,
+  ): Promise<void> {
+    if (!stops.length) {
+      return;
+    }
+
+    const programDate = ruta.fechaProgramada ?? new Date();
+    const originLat = Number(origin.lat);
+    const originLng = Number(origin.lng);
+    const assignedEmployeeId = ruta.idEmpleado ?? empleado?.idEmpleado ?? null;
+
+    await Promise.all(
+      stops.map(async (stop) => {
+        const pedidoId = stop.pedido.idPedido;
+        const destinoLat = Number(stop.lat);
+        const destinoLng = Number(stop.lng);
+        const envio = await this.envioRepository.findOne({
+          where: { idPedido: pedidoId },
+        });
+
+        if (envio) {
+          if (envio.estadoEnvio?.toLowerCase() === 'entregado') {
+            if (envio.idRuta !== ruta.idRuta) {
+              envio.idRuta = ruta.idRuta;
+              await this.envioRepository.save(envio);
+            }
+            return;
+          }
+
+          const metrics = await this.mapboxService.getDistanceBetween(
+            { lat: originLat, lng: originLng },
+            { lat: destinoLat, lng: destinoLng },
+            ruta.profile,
+          );
+
+          const distanceKm = Number(metrics.distanceKm.toFixed(2));
+
+          envio.estadoEnvio = 'programado';
+          envio.fechaProgramada = programDate;
+          if (assignedEmployeeId !== null) {
+            envio.idEmpleado = assignedEmployeeId;
+          }
+          envio.origenLat = originLat;
+          envio.origenLng = originLng;
+          envio.destinoLat = destinoLat;
+          envio.destinoLng = destinoLng;
+          envio.idRuta = ruta.idRuta;
+          envio.distanciaKm = distanceKm;
+
+          await this.envioRepository.save(envio);
+          return;
+        }
+
+        const metrics = await this.mapboxService.getDistanceBetween(
+          { lat: originLat, lng: originLng },
+          { lat: destinoLat, lng: destinoLng },
+          ruta.profile,
+        );
+
+        const distanceKm = Number(metrics.distanceKm.toFixed(2));
+
+        const nuevoEnvio = this.envioRepository.create({
+          idPedido: pedidoId,
+          idEmpleado: assignedEmployeeId ?? stop.pedido.idEmpleado ?? undefined,
+          estadoEnvio: 'programado',
+          fechaProgramada: programDate,
+          origenLat: originLat,
+          origenLng: originLng,
+          destinoLat,
+          destinoLng,
+          idRuta: ruta.idRuta,
+          distanciaKm: distanceKm,
+        });
+
+        await this.envioRepository.save(nuevoEnvio);
+      }),
+    );
   }
 }

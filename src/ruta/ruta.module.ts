@@ -6,11 +6,12 @@ import { Ruta } from './entities/ruta.entity';
 import { RutaPedido } from './entities/ruta-pedido.entity';
 import { Pedido } from '../pedido/entities/pedido.entity';
 import { Empleado } from '../empleado/entities/empleado.entity';
+import { Envio } from '../envio/entities/envio.entity';
 import { MapboxModule } from '../common/mapbox/mapbox.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Ruta, RutaPedido, Pedido, Empleado]),
+    TypeOrmModule.forFeature([Ruta, RutaPedido, Pedido, Empleado, Envio]),
     MapboxModule,
   ],
   controllers: [RutaController],

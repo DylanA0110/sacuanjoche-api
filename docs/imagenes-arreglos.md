@@ -66,3 +66,4 @@ Esta guía explica cómo funciona la gestión de imágenes para los arreglos flo
 
 - Las URLs firmadas caducan según `DO_SPACES_UPLOAD_EXPIRATION` (default 3600s).
 - `SpacesService` usa `DO_SPACES_*` para construir URLs y eliminar objetos.
+- `DO_SPACES_MAX_UPLOAD_BYTES` define el tamaño máximo permitido (por defecto 5 MB).

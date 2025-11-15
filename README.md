@@ -64,6 +64,8 @@ DO_SPACES_PUBLIC_BASE_URL=
 DO_SPACES_UPLOAD_EXPIRATION=
 # Opcional: ACL por defecto (public-read | private)
 DO_SPACES_DEFAULT_ACL=
+# Opcional: tamaño máximo permitido en bytes (ej. 5242880 para 5 MB)
+DO_SPACES_MAX_UPLOAD_BYTES=
 ```
 
 ## Compile and run the project
