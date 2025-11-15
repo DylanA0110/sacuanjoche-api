@@ -1,135 +1,178 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+<h1 align="center">Sacuanjoche API</h1>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend para la gestión integral de pedidos de una floristería nicaragüense. Provee un núcleo administrativo para el equipo interno, optimiza rutas de reparto en tiempo real con Mapbox y expone servicios que alimentarán una landing page pública donde los clientes podrán descubrir y comprar arreglos florales. El sistema contempla almacenamiento multimedia en la nube, cálculos automáticos de distancias, y una integración flexible de métodos de pago (iniciando con PayPal, pero con una capa preparada para intercambiar proveedores en el futuro).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Tabla de contenidos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Principales capacidades](#principales-capacidades)
+- [Arquitectura y tecnologías](#arquitectura-y-tecnologías)
+- [Estado actual del proyecto](#estado-actual-del-proyecto)
+- [Requisitos e instalación](#requisitos-e-instalación)
+- [Variables de entorno](#variables-de-entorno)
+- [Ejecución y pruebas](#ejecución-y-pruebas)
+- [Documentación adicional](#documentación-adicional)
+- [Próximos pasos](#próximos-pasos)
+- [Licencia](#licencia)
 
-## Gestión de imágenes de arreglos
+---
 
-La documentación sobre el flujo completo de subida de imágenes a DigitalOcean Spaces y uso de los endpoints se encuentra en `docs/imagenes-arreglos.md`.
+## Principales capacidades
 
-## Project setup
+- **Gestión de pedidos** con entidades normalizadas para clientes, direcciones, detalles, envíos y facturación.
+- **Galería de arreglos florales**: subida de múltiples imágenes a DigitalOcean Spaces mediante URLs firmadas y control del tamaño máximo permitido.
+- **Optimización de rutas**: cálculo automatizado de trayectos usando Mapbox Optimized Trips y sincronización de los envíos asociados a cada pedido.
+- **Geocodificación completa**:
+  - Búsqueda forward (texto a coordenadas) con filtros por país, bbox y proximidad.
+  - Reverse geocoding para autocompletar direcciones en base a coordenadas.
+- **Cálculos logísticos**: origen/destino y distancia en kilómetros para cada envío (con fallback Haversine si Mapbox Directions no responde).
+- **Totales automáticos**: los detalles de pedido recalculan subtotal (`cantidad * precio_unitario`), `totalProductos` y `totalPedido` cada vez que se crean, actualizan o eliminan.
+- **Control de estados de envío** enlazado con rutas optimizadas, manteniendo historial individual por pedido.
+- **Landing page futura**: los endpoints actuales están diseñados para alimentar un frontend público con catálogo, carrito y checkout.
+- **Integración de pagos extensible**: se iniciará con PayPal, pero se definió una capa de configuración que permitirá intercambiar el gateway sin romper el dominio.
 
-```bash
-$ npm install
+---
+
+## Arquitectura y tecnologías
+
+- **NestJS (TypeScript)** como framework principal.
+- **TypeORM** para acceso a datos sobre PostgreSQL.
+- **Mapbox APIs** (Optimized Trips, Geocoding, Directions) para logística.
+- **DigitalOcean Spaces (S3 compatible)** para contenidos multimedia.
+- **Jest** y tooling provistos por NestJS para pruebas.
+
+Estructuralmente el proyecto está dividido en módulos de dominio (`pedido`, `detalle-pedido`, `envio`, `ruta`, `arreglo`, etc.) y módulos comunes (`common/mapbox`, `common/storage`) que encapsulan integraciones externas.
+
+---
+
+## Estado actual del proyecto
+
+| Área                   | Entregables completados                                                                                                                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mapbox**             | Servicio unificado con forward geocoding (estricto y relajado), reverse geocoding, optimización de rutas y cálculo de distancias punto a punto. Control de parámetros (país, idioma, bbox, proximidad, fuzzy match) expuesto vía DTOs. |
+| **Direcciones**        | Autocompletado a partir de coordenadas, guardado de campos normalizados (calle, ciudad, barrio, etc.).                                                                                                                                 |
+| **Envíos**             | Entidad enlazada 1:1 con pedidos. Asignación automática de coordenadas, distancia y estado al crear/editar envíos o al generar rutas. Evita recalcular envíos ya entregados.                                                           |
+| **Rutas**              | Generación de rutas óptimas desde el punto de salida configurado, creación de secuencias `ruta_pedido` y sincronización de envíos asociados.                                                                                           |
+| **Arreglos**           | Módulo para administrar arreglos florales, con soporte de galerías y documentación en `docs/imagenes-arreglos.md`.                                                                                                                     |
+| **Storage**            | Integración con Spaces usando AWS SDK. Validación de tamaño máximo (`DO_SPACES_MAX_UPLOAD_BYTES`) y generación de URLs firmadas temporales.                                                                                            |
+| **Pedidos**            | Cálculo automático de `totalProductos` y `totalPedido` según los detalles activos.                                                                                                                                                     |
+| **Detalles de pedido** | Hooks que recalculan subtotal (`cantidad * precio_unitario`) y actualizan totales del pedido al crear/editar/eliminar.                                                                                                                 |
+| **Documentación**      | Guía de imágenes, variables de entorno esenciales, recomendaciones de frontend (por ejemplo Mapbox search via backend).                                                                                                                |
+
+---
+
+## Requisitos e instalación
+
+1. **Clonar el repositorio**
+
+   ```bash
+   git clone https://github.com/DylanA0110/sacuanjoche-api.git
+   cd sacuanjoche-api
+   ```
+
+2. **Instalar dependencias**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configurar la base de datos PostgreSQL**
+   - Puedes usar el `docker-compose.yaml` incluido para levantar PostgreSQL y pgAdmin.
+   - Alternativamente, apunta a tu instancia existente y ajusta `src/data-source.ts` o las variables de entorno correspondientes.
+
+4. **Completar el archivo `.env`** (ver sección siguiente).
+
+---
+
+## Variables de entorno
+
+### Mapbox
+
 ```
-
-### Variables de entorno necesarias
-
-Para habilitar la optimización de rutas con Mapbox define las siguientes variables en tu archivo `.env`:
-
-```
-MAPBOX_ACCESS_TOKEN=tu_token_privado
-ROUTING_ORIGIN_LAT=12.345678
-ROUTING_ORIGIN_LNG=-86.123456
-# Opcional: perfil de viaje (driving, walking, cycling, etc.)
+MAPBOX_ACCESS_TOKEN=
 MAPBOX_PROFILE=driving
+ROUTING_ORIGIN_LAT=
+ROUTING_ORIGIN_LNG=
+# Alternativa: DELIVERY_ORIGIN_LAT / DELIVERY_ORIGIN_LNG si deseas separar capas
 ```
 
-`ROUTING_ORIGIN_LAT/LNG` representan las coordenadas de la floristería (punto de partida).
-
-Para gestionar las imágenes de los arreglos utilizando DigitalOcean Spaces configura también:
+### DigitalOcean Spaces
 
 ```
 DO_SPACES_BUCKET=
 DO_SPACES_REGION=
-DO_SPACES_ENDPOINT= # opcional, se deriva si se omite
+DO_SPACES_ENDPOINT=
 DO_SPACES_KEY=
 DO_SPACES_SECRET=
-# Opcional: habilita CDN o dominio personalizado
 DO_SPACES_CDN_URL=
 DO_SPACES_PUBLIC_BASE_URL=
-# Opcional: segundos de validez de la URL firmada (por defecto 3600)
-DO_SPACES_UPLOAD_EXPIRATION=
-# Opcional: ACL por defecto (public-read | private)
-DO_SPACES_DEFAULT_ACL=
-# Opcional: tamaño máximo permitido en bytes (ej. 5242880 para 5 MB)
-DO_SPACES_MAX_UPLOAD_BYTES=
+DO_SPACES_UPLOAD_EXPIRATION=3600
+DO_SPACES_DEFAULT_ACL=public-read
+DO_SPACES_MAX_UPLOAD_BYTES=5242880
 ```
 
-## Compile and run the project
+### Pagos (fase inicial)
+
+```
+PAYMENT_PROVIDER=paypal
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_RETURN_URL=
+PAYPAL_CANCEL_URL=
+```
+
+> `PAYMENT_PROVIDER` se diseñó para poder alternar a otro gateway (por ejemplo Stripe o Adyen) sin reescribir el dominio.
+
+### Base de datos y otros
+
+```
+DATABASE_URL=postgres://user:password@localhost:5432/sacuanjoche
+NODE_ENV=development
+PORT=3000
+```
+
+---
+
+## Ejecución y pruebas
 
 ```bash
-# development
-$ npm run start
+# Desarrollo (watch mode)
 
-# watch mode
-$ npm run start:dev
 
-# production mode
-$ npm run start:prod
+# Producción
+npm run start:prod
+
+# Pruebas unitarias
+npm run test
+
+# Pruebas e2e
+npm run test:e2e
+
+# Cobertura
+npm run test:cov
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## Documentación adicional
 
-# e2e tests
-$ npm run test:e2e
+- `docs/imagenes-arreglos.md`: flujo completo para subir y confirmar imágenes de arreglos usando URLs firmadas.
+- Swagger/OpenAPI disponible al levantar la aplicación (rutas de Mapbox, Arreglo, Pedido, etc.).
+- Este README como descripción general del alcance.
 
-# test coverage
-$ npm run test:cov
-```
+---
 
-## Deployment
+## Próximos pasos
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1. **Landing page**: construir el frontend público que consuma los endpoints existentes (catálogo, búsqueda con geocoding, carrito y checkout).
+2. **Integración de pagos**: instrumentar PayPal como primer gateway y definir procesos de captura, conciliación y reembolsos.
+3. **Panel administrativo**: dashboards para monitorear rutas en vivo, estados de envíos y métricas de ventas.
+4. **Notificaciones**: correo o SMS para clientes y repartidores en hitos clave (pedido confirmado, ruta asignada, entrega realizada).
+5. **Automatización de facturación**: generación de documentos fiscales y conciliación con la pasarela de pago.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## Licencia
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Este proyecto se distribuye bajo la licencia MIT. Revisa el archivo `LICENSE` para más detalles.
