@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,17 +16,22 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBody,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { FacturaService } from './factura.service';
 import { CreateFacturaDto } from './dto/create-factura.dto';
 import { UpdateFacturaDto } from './dto/update-factura.dto';
 import { Factura } from './entities/factura.entity';
 import { FindFacturasDto } from './dto/find-facturas.dto';
+import { CrearFacturaDesdePedidoDto } from './dto/crear-factura-desde-pedido.dto';
 
 @ApiTags('Facturas')
 @Controller('factura')
 export class FacturaController {
-  constructor(private readonly facturaService: FacturaService) {}
+  constructor(
+    private readonly facturaService: FacturaService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear una nueva factura' })
@@ -49,6 +55,10 @@ export class FacturaController {
       'Crea una factura automáticamente desde un pedido que esté pagado. Copia todos los montos y detalles del pedido a la factura.',
   })
   @ApiParam({ name: 'idPedido', description: 'ID del pedido a facturar', example: 1 })
+  @ApiBody({
+    type: CrearFacturaDesdePedidoDto,
+    description: 'Datos del empleado que emite la factura',
+  })
   @ApiResponse({
     status: 201,
     description: 'Factura creada exitosamente desde el pedido',
@@ -65,9 +75,12 @@ export class FacturaController {
   })
   crearFacturaDesdePedido(
     @Param('idPedido', ParseIntPipe) idPedido: number,
-    @Body('idEmpleado', ParseIntPipe) idEmpleado: number,
+    @Body() crearFacturaDto: CrearFacturaDesdePedidoDto,
   ) {
-    return this.facturaService.crearFacturaDesdePedido(idPedido, idEmpleado);
+    return this.facturaService.crearFacturaDesdePedido(
+      idPedido,
+      crearFacturaDto.idEmpleado,
+    );
   }
 
   @Get()

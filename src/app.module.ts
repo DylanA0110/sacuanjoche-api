@@ -29,6 +29,8 @@ import { PedidoModule } from './pedido/pedido.module';
 import { PedidoHistorialModule } from './pedido-historial/pedido-historial.module';
 import { RutaModule } from './ruta/ruta.module';
 import { MapboxModule } from './common/mapbox/mapbox.module';
+import { PrinterModule } from './printer/printer.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -83,6 +85,8 @@ import { MapboxModule } from './common/mapbox/mapbox.module';
     PedidoHistorialModule,
     RutaModule,
     MapboxModule,
+    PrinterModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

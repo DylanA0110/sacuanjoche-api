@@ -97,7 +97,13 @@ export class FacturaService {
   async findOne(id: number) {
     const factura = await this.facturaRepository.findOne({
       where: { idFactura: id },
-      relations: ['pedido', 'empleado', 'detallesFactura', 'detallesFactura.arreglo'],
+      relations: [
+        'pedido',
+        'pedido.cliente',
+        'empleado',
+        'detallesFactura',
+        'detallesFactura.arreglo',
+      ],
     });
 
     if (!factura) {
@@ -182,9 +188,13 @@ export class FacturaService {
       }
 
       // Validar que el pago esté completado
-      if (pedido.pago.estado !== PagoEstado.PAGADO) {
+      // Comparar como string para evitar problemas de tipo
+      const estadoPago = String(pedido.pago.estado).toLowerCase();
+      const estadoPagado = String(PagoEstado.PAGADO).toLowerCase();
+      
+      if (estadoPago !== estadoPagado) {
         throw new BadRequestException(
-          `El pedido ${idPedido} no está pagado. Estado del pago: ${pedido.pago.estado}. Solo se pueden facturar pedidos con pago completado.`,
+          `El pedido ${idPedido} no está pagado. Estado del pago: ${pedido.pago.estado}. Solo se pueden facturar pedidos con pago completado (${PagoEstado.PAGADO}).`,
         );
       }
 
