@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
+import { FacturaEstado } from '../../common/enums/factura-estado.enum';
 
 @Entity('factura')
 export class Factura {
@@ -19,8 +20,14 @@ export class Factura {
   @CreateDateColumn({ name: 'fecha_emision', type: 'timestamp' })
   fechaEmision: Date;
 
-  @Column({ name: 'estado', type: 'varchar', length: 50 })
-  estado: string;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: FacturaEstado,
+    default: FacturaEstado.PENDIENTE,
+  })
+  estado: FacturaEstado;
 
   @Column({ name: 'monto_total', type: 'decimal', precision: 10, scale: 2 })
   montoTotal: number;

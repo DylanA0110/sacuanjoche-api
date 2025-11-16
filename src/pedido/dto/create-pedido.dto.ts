@@ -1,7 +1,28 @@
-import { IsNotEmpty, IsNumber, IsString, IsDateString, IsDecimal, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsDateString, IsDecimal, Min, IsOptional, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
 
 export class CreatePedidoDto {
+  @ApiProperty({
+    description: 'Canal de venta: "web" (landing page) o "interno" (tienda física). Por defecto: "web"',
+    example: PedidoCanal.WEB,
+    enum: PedidoCanal,
+    default: PedidoCanal.WEB,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(PedidoCanal, { message: 'El canal debe ser "web" o "interno"' })
+  canal?: PedidoCanal;
+
+  @ApiProperty({
+    description: 'ID del pago completado (requerido para canal "web", opcional para "interno")',
+    example: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'El ID del pago debe ser un número' })
+  idPago?: number;
+
   @ApiProperty({
     description: 'ID del empleado que maneja el pedido',
     example: 1,

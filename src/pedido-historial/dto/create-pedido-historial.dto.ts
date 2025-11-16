@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { PedidoEstado } from '../../common/enums/pedido-estado.enum';
 
 export class CreatePedidoHistorialDto {
   @ApiProperty({
@@ -16,19 +17,26 @@ export class CreatePedidoHistorialDto {
   @IsNumber()
   idEmpleado: number;
 
-  @ApiProperty({
-    description: 'Estado del pedido',
-    example: 'En Proceso',
-    maxLength: 50
+  @ApiPropertyOptional({
+    description: 'Estado anterior del pedido (opcional, se puede inferir del pedido actual)',
+    example: PedidoEstado.PENDIENTE,
+    enum: PedidoEstado,
   })
-  @IsString()
-  @MaxLength(50)
-  estado: string;
+  @IsOptional()
+  @IsEnum(PedidoEstado, { message: 'El estado anterior debe ser un estado válido del pedido' })
+  estadoAnterior?: PedidoEstado | null;
 
   @ApiProperty({
+    description: 'Nuevo estado del pedido',
+    example: PedidoEstado.PROCESANDO,
+    enum: PedidoEstado,
+  })
+  @IsEnum(PedidoEstado, { message: 'El estado nuevo debe ser un estado válido del pedido' })
+  estadoNuevo: PedidoEstado;
+
+  @ApiPropertyOptional({
     description: 'Nota sobre el cambio de estado',
     example: 'Pedido confirmado y en preparación',
-    required: false
   })
   @IsOptional()
   @IsString()

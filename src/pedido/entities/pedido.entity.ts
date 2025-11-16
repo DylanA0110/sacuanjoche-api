@@ -19,6 +19,8 @@ import { Envio } from '../../envio/entities/envio.entity';
 import { Factura } from '../../factura/entities/factura.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
 import { RutaPedido } from '../../ruta/entities/ruta-pedido.entity';
+import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
+import { PedidoEstado } from '../../common/enums/pedido-estado.enum';
 
 @Entity('pedido')
 export class Pedido {
@@ -69,6 +71,27 @@ export class Pedido {
   })
   totalPedido: number;
 
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: PedidoEstado,
+    default: PedidoEstado.PENDIENTE,
+  })
+  estado: PedidoEstado;
+
+  @Column({ name: 'id_pago', nullable: true })
+  idPago?: number;
+
+  @Column({
+    name: 'canal',
+    type: 'varchar',
+    length: 50,
+    default: PedidoCanal.WEB,
+    enum: PedidoCanal,
+  })
+  canal: PedidoCanal;
+
   // Relaciones
   @ManyToOne(() => Empleado, (empleado) => empleado.pedidos)
   @JoinColumn({ name: 'id_empleado' })
@@ -92,8 +115,9 @@ export class Pedido {
   @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.pedido)
   detallesPedido: DetallePedido[];
 
-  @OneToMany(() => Pago, (pago) => pago.pedido)
-  pagos: Pago[];
+  @OneToOne(() => Pago, (pago) => pago.pedido)
+  @JoinColumn({ name: 'id_pago' })
+  pago: Pago;
 
   @OneToOne(() => Envio, (envio) => envio.pedido)
   envio: Envio;

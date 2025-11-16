@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pago } from './entities/pago.entity';
@@ -9,6 +9,8 @@ import { MetodoPago } from 'src/metodo-pago/entities/metodo-pago.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPagosDto } from './dto/find-pagos.dto';
+import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
+import { MetodoPagoEstado } from 'src/common/enums/metodo-pago-estado.enum';
 
 @Injectable()
 export class PagoService {
@@ -25,22 +27,48 @@ export class PagoService {
     try {
       const { idPedido, idMetodoPago, ...pagoData } = createPagoDto;
 
-      const [pedido, metodoPago] = await Promise.all([
-        findEntityOrFail(
-          this.pedidoRepository,
-          { idPedido },
-          'El pedido no fue encontrado o no existe',
-        ),
-        findEntityOrFail(
-          this.metodoPagoRepository,
-          { idMetodoPago },
-          'El método de pago no fue encontrado o no existe',
-        ),
-      ]);
+      const metodoPago = await findEntityOrFail(
+        this.metodoPagoRepository,
+        { idMetodoPago },
+        'El método de pago no fue encontrado o no existe',
+      );
+
+      // Validar que el método de pago esté activo
+      if (metodoPago.estado !== MetodoPagoEstado.ACTIVO) {
+        throw new BadRequestException(
+          `El método de pago "${metodoPago.descripcion}" no está activo.`,
+        );
+      }
+
+      // Si se proporciona idPedido, validar que existe y verificar compatibilidad de canal
+      let pedido = null;
+      if (idPedido !== undefined && idPedido !== null) {
+        pedido = await this.pedidoRepository.findOne({
+          where: { idPedido },
+          relations: ['pago'],
+        });
+
+        if (!pedido) {
+          throw new NotFoundException(
+            'El pedido no fue encontrado o no existe',
+          );
+        }
+
+        // Validar que el método de pago sea compatible con el canal del pedido
+        const canalPedido = pedido.canal || PedidoCanal.WEB;
+        const canalesDisponibles =
+          metodoPago.canalesDisponibles || [PedidoCanal.WEB, PedidoCanal.INTERNO];
+
+        if (!canalesDisponibles.includes(canalPedido)) {
+          throw new BadRequestException(
+            `El método de pago "${metodoPago.descripcion}" no está disponible para pedidos del canal "${canalPedido}". Canales disponibles: ${canalesDisponibles.join(', ')}`,
+          );
+        }
+      }
 
       const newPago = this.pagoRepository.create({
         ...pagoData,
-        pedido,
+        pedido: pedido || undefined,
         metodoPago,
       });
 
@@ -51,7 +79,7 @@ export class PagoService {
         relations: ['pedido', 'metodoPago'],
       });
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
       handleDbException(error);

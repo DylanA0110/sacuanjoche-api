@@ -1,14 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { MetodoPago } from '../../metodo-pago/entities/metodo-pago.entity';
+import { PagoEstado } from '../../common/enums/pago-estado.enum';
 
 @Entity('pago')
 export class Pago {
   @PrimaryGeneratedColumn({ name: 'id_pago' })
   idPago: number;
 
-  @Column({ name: 'id_pedido' })
-  idPedido: number;
+  @Column({ name: 'id_pedido', nullable: true })
+  idPedido?: number;
 
   @Column({ name: 'id_metodo_pago' })
   idMetodoPago: number;
@@ -16,8 +17,14 @@ export class Pago {
   @Column({ name: 'monto', type: 'decimal', precision: 10, scale: 2 })
   monto: number;
 
-  @Column({ name: 'estado', type: 'varchar', length: 50 })
-  estado: string;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: PagoEstado,
+    default: PagoEstado.PENDIENTE,
+  })
+  estado: PagoEstado;
 
   @CreateDateColumn({ name: 'fecha_pago', type: 'timestamp' })
   fechaPago: Date;
@@ -41,7 +48,7 @@ export class Pago {
   rawPayload: string;
 
   // Relaciones
-  @ManyToOne(() => Pedido, pedido => pedido.pagos)
+  @OneToOne(() => Pedido, pedido => pedido.pago)
   @JoinColumn({ name: 'id_pedido' })
   pedido: Pedido;
 

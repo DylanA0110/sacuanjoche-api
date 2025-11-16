@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
+import { PedidoEstado } from '../../common/enums/pedido-estado.enum';
 
 @Entity('pedido_historial')
 export class PedidoHistorial {
@@ -13,8 +14,22 @@ export class PedidoHistorial {
   @Column({ name: 'id_empleado' })
   idEmpleado: number;
 
-  @Column({ name: 'estado', type: 'varchar', length: 50 })
-  estado: string;
+  @Column({
+    name: 'estado_anterior',
+    type: 'varchar',
+    length: 50,
+    enum: PedidoEstado,
+    nullable: true,
+  })
+  estadoAnterior: PedidoEstado | null;
+
+  @Column({
+    name: 'estado_nuevo',
+    type: 'varchar',
+    length: 50,
+    enum: PedidoEstado,
+  })
+  estadoNuevo: PedidoEstado;
 
   @CreateDateColumn({ name: 'fecha_cambio', type: 'timestamp' })
   fechaCambio: Date;

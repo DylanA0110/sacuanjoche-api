@@ -1,5 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Pago } from '../../pago/entities/pago.entity';
+import { MetodoPagoTipo } from '../../common/enums/metodo-pago-tipo.enum';
+import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
+import { MetodoPagoEstado } from '../../common/enums/metodo-pago-estado.enum';
 
 @Entity('metodo_pago')
 export class MetodoPago {
@@ -9,8 +12,31 @@ export class MetodoPago {
   @Column({ name: 'descripcion', type: 'varchar', length: 200 })
   descripcion: string;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'tipo',
+    type: 'varchar',
+    length: 50,
+    enum: MetodoPagoTipo,
+    default: MetodoPagoTipo.MIXTO,
+  })
+  tipo: MetodoPagoTipo;
+
+  @Column({
+    name: 'canales_disponibles',
+    type: 'varchar',
+    array: true,
+    default: [PedidoCanal.WEB, PedidoCanal.INTERNO],
+  })
+  canalesDisponibles: PedidoCanal[];
+
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: MetodoPagoEstado,
+    default: MetodoPagoEstado.ACTIVO,
+  })
+  estado: MetodoPagoEstado;
 
   // Relaciones
   @OneToMany(() => Pago, pago => pago.metodoPago)

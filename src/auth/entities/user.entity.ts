@@ -11,6 +11,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { UserEstado } from '../../common/enums/user-estado.enum';
 
 @Entity('users')
 export class User {
@@ -42,11 +43,14 @@ export class User {
   })
   blockedUntil: Date | null;
 
-  @Column('bool', {
-    name: 'is_active',
-    default: true,
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: UserEstado,
+    default: UserEstado.ACTIVO,
   })
-  isActive: boolean;
+  estado: UserEstado;
 
   @Column('text', {
     name: 'roles',

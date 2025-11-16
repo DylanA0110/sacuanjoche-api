@@ -10,6 +10,7 @@ import {
 import { User } from '../../auth/entities/user.entity';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { ClienteDireccion } from '../../cliente-direccion/entities/cliente-direccion.entity';
+import { ClienteEstado } from '../../common/enums/cliente-estado.enum';
 
 @Entity('cliente')
 export class Cliente {
@@ -25,8 +26,14 @@ export class Cliente {
   @Column({ name: 'telefono', type: 'varchar', length: 20, nullable: true })
   telefono: string;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: ClienteEstado,
+    default: ClienteEstado.ACTIVO,
+  })
+  estado: ClienteEstado;
 
   @CreateDateColumn({ name: 'fecha_creacion', type: 'timestamp' })
   fechaCreacion: Date;

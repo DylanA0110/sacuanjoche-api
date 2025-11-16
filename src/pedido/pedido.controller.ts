@@ -122,4 +122,31 @@ export class PedidoController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.pedidoService.remove(id);
   }
+
+  @Post(':id/asociar-pago')
+  @ApiOperation({
+    summary: 'Asociar un pago a un pedido existente (útil para canal interno)',
+    description:
+      'Permite asociar un pago a un pedido que fue creado sin pago. Útil cuando el empleado crea el pedido primero y luego procesa el pago.',
+  })
+  @ApiParam({ name: 'id', description: 'ID del pedido', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Pago asociado exitosamente al pedido',
+    type: Pedido,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'El pago o pedido ya está asociado, o los montos no coinciden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Pedido o pago no encontrado',
+  })
+  asociarPago(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('idPago', ParseIntPipe) idPago: number,
+  ) {
+    return this.pedidoService.asociarPago(id, idPago);
+  }
 }

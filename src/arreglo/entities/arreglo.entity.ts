@@ -13,6 +13,7 @@ import { AccesoriosArreglo } from '../../accesorios-arreglo/entities/accesorios-
 import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arreglo.entity';
 import { DetallePedido } from '../../detalle-pedido/entities/detalle-pedido.entity';
 import { ArregloMedia } from './arreglo-media.entity';
+import { ArregloEstado } from '../../common/enums/arreglo-estado.enum';
 
 @Entity('arreglo')
 export class Arreglo {
@@ -37,8 +38,14 @@ export class Arreglo {
   @Column({ name: 'cantidad_flores', type: 'int' })
   cantidadFlores: number;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: ArregloEstado,
+    default: ArregloEstado.ACTIVO,
+  })
+  estado: ArregloEstado;
 
   @CreateDateColumn({ name: 'fecha_creacion', type: 'timestamp' })
   fechaCreacion: Date;

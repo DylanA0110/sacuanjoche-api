@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, JoinColumn } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arreglo.entity';
+import { CarritoEstado } from '../../common/enums/carrito-estado.enum';
 
 @Entity('carrito')
 export class Carrito {
@@ -16,8 +17,14 @@ export class Carrito {
   @UpdateDateColumn({ name: 'fecha_ult_act', type: 'timestamp' })
   fechaUltAct: Date;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: CarritoEstado,
+    default: CarritoEstado.ACTIVO,
+  })
+  estado: CarritoEstado;
 
   // Relaciones
   @OneToOne(() => User, user => user.carrito)

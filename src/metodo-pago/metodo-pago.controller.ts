@@ -21,6 +21,7 @@ import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
 import { MetodoPago } from './entities/metodo-pago.entity';
 import { FindMetodosPagoDto } from './dto/find-metodos-pago.dto';
+import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
 
 @ApiTags('Métodos de Pago')
 @Controller('metodo-pago')
@@ -66,6 +67,27 @@ export class MetodoPagoController {
   })
   findAll(@Query() filters: FindMetodosPagoDto) {
     return this.metodoPagoService.findAll(filters);
+  }
+
+  @Get('por-canal/:canal')
+  @ApiOperation({
+    summary: 'Obtener métodos de pago disponibles para un canal específico',
+    description:
+      'Retorna solo los métodos de pago activos que están disponibles para el canal especificado (web o interno)',
+  })
+  @ApiParam({
+    name: 'canal',
+    description: 'Canal para filtrar métodos de pago',
+    enum: PedidoCanal,
+    example: PedidoCanal.WEB,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de métodos de pago disponibles para el canal',
+    type: [MetodoPago],
+  })
+  findByCanal(@Param('canal') canal: PedidoCanal) {
+    return this.metodoPagoService.findByCanal(canal);
   }
 
   @Get(':id')

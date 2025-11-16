@@ -12,6 +12,7 @@ import { Factura } from '../../factura/entities/factura.entity';
 import { User } from '../../auth/entities/user.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
 import { Ruta } from '../../ruta/entities/ruta.entity';
+import { EmpleadoEstado } from '../../common/enums/empleado-estado.enum';
 
 @Entity('empleado')
 export class Empleado {
@@ -44,8 +45,14 @@ export class Empleado {
   @Column({ name: 'fecha_nac', type: 'date' })
   fechaNac: Date;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: EmpleadoEstado,
+    default: EmpleadoEstado.ACTIVO,
+  })
+  estado: EmpleadoEstado;
 
   @CreateDateColumn({ name: 'fecha_creacion', type: 'timestamp' })
   fechaCreacion: Date;

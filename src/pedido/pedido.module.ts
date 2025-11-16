@@ -7,6 +7,8 @@ import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.entity';
+import { Pago } from 'src/pago/entities/pago.entity';
+import { PedidoHistorialModule } from 'src/pedido-historial/pedido-historial.module';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.
       Empleado,
       Direccion,
       ContactoEntrega,
+      Pago,
     ]),
+    PedidoHistorialModule,
   ],
   controllers: [PedidoController],
   providers: [PedidoService],

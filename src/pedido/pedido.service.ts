@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pedido } from './entities/pedido.entity';
@@ -11,6 +11,11 @@ import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.
 import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPedidosDto } from './dto/find-pedidos.dto';
+import { Pago } from 'src/pago/entities/pago.entity';
+import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
+import { PedidoEstado } from 'src/common/enums/pedido-estado.enum';
+import { PagoEstado } from 'src/common/enums/pago-estado.enum';
+import { PedidoHistorialService } from 'src/pedido-historial/pedido-historial.service';
 
 @Injectable()
 export class PedidoService {
@@ -25,6 +30,9 @@ export class PedidoService {
     private readonly direccionRepository: Repository<Direccion>,
     @InjectRepository(ContactoEntrega)
     private readonly contactoEntregaRepository: Repository<ContactoEntrega>,
+    @InjectRepository(Pago)
+    private readonly pagoRepository: Repository<Pago>,
+    private readonly pedidoHistorialService: PedidoHistorialService,
   ) {}
 
   async create(createPedidoDto: CreatePedidoDto) {
@@ -34,8 +42,105 @@ export class PedidoService {
         idCliente,
         idDireccion,
         idContactoEntrega,
+        idPago,
+        canal = PedidoCanal.WEB, // Por defecto es 'web' si no se especifica
         ...pedido
       } = createPedidoDto;
+
+      // Validar canal
+      const canalNormalizado = canal || PedidoCanal.WEB;
+
+      let pago = null;
+      let estadoInicial = PedidoEstado.PENDIENTE;
+
+      // FLUJO CANAL WEB: Pago es obligatorio y debe estar completado
+      if (canalNormalizado === PedidoCanal.WEB) {
+        if (!idPago) {
+          throw new BadRequestException(
+            'El ID del pago es requerido para pedidos del canal web. El pago debe estar completado antes de crear el pedido.',
+          );
+        }
+
+        pago = await this.pagoRepository.findOne({
+          where: { idPago: idPago },
+          relations: ['metodoPago'],
+        });
+
+        if (!pago) {
+          throw new NotFoundException(
+            `El pago con id ${idPago} no fue encontrado`,
+          );
+        }
+
+        // Validar que el método de pago sea compatible con el canal WEB
+        if (pago.metodoPago) {
+          const canalesDisponibles =
+            pago.metodoPago.canalesDisponibles || [
+              PedidoCanal.WEB,
+              PedidoCanal.INTERNO,
+            ];
+
+          if (!canalesDisponibles.includes(PedidoCanal.WEB)) {
+            throw new BadRequestException(
+              `El método de pago "${pago.metodoPago.descripcion}" no está disponible para pedidos del canal web. Solo está disponible en: ${canalesDisponibles.join(', ')}`,
+            );
+          }
+        }
+
+        // Validar que el pago esté completado (PAGADO)
+        if (pago.estado !== PagoEstado.PAGADO) {
+          throw new BadRequestException(
+            `El pago con id ${idPago} no está completado. Estado actual: ${pago.estado}. En el canal web, el pedido solo puede crearse con un pago completado (${PagoEstado.PAGADO}).`,
+          );
+        }
+
+        // Validar que el monto del pago coincida con el total del pedido
+        const totalPedido = Number(pedido.totalPedido || 0);
+        const montoPago = Number(pago.monto || 0);
+
+        if (Math.abs(totalPedido - montoPago) > 0.01) {
+          throw new BadRequestException(
+            `El monto del pago (${montoPago}) no coincide con el total del pedido (${totalPedido}).`,
+          );
+        }
+
+        // Validar que el pago no esté ya asociado a otro pedido
+        if (pago.idPedido !== null && pago.idPedido !== undefined) {
+          throw new BadRequestException(
+            `El pago con id ${idPago} ya está asociado al pedido ${pago.idPedido}.`,
+          );
+        }
+
+        estadoInicial = PedidoEstado.PROCESANDO; // En canal web, el pedido se crea ya pagado y pasa a procesando
+      }
+
+      // FLUJO CANAL INTERNO: Pago es opcional
+      // Si se proporciona idPago, validar que existe (pero puede estar pendiente)
+      if (canalNormalizado === PedidoCanal.INTERNO && idPago) {
+        pago = await this.pagoRepository.findOne({
+          where: { idPago: idPago },
+        });
+
+        if (!pago) {
+          throw new NotFoundException(
+            `El pago con id ${idPago} no fue encontrado`,
+          );
+        }
+
+        // Si el pago está completado, el pedido se crea como procesando
+        if (pago.estado === PagoEstado.PAGADO) {
+          estadoInicial = PedidoEstado.PROCESANDO;
+        } else {
+          estadoInicial = PedidoEstado.PENDIENTE;
+        }
+
+        // Validar que el pago no esté ya asociado a otro pedido
+        if (pago.idPedido !== null && pago.idPedido !== undefined) {
+          throw new BadRequestException(
+            `El pago con id ${idPago} ya está asociado al pedido ${pago.idPedido}.`,
+          );
+        }
+      }
 
       const empleado = await findEntityOrFail(
         this.empleadoRepository,
@@ -63,6 +168,9 @@ export class PedidoService {
 
       const newPedido = this.pedidoRepository.create({
         ...pedido,
+        estado: estadoInicial,
+        canal: canalNormalizado,
+        idPago: pago?.idPago, // Asociar el pago si existe
         empleado,
         cliente,
         direccion,
@@ -71,12 +179,18 @@ export class PedidoService {
 
       await this.pedidoRepository.save(newPedido);
 
+      // Si hay un pago, asociarlo al pedido
+      if (pago) {
+        pago.idPedido = newPedido.idPedido;
+        await this.pagoRepository.save(pago);
+      }
+
       return await this.pedidoRepository.findOne({
         where: { idPedido: newPedido.idPedido },
-        relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
+        relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'pago'],
       });
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
       handleDbException(error);
@@ -190,6 +304,111 @@ export class PedidoService {
   async remove(id: number) {
     const pedido = await this.findOne(id);
     await this.pedidoRepository.remove(pedido!);
+  }
+
+  /**
+   * Asocia un pago a un pedido existente (útil para canal interno)
+   * Permite que un empleado cree el pedido primero y luego procese el pago
+   */
+  async asociarPago(idPedido: number, idPago: number) {
+    const pedido = await this.findOne(idPedido);
+    const pago = await this.pagoRepository.findOne({
+      where: { idPago: idPago },
+      relations: ['metodoPago'],
+    });
+
+    if (!pago) {
+      throw new NotFoundException(`El pago con id ${idPago} no fue encontrado`);
+    }
+
+    // Validar que el método de pago sea compatible con el canal del pedido
+    if (pago.metodoPago) {
+      const canalPedido = pedido.canal || PedidoCanal.WEB;
+      const canalesDisponibles =
+        pago.metodoPago.canalesDisponibles || [
+          PedidoCanal.WEB,
+          PedidoCanal.INTERNO,
+        ];
+
+      if (!canalesDisponibles.includes(canalPedido)) {
+        throw new BadRequestException(
+          `El método de pago "${pago.metodoPago.descripcion}" no está disponible para pedidos del canal "${canalPedido}". Canales disponibles: ${canalesDisponibles.join(', ')}`,
+        );
+      }
+    }
+
+    // Validar que el pago no esté ya asociado a otro pedido
+    if (pago.idPedido !== null && pago.idPedido !== undefined) {
+      throw new BadRequestException(
+        `El pago con id ${idPago} ya está asociado al pedido ${pago.idPedido}.`,
+      );
+    }
+
+    // Validar que el pedido no tenga ya un pago asociado
+    if (pedido.idPago !== null && pedido.idPago !== undefined) {
+      throw new BadRequestException(
+        `El pedido ${idPedido} ya tiene un pago asociado (id: ${pedido.idPago}).`,
+      );
+    }
+
+    // Validar que el monto del pago coincida con el total del pedido
+    const totalPedido = Number(pedido.totalPedido || 0);
+    const montoPago = Number(pago.monto || 0);
+
+    if (Math.abs(totalPedido - montoPago) > 0.01) {
+      throw new BadRequestException(
+        `El monto del pago (${montoPago}) no coincide con el total del pedido (${totalPedido}).`,
+      );
+    }
+
+    // Asociar el pago al pedido
+    pedido.idPago = pago.idPago;
+    pago.idPedido = pedido.idPedido;
+
+    // Si el pago está completado, actualizar el estado del pedido
+    if (pago.estado === PagoEstado.PAGADO) {
+      pedido.estado = PedidoEstado.PROCESANDO;
+    }
+
+    await this.pedidoRepository.save(pedido);
+    await this.pagoRepository.save(pago);
+
+    return await this.findOne(idPedido);
+  }
+
+  /**
+   * Actualiza el estado de un pedido y registra el cambio en el historial
+   */
+  async updateEstado(
+    idPedido: number,
+    nuevoEstado: PedidoEstado,
+    idEmpleado: number,
+    nota?: string,
+  ) {
+    const pedido = await this.findOne(idPedido);
+    const estadoAnterior = pedido.estado;
+
+    // Validar que el estado nuevo sea diferente al actual
+    if (estadoAnterior === nuevoEstado) {
+      throw new BadRequestException(
+        `El pedido ya está en el estado "${nuevoEstado}". No se puede cambiar al mismo estado.`,
+      );
+    }
+
+    // Actualizar el estado del pedido
+    pedido.estado = nuevoEstado;
+    await this.pedidoRepository.save(pedido);
+
+    // Registrar el cambio en el historial
+    await this.pedidoHistorialService.create({
+      idPedido,
+      idEmpleado,
+      estadoAnterior,
+      estadoNuevo: nuevoEstado,
+      nota,
+    });
+
+    return await this.findOne(idPedido);
   }
 
   // async findByCliente(idCliente: number) {}
