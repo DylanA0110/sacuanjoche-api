@@ -6,7 +6,8 @@
 postgres/
 pgadmin/
 
-.env
+.en
+fonts/
 
 # Logs
 logs
