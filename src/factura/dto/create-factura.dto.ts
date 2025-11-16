@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNumber, MaxLength, IsOptional, IsEnum } from 'class-validator';
+import { FacturaEstado } from '../../common/enums/factura-estado.enum';
 
 export class CreateFacturaDto {
   @ApiProperty({
@@ -25,14 +26,15 @@ export class CreateFacturaDto {
   @MaxLength(50)
   numFactura: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Estado de la factura',
-    example: 'Emitida',
-    maxLength: 50
+    example: FacturaEstado.PENDIENTE,
+    enum: FacturaEstado,
+    default: FacturaEstado.PENDIENTE,
   })
-  @IsString()
-  @MaxLength(50)
-  estado: string;
+  @IsOptional()
+  @IsEnum(FacturaEstado, { message: 'El estado debe ser un estado válido de factura' })
+  estado?: FacturaEstado;
 
   @ApiProperty({
     description: 'Monto total de la factura',

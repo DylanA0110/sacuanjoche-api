@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Factura } from './entities/factura.entity';
@@ -9,6 +9,10 @@ import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindFacturasDto } from './dto/find-facturas.dto';
+import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
+import { FacturaDetalle } from 'src/factura-detalle/entities/factura-detalle.entity';
+import { PagoEstado } from 'src/common/enums/pago-estado.enum';
+import { FacturaEstado } from 'src/common/enums/factura-estado.enum';
 
 @Injectable()
 export class FacturaService {
@@ -19,6 +23,10 @@ export class FacturaService {
     private readonly pedidoRepository: Repository<Pedido>,
     @InjectRepository(Empleado)
     private readonly empleadoRepository: Repository<Empleado>,
+    @InjectRepository(DetallePedido)
+    private readonly detallePedidoRepository: Repository<DetallePedido>,
+    @InjectRepository(FacturaDetalle)
+    private readonly facturaDetalleRepository: Repository<FacturaDetalle>,
   ) {}
 
   async create(createFacturaDto: CreateFacturaDto) {
@@ -39,9 +47,11 @@ export class FacturaService {
       ]);
 
       const newFactura = this.facturaRepository.create({
-        ...facturaData,
-        pedido,
-        empleado,
+        idPedido: pedido.idPedido,
+        idEmpleado: empleado.idEmpleado,
+        numFactura: facturaData.numFactura,
+        montoTotal: facturaData.montoTotal,
+        estado: facturaData.estado || FacturaEstado.PENDIENTE,
       });
 
       await this.facturaRepository.save(newFactura);
@@ -87,7 +97,7 @@ export class FacturaService {
   async findOne(id: number) {
     const factura = await this.facturaRepository.findOne({
       where: { idFactura: id },
-      relations: ['pedido', 'empleado'],
+      relations: ['pedido', 'empleado', 'detallesFactura', 'detallesFactura.arreglo'],
     });
 
     if (!factura) {
@@ -144,5 +154,133 @@ export class FacturaService {
   async remove(id: number) {
     const factura = await this.findOne(id);
     await this.facturaRepository.remove(factura);
+  }
+
+  /**
+   * Convierte un pedido pagado en una factura
+   * Copia toda la información del pedido y sus detalles a la factura
+   */
+  async crearFacturaDesdePedido(idPedido: number, idEmpleado: number) {
+    try {
+      // Obtener el pedido con todas sus relaciones
+      const pedido = await this.pedidoRepository.findOne({
+        where: { idPedido },
+        relations: ['pago', 'factura', 'detallesPedido', 'detallesPedido.arreglo'],
+      });
+
+      if (!pedido) {
+        throw new NotFoundException(
+          `El pedido con id ${idPedido} no fue encontrado`,
+        );
+      }
+
+      // Validar que el pedido tenga un pago asociado
+      if (!pedido.pago) {
+        throw new BadRequestException(
+          `El pedido ${idPedido} no tiene un pago asociado. Solo se pueden facturar pedidos que han sido pagados.`,
+        );
+      }
+
+      // Validar que el pago esté completado
+      if (pedido.pago.estado !== PagoEstado.PAGADO) {
+        throw new BadRequestException(
+          `El pedido ${idPedido} no está pagado. Estado del pago: ${pedido.pago.estado}. Solo se pueden facturar pedidos con pago completado.`,
+        );
+      }
+
+      // Validar que el pedido no tenga ya una factura
+      if (pedido.factura) {
+        throw new BadRequestException(
+          `El pedido ${idPedido} ya tiene una factura asociada (ID: ${pedido.factura.idFactura}).`,
+        );
+      }
+
+      // Validar que el pedido tenga detalles
+      if (!pedido.detallesPedido || pedido.detallesPedido.length === 0) {
+        throw new BadRequestException(
+          `El pedido ${idPedido} no tiene detalles. No se puede crear una factura sin productos.`,
+        );
+      }
+
+      // Validar empleado
+      const empleado = await findEntityOrFail(
+        this.empleadoRepository,
+        { idEmpleado },
+        'El empleado no fue encontrado o no existe',
+      );
+
+      // Generar número de factura único
+      const numFactura = await this.generarNumeroFactura();
+
+      // Crear la factura copiando información del pedido
+      const nuevaFactura = this.facturaRepository.create({
+        idPedido: pedido.idPedido,
+        idEmpleado: empleado.idEmpleado,
+        numFactura,
+        montoTotal: pedido.totalPedido,
+        estado: FacturaEstado.PAGADO, // Si el pedido está pagado, la factura también
+      });
+
+      await this.facturaRepository.save(nuevaFactura);
+
+      // Copiar los detalles del pedido a detalles de factura
+      const detallesFactura = pedido.detallesPedido.map((detallePedido) => {
+        return this.facturaDetalleRepository.create({
+          idFactura: nuevaFactura.idFactura,
+          idArreglo: detallePedido.idArreglo,
+          cantidad: detallePedido.cantidad,
+          precioUnitario: detallePedido.precioUnitario,
+          subtotal: detallePedido.subtotal,
+        });
+      });
+
+      await this.facturaDetalleRepository.save(detallesFactura);
+
+      // Retornar la factura completa con sus detalles
+      return this.facturaRepository.findOne({
+        where: { idFactura: nuevaFactura.idFactura },
+        relations: ['pedido', 'empleado', 'detallesFactura', 'detallesFactura.arreglo'],
+      });
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      handleDbException(error);
+    }
+  }
+
+  /**
+   * Genera un número de factura único en formato FAC-YYYY-NNNN
+   * Ejemplo: FAC-2024-0001
+   */
+  private async generarNumeroFactura(): Promise<string> {
+    const año = new Date().getFullYear();
+    const prefijo = `FAC-${año}-`;
+
+    // Buscar la última factura del año
+    const ultimaFactura = await this.facturaRepository
+      .createQueryBuilder('factura')
+      .where('factura.numFactura LIKE :prefijo', { prefijo: `${prefijo}%` })
+      .orderBy('factura.numFactura', 'DESC')
+      .getOne();
+
+    let siguienteNumero = 1;
+
+    if (ultimaFactura) {
+      // Extraer el número de la última factura
+      const ultimoNumero = parseInt(
+        ultimaFactura.numFactura.replace(prefijo, ''),
+        10,
+      );
+      siguienteNumero = ultimoNumero + 1;
+    }
+
+    // Formatear con ceros a la izquierda (4 dígitos)
+    const numeroFormateado = siguienteNumero.toString().padStart(4, '0');
+
+    return `${prefijo}${numeroFormateado}`;
   }
 }

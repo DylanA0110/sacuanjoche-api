@@ -20,6 +20,7 @@ import { DireccionModule } from './direccion/direccion.module';
 import { EmpleadoModule } from './empleado/empleado.module';
 import { EnvioModule } from './envio/envio.module';
 import { FacturaModule } from './factura/factura.module';
+import { FacturaDetalleModule } from './factura-detalle/factura-detalle.module';
 import { FlorModule } from './flor/flor.module';
 import { FormaArregloModule } from './forma-arreglo/forma-arreglo.module';
 import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
@@ -73,6 +74,7 @@ import { MapboxModule } from './common/mapbox/mapbox.module';
     EmpleadoModule,
     EnvioModule,
     FacturaModule,
+    FacturaDetalleModule,
     FlorModule,
     FormaArregloModule,
     MetodoPagoModule,

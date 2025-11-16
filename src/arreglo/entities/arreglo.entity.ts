@@ -12,6 +12,7 @@ import { ArregloFlor } from '../../arreglo-flor/entities/arreglo-flor.entity';
 import { AccesoriosArreglo } from '../../accesorios-arreglo/entities/accesorios-arreglo.entity';
 import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arreglo.entity';
 import { DetallePedido } from '../../detalle-pedido/entities/detalle-pedido.entity';
+import { FacturaDetalle } from '../../factura-detalle/entities/factura-detalle.entity';
 import { ArregloMedia } from './arreglo-media.entity';
 import { ArregloEstado } from '../../common/enums/arreglo-estado.enum';
 
@@ -72,6 +73,9 @@ export class Arreglo {
 
   @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.arreglo)
   detallesPedido: DetallePedido[];
+
+  @OneToMany(() => FacturaDetalle, (facturaDetalle) => facturaDetalle.arreglo)
+  detallesFactura: FacturaDetalle[];
 
   @OneToMany(() => ArregloMedia, (media) => media.arreglo)
   media: ArregloMedia[];

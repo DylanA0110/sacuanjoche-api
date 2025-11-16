@@ -42,6 +42,34 @@ export class FacturaController {
     return this.facturaService.create(createFacturaDto);
   }
 
+  @Post('desde-pedido/:idPedido')
+  @ApiOperation({
+    summary: 'Convertir un pedido pagado en factura',
+    description:
+      'Crea una factura automáticamente desde un pedido que esté pagado. Copia todos los montos y detalles del pedido a la factura.',
+  })
+  @ApiParam({ name: 'idPedido', description: 'ID del pedido a facturar', example: 1 })
+  @ApiResponse({
+    status: 201,
+    description: 'Factura creada exitosamente desde el pedido',
+    type: Factura,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'El pedido no está pagado, ya tiene factura, o no tiene detalles',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Pedido no encontrado',
+  })
+  crearFacturaDesdePedido(
+    @Param('idPedido', ParseIntPipe) idPedido: number,
+    @Body('idEmpleado', ParseIntPipe) idEmpleado: number,
+  ) {
+    return this.facturaService.crearFacturaDesdePedido(idPedido, idEmpleado);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Obtener todas las facturas con paginación' })
   @ApiResponse({

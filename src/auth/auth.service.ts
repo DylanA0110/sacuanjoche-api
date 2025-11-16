@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
+import { UserEstado } from 'src/common/enums/user-estado.enum';
 
 @Injectable()
 export class AuthService {
@@ -146,7 +147,7 @@ export class AuthService {
       );
     }
 
-    if (!user.isActive) {
+    if (user.estado !== UserEstado.ACTIVO) {
       throw new UnauthorizedException('El usuario se encuentra inactivo.');
     }
 

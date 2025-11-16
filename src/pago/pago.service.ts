@@ -11,6 +11,7 @@ import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPagosDto } from './dto/find-pagos.dto';
 import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
 import { MetodoPagoEstado } from 'src/common/enums/metodo-pago-estado.enum';
+import { PagoEstado } from 'src/common/enums/pago-estado.enum';
 
 @Injectable()
 export class PagoService {
@@ -67,9 +68,16 @@ export class PagoService {
       }
 
       const newPago = this.pagoRepository.create({
-        ...pagoData,
-        pedido: pedido || undefined,
-        metodoPago,
+        idPedido: pedido?.idPedido,
+        idMetodoPago: metodoPago.idMetodoPago,
+        monto: pagoData.monto,
+        estado: pagoData.estado || PagoEstado.PENDIENTE,
+        referencia: pagoData.referencia,
+        gateway: pagoData.gateway,
+        idGateway: pagoData.idGateway,
+        paymentLinkUrl: pagoData.paymentLinkUrl,
+        paymentUrlExt: pagoData.paymentUrlExt,
+        rawPayload: pagoData.rawPayload,
       });
 
       await this.pagoRepository.save(newPago);
@@ -154,9 +162,9 @@ export class PagoService {
 
       const pago = await this.pagoRepository.preload({
         idPago: id,
+        idPedido: pedido?.idPedido,
+        idMetodoPago: metodoPago?.idMetodoPago,
         ...toUpdate,
-        pedido,
-        metodoPago,
       });
 
       if (!pago) {

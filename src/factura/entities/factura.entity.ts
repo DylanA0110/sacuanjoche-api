@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
 import { FacturaEstado } from '../../common/enums/factura-estado.enum';
+import { FacturaDetalle } from '../../factura-detalle/entities/factura-detalle.entity';
 
 @Entity('factura')
 export class Factura {
@@ -40,5 +41,8 @@ export class Factura {
   @ManyToOne(() => Empleado, empleado => empleado.facturas)
   @JoinColumn({ name: 'id_empleado' })
   empleado: Empleado;
+
+  @OneToMany(() => FacturaDetalle, (facturaDetalle) => facturaDetalle.factura)
+  detallesFactura: FacturaDetalle[];
 }
 

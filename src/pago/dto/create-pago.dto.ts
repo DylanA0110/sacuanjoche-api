@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNumber, IsOptional, MaxLength, IsEnum } from 'class-validator';
+import { PagoEstado } from '../../common/enums/pago-estado.enum';
 
 export class CreatePagoDto {
   @ApiProperty({
@@ -25,14 +26,15 @@ export class CreatePagoDto {
   @IsNumber()
   monto: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Estado del pago',
-    example: 'Pendiente',
-    maxLength: 50
+    example: PagoEstado.PENDIENTE,
+    enum: PagoEstado,
+    default: PagoEstado.PENDIENTE,
   })
-  @IsString()
-  @MaxLength(50)
-  estado: string;
+  @IsOptional()
+  @IsEnum(PagoEstado, { message: 'El estado debe ser un estado válido de pago' })
+  estado?: PagoEstado;
 
   @ApiProperty({
     description: 'Referencia del pago',
@@ -66,6 +68,15 @@ export class CreatePagoDto {
   @IsString()
   @MaxLength(200)
   idGateway?: string;
+
+  @ApiProperty({
+    description: 'URL del enlace de pago',
+    example: 'https://paypal.com/pay/123456789',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  paymentLinkUrl?: string;
 
   @ApiProperty({
     description: 'URL externa de pago',

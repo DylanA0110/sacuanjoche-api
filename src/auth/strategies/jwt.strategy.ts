@@ -6,6 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ConfigService } from "@nestjs/config";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { UserEstado } from "src/common/enums/user-estado.enum";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -32,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new UnauthorizedException('Token not valid');
         }
 
-        if (!user.isActive) {
+        if (user.estado !== UserEstado.ACTIVO) {
             throw new UnauthorizedException('User is not active');
         }
 
