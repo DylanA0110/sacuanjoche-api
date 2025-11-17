@@ -106,9 +106,13 @@ export class PedidoService {
         }
 
         // Validar que el pago no esté ya asociado a otro pedido
-        if (pago.idPedido !== null && pago.idPedido !== undefined) {
+        const pedidoExistente = await this.pedidoRepository.findOne({
+          where: { idPago: idPago },
+        });
+
+        if (pedidoExistente) {
           throw new BadRequestException(
-            `El pago con id ${idPago} ya está asociado al pedido ${pago.idPedido}.`,
+            `El pago con id ${idPago} ya está asociado al pedido ${pedidoExistente.idPedido}.`,
           );
         }
 
@@ -136,9 +140,13 @@ export class PedidoService {
         }
 
         // Validar que el pago no esté ya asociado a otro pedido
-        if (pago.idPedido !== null && pago.idPedido !== undefined) {
+        const pedidoExistente = await this.pedidoRepository.findOne({
+          where: { idPago: idPago },
+        });
+
+        if (pedidoExistente) {
           throw new BadRequestException(
-            `El pago con id ${idPago} ya está asociado al pedido ${pago.idPedido}.`,
+            `El pago con id ${idPago} ya está asociado al pedido ${pedidoExistente.idPedido}.`,
           );
         }
       }
@@ -198,12 +206,6 @@ export class PedidoService {
       });
 
       await this.pedidoRepository.save(newPedido);
-
-      // Si hay un pago, asociarlo al pedido
-      if (pago) {
-        pago.idPedido = newPedido.idPedido;
-        await this.pagoRepository.save(pago);
-      }
 
       return await this.pedidoRepository.findOne({
         where: { idPedido: newPedido.idPedido },
@@ -358,9 +360,13 @@ export class PedidoService {
     }
 
     // Validar que el pago no esté ya asociado a otro pedido
-    if (pago.idPedido !== null && pago.idPedido !== undefined) {
+    const pedidoExistente = await this.pedidoRepository.findOne({
+      where: { idPago: idPago },
+    });
+
+    if (pedidoExistente) {
       throw new BadRequestException(
-        `El pago con id ${idPago} ya está asociado al pedido ${pago.idPedido}.`,
+        `El pago con id ${idPago} ya está asociado al pedido ${pedidoExistente.idPedido}.`,
       );
     }
 
@@ -383,7 +389,6 @@ export class PedidoService {
 
     // Asociar el pago al pedido
     pedido.idPago = pago.idPago;
-    pago.idPedido = pedido.idPedido;
 
     // Si el pago está completado, actualizar el estado del pedido
     if (pago.estado === PagoEstado.PAGADO) {
@@ -391,7 +396,6 @@ export class PedidoService {
     }
 
     await this.pedidoRepository.save(pedido);
-    await this.pagoRepository.save(pago);
 
     return await this.findOne(idPedido);
   }

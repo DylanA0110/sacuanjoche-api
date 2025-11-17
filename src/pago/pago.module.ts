@@ -5,11 +5,12 @@ import { PagoController } from './pago.controller';
 import { Pago } from './entities/pago.entity';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 import { MetodoPago } from 'src/metodo-pago/entities/metodo-pago.entity';
+import { PayPalService } from './paypal/paypal.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Pago, Pedido, MetodoPago])],
   controllers: [PagoController],
-  providers: [PagoService],
+  providers: [PagoService, PayPalService],
   exports: [PagoService],
 })
 export class PagoModule {}

@@ -158,6 +158,7 @@ npm run test:cov
 ## Documentación adicional
 
 - `docs/imagenes-arreglos.md`: flujo completo para subir y confirmar imágenes de arreglos usando URLs firmadas.
+- `docs/paypal-integration-frontend.md`: guía completa para integrar PayPal en el frontend, incluyendo ejemplos de código, flujo paso a paso y manejo de errores.
 - Swagger/OpenAPI disponible al levantar la aplicación (rutas de Mapbox, Arreglo, Pedido, etc.).
 - Este README como descripción general del alcance.
 

@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
-import { Pedido } from '../../pedido/entities/pedido.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { MetodoPago } from '../../metodo-pago/entities/metodo-pago.entity';
 import { PagoEstado } from '../../common/enums';
 
@@ -7,9 +6,6 @@ import { PagoEstado } from '../../common/enums';
 export class Pago {
   @PrimaryGeneratedColumn({ name: 'id_pago' })
   idPago: number;
-
-  @Column({ name: 'id_pedido', nullable: true })
-  idPedido?: number;
 
   @Column({ name: 'id_metodo_pago' })
   idMetodoPago: number;
@@ -48,10 +44,6 @@ export class Pago {
   rawPayload: string;
 
   // Relaciones
-  @OneToOne(() => Pedido, pedido => pedido.pago)
-  @JoinColumn({ name: 'id_pedido' })
-  pedido: Pedido;
-
   @ManyToOne(() => MetodoPago, metodoPago => metodoPago.pagos)
   @JoinColumn({ name: 'id_metodo_pago' })
   metodoPago: MetodoPago;

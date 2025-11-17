@@ -121,7 +121,7 @@ export class Pedido {
   @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.pedido)
   detallesPedido: DetallePedido[];
 
-  @OneToOne(() => Pago, (pago) => pago.pedido)
+  @OneToOne(() => Pago)
   @JoinColumn({ name: 'id_pago' })
   pago: Pago;
 

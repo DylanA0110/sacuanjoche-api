@@ -4,15 +4,6 @@ import { PagoEstado } from '../../common/enums';
 
 export class CreatePagoDto {
   @ApiProperty({
-    description: 'ID del pedido (opcional, puede ser null si el pago se crea antes del pedido)',
-    example: 1,
-    required: false
-  })
-  @IsOptional()
-  @IsNumber()
-  idPedido?: number;
-
-  @ApiProperty({
     description: 'ID del método de pago',
     example: 1
   })
