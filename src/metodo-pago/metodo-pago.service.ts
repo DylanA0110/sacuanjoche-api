@@ -6,9 +6,7 @@ import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { FindMetodosPagoDto } from './dto/find-metodos-pago.dto';
-import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
-import { MetodoPagoTipo } from 'src/common/enums/metodo-pago-tipo.enum';
-import { MetodoPagoEstado } from 'src/common/enums/metodo-pago-estado.enum';
+import { PedidoCanal, MetodoPagoTipo, MetodoPagoEstado } from 'src/common/enums';
 
 @Injectable()
 export class MetodoPagoService {

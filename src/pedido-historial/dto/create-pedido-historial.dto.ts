@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
-import { PedidoEstado } from '../../common/enums/pedido-estado.enum';
+import { PedidoEstado } from '../../common/enums';
 
 export class CreatePedidoHistorialDto {
   @ApiProperty({

@@ -16,7 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
-import { UserEstado } from 'src/common/enums/user-estado.enum';
+import { UserEstado } from 'src/common/enums';
 
 @Injectable()
 export class AuthService {

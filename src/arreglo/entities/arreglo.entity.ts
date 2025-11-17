@@ -14,7 +14,7 @@ import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arregl
 import { DetallePedido } from '../../detalle-pedido/entities/detalle-pedido.entity';
 import { FacturaDetalle } from '../../factura-detalle/entities/factura-detalle.entity';
 import { ArregloMedia } from './arreglo-media.entity';
-import { ArregloEstado } from '../../common/enums/arreglo-estado.enum';
+import { ArregloEstado } from '../../common/enums';
 
 @Entity('arreglo')
 export class Arreglo {

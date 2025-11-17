@@ -1,8 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MaxLength, IsOptional, IsEnum, IsArray, ArrayMinSize } from 'class-validator';
-import { MetodoPagoTipo } from '../../common/enums/metodo-pago-tipo.enum';
-import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
-import { MetodoPagoEstado } from '../../common/enums/metodo-pago-estado.enum';
+import { MetodoPagoTipo, PedidoCanal, MetodoPagoEstado } from '../../common/enums';
 
 export class CreateMetodoPagoDto {
   @ApiProperty({

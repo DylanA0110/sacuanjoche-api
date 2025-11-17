@@ -9,9 +9,7 @@ import { MetodoPago } from 'src/metodo-pago/entities/metodo-pago.entity';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPagosDto } from './dto/find-pagos.dto';
-import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
-import { MetodoPagoEstado } from 'src/common/enums/metodo-pago-estado.enum';
-import { PagoEstado } from 'src/common/enums/pago-estado.enum';
+import { PedidoCanal, MetodoPagoEstado, PagoEstado } from 'src/common/enums';
 
 @Injectable()
 export class PagoService {

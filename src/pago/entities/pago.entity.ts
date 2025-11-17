@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { MetodoPago } from '../../metodo-pago/entities/metodo-pago.entity';
-import { PagoEstado } from '../../common/enums/pago-estado.enum';
+import { PagoEstado } from '../../common/enums';
 
 @Entity('pago')
 export class Pago {

@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, JoinColumn } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arreglo.entity';
-import { CarritoEstado } from '../../common/enums/carrito-estado.enum';
+import { CarritoEstado } from '../../common/enums';
 
 @Entity('carrito')
 export class Carrito {

@@ -10,7 +10,7 @@ import {
 import { User } from '../../auth/entities/user.entity';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { ClienteDireccion } from '../../cliente-direccion/entities/cliente-direccion.entity';
-import { ClienteEstado } from '../../common/enums/cliente-estado.enum';
+import { ClienteEstado } from '../../common/enums';
 
 @Entity('cliente')
 export class Cliente {

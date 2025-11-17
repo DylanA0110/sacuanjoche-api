@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
-import { PedidoEstado } from '../../common/enums/pedido-estado.enum';
+import { PedidoEstado } from '../../common/enums';
 
 @Entity('pedido_historial')
 export class PedidoHistorial {

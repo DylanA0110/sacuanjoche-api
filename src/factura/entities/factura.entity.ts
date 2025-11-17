@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
-import { FacturaEstado } from '../../common/enums/factura-estado.enum';
+import { FacturaEstado } from '../../common/enums';
 import { FacturaDetalle } from '../../factura-detalle/entities/factura-detalle.entity';
 
 @Entity('factura')

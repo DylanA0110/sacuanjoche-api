@@ -1,8 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Pago } from '../../pago/entities/pago.entity';
-import { MetodoPagoTipo } from '../../common/enums/metodo-pago-tipo.enum';
-import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
-import { MetodoPagoEstado } from '../../common/enums/metodo-pago-estado.enum';
+import { MetodoPagoTipo, PedidoCanal, MetodoPagoEstado } from '../../common/enums';
 
 @Entity('metodo_pago')
 export class MetodoPago {

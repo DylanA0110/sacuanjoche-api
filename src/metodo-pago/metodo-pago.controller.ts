@@ -21,7 +21,7 @@ import { CreateMetodoPagoDto } from './dto/create-metodo-pago.dto';
 import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
 import { MetodoPago } from './entities/metodo-pago.entity';
 import { FindMetodosPagoDto } from './dto/find-metodos-pago.dto';
-import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
+import { PedidoCanal } from 'src/common/enums';
 
 @ApiTags('Métodos de Pago')
 @Controller('metodo-pago')

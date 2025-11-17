@@ -12,7 +12,7 @@ import { Factura } from '../../factura/entities/factura.entity';
 import { User } from '../../auth/entities/user.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
 import { Ruta } from '../../ruta/entities/ruta.entity';
-import { EmpleadoEstado } from '../../common/enums/empleado-estado.enum';
+import { EmpleadoEstado } from '../../common/enums';
 
 @Entity('empleado')
 export class Empleado {

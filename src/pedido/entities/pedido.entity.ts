@@ -19,8 +19,7 @@ import { Envio } from '../../envio/entities/envio.entity';
 import { Factura } from '../../factura/entities/factura.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
 import { RutaPedido } from '../../ruta/entities/ruta-pedido.entity';
-import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
-import { PedidoEstado } from '../../common/enums/pedido-estado.enum';
+import { PedidoCanal, PedidoEstado } from '../../common/enums';
 
 @Entity('pedido')
 export class Pedido {

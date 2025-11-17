@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber, IsString, IsDateString, IsDecimal, Min, IsOptional, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { PedidoCanal } from '../../common/enums/pedido-canal.enum';
+import { PedidoCanal } from '../../common/enums';
 
 export class CreatePedidoDto {
   @ApiProperty({

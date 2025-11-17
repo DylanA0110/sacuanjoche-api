@@ -6,7 +6,7 @@ import {
   MaxLength,
   IsOptional,
 } from 'class-validator';
-import { ArregloEstado } from '../../common/enums/arreglo-estado.enum';
+import { ArregloEstado } from '../../common/enums';
 
 export class CreateArregloDto {
   @ApiProperty({

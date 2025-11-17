@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, IsOptional, MaxLength, IsEnum } from 'class-validator';
-import { PagoEstado } from '../../common/enums/pago-estado.enum';
+import { PagoEstado } from '../../common/enums';
 
 export class CreatePagoDto {
   @ApiProperty({

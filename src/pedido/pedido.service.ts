@@ -12,9 +12,7 @@ import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPedidosDto } from './dto/find-pedidos.dto';
 import { Pago } from 'src/pago/entities/pago.entity';
-import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
-import { PedidoEstado } from 'src/common/enums/pedido-estado.enum';
-import { PagoEstado } from 'src/common/enums/pago-estado.enum';
+import { PedidoCanal, PedidoEstado, PagoEstado } from 'src/common/enums';
 import { PedidoHistorialService } from 'src/pedido-historial/pedido-historial.service';
 
 @Injectable()

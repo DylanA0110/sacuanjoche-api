@@ -11,7 +11,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserEstado } from '../../common/enums/user-estado.enum';
+import { UserEstado } from '../../common/enums';
 
 @Entity('users')
 export class User {

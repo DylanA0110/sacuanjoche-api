@@ -11,9 +11,7 @@ import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindFacturasDto } from './dto/find-facturas.dto';
 import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
 import { FacturaDetalle } from 'src/factura-detalle/entities/factura-detalle.entity';
-import { PagoEstado } from 'src/common/enums/pago-estado.enum';
-import { FacturaEstado } from 'src/common/enums/factura-estado.enum';
-import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
+import { PagoEstado, FacturaEstado, PedidoCanal } from 'src/common/enums';
 
 @Injectable()
 export class FacturaService {

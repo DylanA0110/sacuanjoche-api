@@ -10,7 +10,7 @@ import {
   MinLength,
   IsEnum,
 } from 'class-validator';
-import { UserEstado } from '../../common/enums/user-estado.enum';
+import { UserEstado } from '../../common/enums';
 
 export class CreateUserDto {
   @ApiProperty()

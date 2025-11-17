@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsEnum, IsOptional } from 'class-validator';
-import { CarritoEstado } from '../../common/enums/carrito-estado.enum';
+import { CarritoEstado } from '../../common/enums';
 
 export class CreateCarritoDto {
   @ApiProperty({

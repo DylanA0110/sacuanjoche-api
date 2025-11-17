@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsEnum, MaxLength, IsPhoneNumber } from 'class-validator';
-import { ClienteEstado } from '../../common/enums/cliente-estado.enum';
+import { ClienteEstado } from '../../common/enums';
 
 export class CreateClienteDto {
   @ApiProperty({

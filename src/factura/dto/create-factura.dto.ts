@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, MaxLength, IsOptional, IsEnum } from 'class-validator';
-import { FacturaEstado } from '../../common/enums/factura-estado.enum';
+import { FacturaEstado } from '../../common/enums';
 
 export class CreateFacturaDto {
   @ApiProperty({

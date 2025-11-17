@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsDateString, IsEnum, MaxLength, IsOptional } from 'class-validator';
-import { EmpleadoEstado } from '../../common/enums/empleado-estado.enum';
+import { EmpleadoEstado } from '../../common/enums';
 
 export class CreateEmpleadoDto {
   @ApiProperty({

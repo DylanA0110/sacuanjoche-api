@@ -6,6 +6,8 @@ import { PrinterModule } from '../printer/printer.module';
 import { FacturaModule } from '../factura/factura.module';
 import { PedidoModule } from '../pedido/pedido.module';
 import { Pedido } from '../pedido/entities/pedido.entity';
+import { FacturaReport } from './report/factura.report';
+import { OrdenTrabajoReport } from './report/orden-trabajo.report';
 
 @Module({
   imports: [
@@ -15,7 +17,7 @@ import { Pedido } from '../pedido/entities/pedido.entity';
     TypeOrmModule.forFeature([Pedido]),
   ],
   controllers: [ReportsController],
-  providers: [ReportsService],
+  providers: [ReportsService, FacturaReport, OrdenTrabajoReport],
   exports: [ReportsService],
 })
 export class ReportsModule {}

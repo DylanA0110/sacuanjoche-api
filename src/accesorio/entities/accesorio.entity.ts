@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { AccesoriosArreglo } from '../../accesorios-arreglo/entities/accesorios-arreglo.entity';
-import { ArticuloEstado } from '../../common/enums/articulo-estado.enum';
+import { ArticuloEstado } from '../../common/enums';
 
 @Entity('accesorio')
 export class Accesorio {
