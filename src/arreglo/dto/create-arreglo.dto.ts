@@ -50,13 +50,7 @@ export class CreateArregloDto {
   @IsNumber()
   precioUnitario: number;
 
-  @ApiProperty({
-    description: 'Cantidad de flores en el arreglo',
-    example: 12,
-  })
-  @IsNumber()
-  cantidadFlores: number;
-
+ 
   @ApiProperty({
     description: 'Estado del arreglo',
     example: ArregloEstado.ACTIVO,

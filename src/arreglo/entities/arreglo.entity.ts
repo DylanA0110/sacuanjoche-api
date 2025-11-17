@@ -36,9 +36,6 @@ export class Arreglo {
   @Column({ name: 'precio_unitario', type: 'decimal', precision: 10, scale: 2 })
   precioUnitario: number;
 
-  @Column({ name: 'cantidad_flores', type: 'int' })
-  cantidadFlores: number;
-
   @Column({
     name: 'estado',
     type: 'varchar',
