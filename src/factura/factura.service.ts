@@ -13,6 +13,7 @@ import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity
 import { FacturaDetalle } from 'src/factura-detalle/entities/factura-detalle.entity';
 import { PagoEstado } from 'src/common/enums/pago-estado.enum';
 import { FacturaEstado } from 'src/common/enums/factura-estado.enum';
+import { PedidoCanal } from 'src/common/enums/pedido-canal.enum';
 
 @Injectable()
 export class FacturaService {
@@ -163,8 +164,16 @@ export class FacturaService {
   }
 
   /**
-   * Convierte un pedido pagado en una factura
+   * Convierte un pedido en una factura
    * Copia toda la información del pedido y sus detalles a la factura
+   * 
+   * Validaciones según el canal:
+   * - Canal WEB: Requiere pago completado obligatoriamente
+   * - Canal INTERNO: Puede facturarse sin pago o con pago pendiente
+   * 
+   * El estado de la factura se determina según el estado del pago:
+   * - Si hay pago completado: FacturaEstado.PAGADO
+   * - Si no hay pago o está pendiente: FacturaEstado.PENDIENTE
    */
   async crearFacturaDesdePedido(idPedido: number, idEmpleado: number) {
     try {
@@ -180,22 +189,41 @@ export class FacturaService {
         );
       }
 
-      // Validar que el pedido tenga un pago asociado
-      if (!pedido.pago) {
-        throw new BadRequestException(
-          `El pedido ${idPedido} no tiene un pago asociado. Solo se pueden facturar pedidos que han sido pagados.`,
-        );
+      // Validación según el canal del pedido
+      const canalPedido = pedido.canal || PedidoCanal.WEB;
+      let estadoFactura = FacturaEstado.PENDIENTE;
+
+      // CANAL WEB: Requiere pago completado obligatoriamente
+      if (canalPedido === PedidoCanal.WEB) {
+        if (!pedido.pago) {
+          throw new BadRequestException(
+            `El pedido ${idPedido} del canal web no tiene un pago asociado. Solo se pueden facturar pedidos web que han sido pagados.`,
+          );
+        }
+
+        // Validar que el pago esté completado
+        // Comparar como string para evitar problemas de tipo
+        const estadoPago = String(pedido.pago.estado).toLowerCase();
+        const estadoPagado = String(PagoEstado.PAGADO).toLowerCase();
+        
+        if (estadoPago !== estadoPagado) {
+          throw new BadRequestException(
+            `El pedido ${idPedido} no está pagado. Estado del pago: ${pedido.pago.estado}. Solo se pueden facturar pedidos web con pago completado (${PagoEstado.PAGADO}).`,
+          );
+        }
+
+        estadoFactura = FacturaEstado.PAGADO;
       }
 
-      // Validar que el pago esté completado
-      // Comparar como string para evitar problemas de tipo
-      const estadoPago = String(pedido.pago.estado).toLowerCase();
-      const estadoPagado = String(PagoEstado.PAGADO).toLowerCase();
-      
-      if (estadoPago !== estadoPagado) {
-        throw new BadRequestException(
-          `El pedido ${idPedido} no está pagado. Estado del pago: ${pedido.pago.estado}. Solo se pueden facturar pedidos con pago completado (${PagoEstado.PAGADO}).`,
-        );
+      // CANAL INTERNO: Puede facturarse sin pago o con pago pendiente
+      // Si tiene pago y está completado, la factura se marca como pagada
+      if (canalPedido === PedidoCanal.INTERNO && pedido.pago) {
+        const estadoPago = String(pedido.pago.estado).toLowerCase();
+        const estadoPagado = String(PagoEstado.PAGADO).toLowerCase();
+        
+        if (estadoPago === estadoPagado) {
+          estadoFactura = FacturaEstado.PAGADO;
+        }
       }
 
       // Validar que el pedido no tenga ya una factura
@@ -228,7 +256,7 @@ export class FacturaService {
         idEmpleado: empleado.idEmpleado,
         numFactura,
         montoTotal: pedido.totalPedido,
-        estado: FacturaEstado.PAGADO, // Si el pedido está pagado, la factura también
+        estado: estadoFactura, // PAGADO si hay pago completado, PENDIENTE si no
       });
 
       await this.facturaRepository.save(nuevaFactura);
