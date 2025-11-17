@@ -20,6 +20,7 @@ import { Factura } from '../../factura/entities/factura.entity';
 import { PedidoHistorial } from '../../pedido-historial/entities/pedido-historial.entity';
 import { RutaPedido } from '../../ruta/entities/ruta-pedido.entity';
 import { PedidoCanal, PedidoEstado } from '../../common/enums';
+import { Folio } from '../../folio/entities/folio.entity';
 
 @Entity('pedido')
 export class Pedido {
@@ -91,6 +92,12 @@ export class Pedido {
   })
   canal: PedidoCanal;
 
+  @Column({ name: 'numero_pedido', type: 'varchar', length: 50, nullable: true })
+  numeroPedido: string;
+
+  @Column({ name: 'id_folio', nullable: true })
+  idFolio?: number;
+
   // Relaciones
   @ManyToOne(() => Empleado, (empleado) => empleado.pedidos)
   @JoinColumn({ name: 'id_empleado' })
@@ -129,4 +136,8 @@ export class Pedido {
 
   @OneToMany(() => RutaPedido, (rutaPedido) => rutaPedido.pedido)
   rutaPedidos: RutaPedido[];
+
+  @ManyToOne(() => Folio, (folio) => folio.pedidos)
+  @JoinColumn({ name: 'id_folio' })
+  folio: Folio;
 }

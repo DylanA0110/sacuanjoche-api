@@ -8,16 +8,28 @@ import { PedidoModule } from '../pedido/pedido.module';
 import { Pedido } from '../pedido/entities/pedido.entity';
 import { FacturaReport } from './report/factura.report';
 import { OrdenTrabajoReport } from './report/orden-trabajo.report';
+import { PedidosReport } from './report/pedidos.report';
+import { FacturasReport } from './report/facturas.report';
+import { ArreglosReport } from './report/arreglos.report';
+import { Factura } from '../factura/entities/factura.entity';
+import { Arreglo } from '../arreglo/entities/arreglo.entity';
 
 @Module({
   imports: [
     PrinterModule,
     FacturaModule,
     PedidoModule,
-    TypeOrmModule.forFeature([Pedido]),
+    TypeOrmModule.forFeature([Pedido, Factura, Arreglo]),
   ],
   controllers: [ReportsController],
-  providers: [ReportsService, FacturaReport, OrdenTrabajoReport],
+  providers: [
+    ReportsService,
+    FacturaReport,
+    OrdenTrabajoReport,
+    PedidosReport,
+    FacturasReport,
+    ArreglosReport,
+  ],
   exports: [ReportsService],
 })
 export class ReportsModule {}

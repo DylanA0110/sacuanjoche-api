@@ -9,6 +9,7 @@ import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.entity';
 import { Pago } from 'src/pago/entities/pago.entity';
 import { PedidoHistorialModule } from 'src/pedido-historial/pedido-historial.module';
+import { FolioModule } from 'src/folio/folio.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PedidoHistorialModule } from 'src/pedido-historial/pedido-historial.mod
       Pago,
     ]),
     PedidoHistorialModule,
+    FolioModule,
   ],
   controllers: [PedidoController],
   providers: [PedidoService],

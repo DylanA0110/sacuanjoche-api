@@ -12,8 +12,9 @@ import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPedidosDto } from './dto/find-pedidos.dto';
 import { Pago } from 'src/pago/entities/pago.entity';
-import { PedidoCanal, PedidoEstado, PagoEstado } from 'src/common/enums';
+import { PedidoCanal, PedidoEstado, PagoEstado, EstadoActivo } from 'src/common/enums';
 import { PedidoHistorialService } from 'src/pedido-historial/pedido-historial.service';
+import { FolioService } from 'src/folio/folio.service';
 
 @Injectable()
 export class PedidoService {
@@ -31,6 +32,7 @@ export class PedidoService {
     @InjectRepository(Pago)
     private readonly pagoRepository: Repository<Pago>,
     private readonly pedidoHistorialService: PedidoHistorialService,
+    private readonly folioService: FolioService,
   ) {}
 
   async create(createPedidoDto: CreatePedidoDto) {
@@ -165,6 +167,21 @@ export class PedidoService {
         `El contacto de entrega no fue encontrado o no existe`,
       );
 
+      // Generar número de folio para el pedido
+      let numeroPedido: string | undefined;
+      let idFolio: number | undefined;
+      try {
+        // Buscar el folio activo para PEDIDO
+        const folioPedido = await this.folioService.buscarFolioPorDocumento('PEDIDO');
+        if (folioPedido) {
+          numeroPedido = await this.folioService.obtenerSiguienteFolio('PEDIDO');
+          idFolio = folioPedido.idFolio;
+        }
+      } catch (error) {
+        // Si no existe el folio, continuar sin número de pedido
+        // No lanzar error para no bloquear la creación del pedido
+      }
+
       const newPedido = this.pedidoRepository.create({
         ...pedido,
         estado: estadoInicial,
@@ -172,6 +189,8 @@ export class PedidoService {
         idPago: pago?.idPago, // Asociar el pago si existe
         totalProductos: 0, // Se calculará automáticamente cuando se agreguen las líneas de detalle
         totalPedido: 0, // Se calculará automáticamente cuando se agreguen las líneas de detalle
+        numeroPedido,
+        idFolio,
         empleado,
         cliente,
         direccion,

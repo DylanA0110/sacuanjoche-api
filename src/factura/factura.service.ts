@@ -11,7 +11,8 @@ import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindFacturasDto } from './dto/find-facturas.dto';
 import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
 import { FacturaDetalle } from 'src/factura-detalle/entities/factura-detalle.entity';
-import { PagoEstado, FacturaEstado, PedidoCanal } from 'src/common/enums';
+import { PagoEstado, FacturaEstado, PedidoCanal, EstadoActivo } from 'src/common/enums';
+import { FolioService } from 'src/folio/folio.service';
 
 @Injectable()
 export class FacturaService {
@@ -26,6 +27,7 @@ export class FacturaService {
     private readonly detallePedidoRepository: Repository<DetallePedido>,
     @InjectRepository(FacturaDetalle)
     private readonly facturaDetalleRepository: Repository<FacturaDetalle>,
+    private readonly folioService: FolioService,
   ) {}
 
   async create(createFacturaDto: CreateFacturaDto) {
@@ -248,11 +250,28 @@ export class FacturaService {
       // Generar número de factura único
       const numFactura = await this.generarNumeroFactura();
 
+      // Generar número de folio para la factura
+      let numeroFactura: string | undefined;
+      let idFolio: number | undefined;
+      try {
+        // Buscar el folio activo para FACTURA
+        const folioFactura = await this.folioService.buscarFolioPorDocumento('FACTURA');
+        if (folioFactura) {
+          numeroFactura = await this.folioService.obtenerSiguienteFolio('FACTURA');
+          idFolio = folioFactura.idFolio;
+        }
+      } catch (error) {
+        // Si no existe el folio, continuar sin número de factura
+        // No lanzar error para no bloquear la creación de la factura
+      }
+
       // Crear la factura copiando información del pedido
       const nuevaFactura = this.facturaRepository.create({
         idPedido: pedido.idPedido,
         idEmpleado: empleado.idEmpleado,
         numFactura,
+        numeroFactura,
+        idFolio,
         montoTotal: pedido.totalPedido,
         estado: estadoFactura, // PAGADO si hay pago completado, PENDIENTE si no
       });

@@ -3,6 +3,7 @@ import { Pedido } from '../../pedido/entities/pedido.entity';
 import { Empleado } from '../../empleado/entities/empleado.entity';
 import { FacturaEstado } from '../../common/enums';
 import { FacturaDetalle } from '../../factura-detalle/entities/factura-detalle.entity';
+import { Folio } from '../../folio/entities/folio.entity';
 
 @Entity('factura')
 export class Factura {
@@ -17,6 +18,12 @@ export class Factura {
 
   @Column({ name: 'num_factura', type: 'varchar', length: 50, unique: true })
   numFactura: string;
+
+  @Column({ name: 'numero_factura', type: 'varchar', length: 50, nullable: true })
+  numeroFactura: string;
+
+  @Column({ name: 'id_folio', nullable: true })
+  idFolio?: number;
 
   @CreateDateColumn({ name: 'fecha_emision', type: 'timestamp' })
   fechaEmision: Date;
@@ -44,5 +51,9 @@ export class Factura {
 
   @OneToMany(() => FacturaDetalle, (facturaDetalle) => facturaDetalle.factura)
   detallesFactura: FacturaDetalle[];
+
+  @ManyToOne(() => Folio, (folio) => folio.facturas)
+  @JoinColumn({ name: 'id_folio' })
+  folio: Folio;
 }
 

@@ -142,3 +142,11 @@ export enum UserEstado {
   ACTIVO = 'activo',
   INACTIVO = 'inactivo',
 }
+
+/**
+ * Enum para estados activo/inactivo genérico
+ */
+export enum EstadoActivo {
+  ACTIVO = 'activo',
+  INACTIVO = 'inactivo',
+}

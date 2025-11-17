@@ -22,6 +22,7 @@ import { EnvioModule } from './envio/envio.module';
 import { FacturaModule } from './factura/factura.module';
 import { FacturaDetalleModule } from './factura-detalle/factura-detalle.module';
 import { FlorModule } from './flor/flor.module';
+import { FolioModule } from './folio/folio.module';
 import { FormaArregloModule } from './forma-arreglo/forma-arreglo.module';
 import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
 import { PagoModule } from './pago/pago.module';
@@ -78,6 +79,7 @@ import { ReportsModule } from './reports/reports.module';
     FacturaModule,
     FacturaDetalleModule,
     FlorModule,
+    FolioModule,
     FormaArregloModule,
     MetodoPagoModule,
     PagoModule,
