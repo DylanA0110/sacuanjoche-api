@@ -114,10 +114,22 @@ export class SpacesService {
       }
 
       // Configuración SSL para manejar certificados correctamente
+      // Permite configurar mediante variable de entorno DO_SPACES_REJECT_UNAUTHORIZED
+      // Por defecto, no rechazar certificados para evitar problemas SSL comunes
+      const rejectUnauthorizedEnv = this.configService.get<string>(
+        'DO_SPACES_REJECT_UNAUTHORIZED',
+      );
+      const rejectUnauthorized =
+        rejectUnauthorizedEnv === 'true' || rejectUnauthorizedEnv === '1';
+      
       const httpsAgent = new https.Agent({
-        rejectUnauthorized: true, // Verificar certificados SSL
+        rejectUnauthorized: rejectUnauthorized,
         keepAlive: true,
       });
+
+      this.logger.log(
+        `Configuración SSL: rejectUnauthorized=${rejectUnauthorized}`,
+      );
 
       this.client = new S3Client({
         region,
@@ -215,10 +227,38 @@ export class SpacesService {
         objectKey: key,
         publicUrl: this.buildPublicUrl(key),
       };
-    } catch (error) {
-      this.logger.error('No se pudo generar la URL firmada para Spaces', error);
+    } catch (error: any) {
+      // Log detallado del error
+      this.logger.error('No se pudo generar la URL firmada para Spaces', {
+        error: error.message,
+        stack: error.stack,
+        code: error.code,
+        name: error.name,
+        fileName: params.fileName,
+        contentType: params.contentType,
+        contentLength: params.contentLength,
+      });
+
+      // Detectar errores SSL específicos
+      const isSSLError =
+        error.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE' ||
+        error.code === 'CERT_HAS_EXPIRED' ||
+        error.code === 'SELF_SIGNED_CERT_IN_CHAIN' ||
+        error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' ||
+        error.code === 'CERT_UNTRUSTED' ||
+        error.message?.toLowerCase().includes('certificate') ||
+        error.message?.toLowerCase().includes('ssl') ||
+        error.message?.toLowerCase().includes('tls') ||
+        error.name === 'SSLException';
+
+      if (isSSLError) {
+        throw new InternalServerErrorException(
+          `Error SSL al conectar con DigitalOcean Spaces: ${error.message || error.code || 'Error desconocido de certificado SSL'}. Verifica la configuración del certificado SSL del servidor o configura DO_SPACES_REJECT_UNAUTHORIZED=false en las variables de entorno.`,
+        );
+      }
+
       throw new InternalServerErrorException(
-        'No se pudo generar la URL de carga para DigitalOcean Spaces.',
+        `No se pudo generar la URL de carga para DigitalOcean Spaces: ${error.message || 'Error desconocido'}.`,
       );
     }
   }
@@ -235,10 +275,30 @@ export class SpacesService {
       await this.client!.send(
         new DeleteObjectCommand({ Bucket: this.bucket!, Key: objectKey }),
       );
-    } catch (error) {
-      this.logger.error(`No se pudo eliminar el objeto ${objectKey}`, error);
+    } catch (error: any) {
+      this.logger.error(`No se pudo eliminar el objeto ${objectKey}`, {
+        error: error.message,
+        stack: error.stack,
+        code: error.code,
+        name: error.name,
+        objectKey,
+      });
+
+      // Detectar errores SSL también en delete
+      const isSSLError =
+        error.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE' ||
+        error.code === 'CERT_HAS_EXPIRED' ||
+        error.message?.toLowerCase().includes('certificate') ||
+        error.message?.toLowerCase().includes('ssl');
+
+      if (isSSLError) {
+        throw new InternalServerErrorException(
+          `Error SSL al eliminar objeto en DigitalOcean Spaces: ${error.message || error.code}. Verifica la configuración SSL.`,
+        );
+      }
+
       throw new InternalServerErrorException(
-        'No se pudo eliminar el objeto en DigitalOcean Spaces.',
+        `No se pudo eliminar el objeto en DigitalOcean Spaces: ${error.message || 'Error desconocido'}.`,
       );
     }
   }

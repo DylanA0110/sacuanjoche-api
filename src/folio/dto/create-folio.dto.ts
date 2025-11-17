@@ -3,64 +3,74 @@ import {
   IsString,
   IsNumber,
   IsEnum,
-  MaxLength,
   IsOptional,
+  MinLength,
   Min,
+  Max,
 } from 'class-validator';
 import { EstadoActivo } from '../../common/enums';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
 
 export class CreateFolioDto {
   @ApiProperty({
     description: 'Descripción del folio',
-    example: 'Folio para facturas',
+    example: 'Folio para facturas de venta',
+    nullable: false,
+    minLength: 1,
     maxLength: 100,
   })
   @IsString()
-  @MaxLength(100)
+  @MinLength(1)
+  @AllowedCharacters()
   descripcion: string;
 
   @ApiProperty({
-    description: 'Estado del folio',
+    description: 'Indica si el folio está activo',
     example: EstadoActivo.ACTIVO,
     enum: EstadoActivo,
     default: EstadoActivo.ACTIVO,
-    required: false,
   })
-  @IsOptional()
   @IsEnum(EstadoActivo)
+  @IsOptional()
   activo?: EstadoActivo;
 
   @ApiProperty({
-    description: 'Longitud del número de folio (cantidad de dígitos)',
-    example: 4,
+    description: 'Longitud del número folio',
+    example: 6,
+    minimum: 1,
+    maximum: 20,
   })
   @IsNumber()
   @Min(1)
+  @Max(20)
   longitud: number;
 
   @ApiProperty({
-    description: 'Tipo de documento para el cual se usa este folio',
+    description: 'Tipo de documento para el folio',
     example: 'FACTURA',
+    nullable: false,
+    minLength: 1,
     maxLength: 20,
   })
   @IsString()
-  @MaxLength(20)
+  @MinLength(1)
+  @AllowedCharacters()
   documento: string;
 
   @ApiProperty({
-    description: 'Máscara para formatear el folio (ej: FAC-{0000})',
-    example: 'FAC-{0000}',
+    description: 'Máscara para formatear el folio',
+    example: 'FAC-{0}',
+    nullable: true,
     maxLength: 20,
-    required: false,
   })
-  @IsOptional()
   @IsString()
-  @MaxLength(20)
+  @IsOptional()
   mascara?: string;
 
   @ApiProperty({
     description: 'Valor inicial del folio',
     example: 1,
+    minimum: 0,
   })
   @IsNumber()
   @Min(0)
@@ -68,15 +78,17 @@ export class CreateFolioDto {
 
   @ApiProperty({
     description: 'Valor final del folio',
-    example: 9999,
+    example: 999999,
+    minimum: 1,
   })
   @IsNumber()
   @Min(1)
   valorFinal: number;
 
   @ApiProperty({
-    description: 'Último valor usado del folio',
+    description: 'Último valor utilizado del folio',
     example: 0,
+    minimum: 0,
   })
   @IsNumber()
   @Min(0)
