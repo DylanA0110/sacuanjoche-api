@@ -8,7 +8,9 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  IsEnum,
 } from 'class-validator';
+import { UserEstado } from '../../common/enums/user-estado.enum';
 
 export class CreateUserDto {
   @ApiProperty()
@@ -45,4 +47,15 @@ export class CreateUserDto {
   @IsPositive()
   @IsOptional()
   empleadoId?: number;
+
+  @ApiProperty({
+    description: 'Estado del usuario',
+    example: UserEstado.ACTIVO,
+    enum: UserEstado,
+    default: UserEstado.ACTIVO,
+    required: false
+  })
+  @IsOptional()
+  @IsEnum(UserEstado)
+  estado?: UserEstado;
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, MaxLength, IsPhoneNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, MaxLength, IsPhoneNumber } from 'class-validator';
+import { ClienteEstado } from '../../common/enums/cliente-estado.enum';
 
 export class CreateClienteDto {
   @ApiProperty({
@@ -32,13 +33,14 @@ export class CreateClienteDto {
   telefono?: string;
 
   @ApiProperty({
-    description: 'Estado activo del cliente',
-    example: true,
-    default: true,
+    description: 'Estado del cliente',
+    example: ClienteEstado.ACTIVO,
+    enum: ClienteEstado,
+    default: ClienteEstado.ACTIVO,
     required: false
   })
   @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
+  @IsEnum(ClienteEstado)
+  estado?: ClienteEstado;
 }
 

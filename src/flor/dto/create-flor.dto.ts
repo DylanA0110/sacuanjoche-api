@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsBoolean, MaxLength, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsEnum, MaxLength, IsNumber, IsPositive, IsOptional } from 'class-validator';
+import { ArticuloEstado } from '../../common/enums/articulo-estado.enum';
 
 export class CreateFlorDto {
   @ApiProperty({
@@ -38,12 +39,14 @@ export class CreateFlorDto {
   tipo: string;
 
   @ApiProperty({
-    description: 'Estado activo de la flor',
-    example: true,
-    default: true,
+    description: 'Estado de la flor',
+    example: ArticuloEstado.ACTIVO,
+    enum: ArticuloEstado,
+    default: ArticuloEstado.ACTIVO,
     required: false
   })
-  @IsBoolean()
-  activo?: boolean;
+  @IsOptional()
+  @IsEnum(ArticuloEstado)
+  estado?: ArticuloEstado;
 }
 

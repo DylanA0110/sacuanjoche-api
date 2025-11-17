@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { ArregloFlor } from '../../arreglo-flor/entities/arreglo-flor.entity';
+import { ArticuloEstado } from '../../common/enums/articulo-estado.enum';
 
 @Entity('flor')
 export class Flor {
@@ -18,8 +19,14 @@ export class Flor {
   @Column({ name: 'tipo', type: 'varchar', length: 50 })
   tipo: string;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: ArticuloEstado,
+    default: ArticuloEstado.ACTIVO,
+  })
+  estado: ArticuloEstado;
 
   // Relaciones
   @OneToMany(() => ArregloFlor, arregloFlor => arregloFlor.flor)

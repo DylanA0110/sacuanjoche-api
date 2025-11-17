@@ -2,10 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
   IsNumber,
-  IsBoolean,
+  IsEnum,
   MaxLength,
   IsOptional,
 } from 'class-validator';
+import { ArregloEstado } from '../../common/enums/arreglo-estado.enum';
 
 export class CreateArregloDto {
   @ApiProperty({
@@ -57,12 +58,13 @@ export class CreateArregloDto {
   cantidadFlores: number;
 
   @ApiProperty({
-    description: 'Estado activo del arreglo',
-    example: true,
-    default: true,
+    description: 'Estado del arreglo',
+    example: ArregloEstado.ACTIVO,
+    enum: ArregloEstado,
+    default: ArregloEstado.ACTIVO,
     required: false,
   })
   @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
+  @IsEnum(ArregloEstado)
+  estado?: ArregloEstado;
 }

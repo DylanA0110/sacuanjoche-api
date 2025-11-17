@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsBoolean, IsOptional } from 'class-validator';
+import { IsNumber, IsEnum, IsOptional } from 'class-validator';
+import { CarritoEstado } from '../../common/enums/carrito-estado.enum';
 
 export class CreateCarritoDto {
   @ApiProperty({
@@ -10,13 +11,14 @@ export class CreateCarritoDto {
   idUser: number;
 
   @ApiProperty({
-    description: 'Estado activo del carrito',
-    example: true,
-    default: true,
+    description: 'Estado del carrito',
+    example: CarritoEstado.ACTIVO,
+    enum: CarritoEstado,
+    default: CarritoEstado.ACTIVO,
     required: false
   })
   @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
+  @IsEnum(CarritoEstado)
+  estado?: CarritoEstado;
 }
 

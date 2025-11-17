@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { AccesoriosArreglo } from '../../accesorios-arreglo/entities/accesorios-arreglo.entity';
+import { ArticuloEstado } from '../../common/enums/articulo-estado.enum';
 
 @Entity('accesorio')
 export class Accesorio {
@@ -12,8 +13,14 @@ export class Accesorio {
   @Column({ name: 'precio_unitario', type: 'decimal', precision: 10, scale: 2 })
   precioUnitario: number;
 
-  @Column({ name: 'activo', type: 'boolean', default: true })
-  activo: boolean;
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 50,
+    enum: ArticuloEstado,
+    default: ArticuloEstado.ACTIVO,
+  })
+  estado: ArticuloEstado;
 
   @Column({ name: 'categoria', type: 'varchar', length: 100 })
   categoria: string;

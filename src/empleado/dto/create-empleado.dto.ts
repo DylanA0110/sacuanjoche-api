@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsBoolean, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsDateString, IsEnum, MaxLength, IsOptional } from 'class-validator';
+import { EmpleadoEstado } from '../../common/enums/empleado-estado.enum';
 
 export class CreateEmpleadoDto {
   @ApiProperty({
@@ -66,14 +67,15 @@ export class CreateEmpleadoDto {
   fechaNac: string;
 
   @ApiProperty({
-    description: 'Estado activo del empleado',
-    example: true,
-    default: true,
+    description: 'Estado del empleado',
+    example: EmpleadoEstado.ACTIVO,
+    enum: EmpleadoEstado,
+    default: EmpleadoEstado.ACTIVO,
     required: false
   })
   @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
+  @IsEnum(EmpleadoEstado)
+  estado?: EmpleadoEstado;
 }
 
 

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsBoolean, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsEnum, MaxLength, IsOptional } from 'class-validator';
+import { ArticuloEstado } from '../../common/enums/articulo-estado.enum';
 
 export class CreateAccesorioDto {
   @ApiProperty({
@@ -19,14 +20,15 @@ export class CreateAccesorioDto {
   precioUnitario: number;
 
   @ApiProperty({
-    description: 'Estado activo del accesorio',
-    example: true,
-    default: true,
+    description: 'Estado del accesorio',
+    example: ArticuloEstado.ACTIVO,
+    enum: ArticuloEstado,
+    default: ArticuloEstado.ACTIVO,
     required: false
   })
   @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
+  @IsEnum(ArticuloEstado)
+  estado?: ArticuloEstado;
 
   @ApiProperty({
     description: 'Categoría del accesorio',
