@@ -95,12 +95,13 @@ export class PedidoService {
         }
 
         // Validar que el monto del pago coincida con el total del pedido
-        const totalPedido = Number(pedido.totalPedido || 0);
+        // Nota: El totalPedido se calculará automáticamente cuando se agreguen las líneas de detalle
+        // Por ahora, validamos que el pago tenga un monto válido
         const montoPago = Number(pago.monto || 0);
 
-        if (Math.abs(totalPedido - montoPago) > 0.01) {
+        if (montoPago <= 0) {
           throw new BadRequestException(
-            `El monto del pago (${montoPago}) no coincide con el total del pedido (${totalPedido}).`,
+            `El monto del pago debe ser mayor a 0. Monto actual: ${montoPago}.`,
           );
         }
 
@@ -171,6 +172,8 @@ export class PedidoService {
         estado: estadoInicial,
         canal: canalNormalizado,
         idPago: pago?.idPago, // Asociar el pago si existe
+        totalProductos: 0, // Se calculará automáticamente cuando se agreguen las líneas de detalle
+        totalPedido: 0, // Se calculará automáticamente cuando se agreguen las líneas de detalle
         empleado,
         cliente,
         direccion,

@@ -55,14 +55,14 @@ export class CreatePedidoDto {
   @IsNumber({}, { message: 'El ID del contacto de entrega debe ser un número' })
   idContactoEntrega: number;
 
-  @ApiProperty({
-    description: 'Total de productos en el pedido',
-    example: 150.50,
-  })
-  @IsNotEmpty({ message: 'El total de productos es requerido' })
-  @IsNumber({}, { message: 'El total de productos debe ser un número' })
-  @Min(0, { message: 'El total de productos debe ser mayor o igual a 0' })
-  totalProductos: number;
+  // @ApiProperty({
+  //   description: 'Total de productos en el pedido',
+  //   example: 150.50,
+  // })
+  // @IsNotEmpty({ message: 'El total de productos es requerido' })
+  // @IsNumber({}, { message: 'El total de productos debe ser un número' })
+  // @Min(0, { message: 'El total de productos debe ser mayor o igual a 0' })
+  // totalProductos: number;
 
   @ApiProperty({
     description: 'Fecha estimada de entrega',
@@ -89,12 +89,12 @@ export class CreatePedidoDto {
   @Min(0, { message: 'El costo de envío debe ser mayor o igual a 0' })
   costoEnvio: number;
 
-  @ApiProperty({
-    description: 'Total del pedido (productos + envío)',
-    example: 175.50,
-  })
-  @IsNotEmpty({ message: 'El total del pedido es requerido' })
-  @IsNumber({}, { message: 'El total del pedido debe ser un número' })
-  @Min(0, { message: 'El total del pedido debe ser mayor o igual a 0' })
-  totalPedido: number;
+  // @ApiProperty({
+  //   description: 'Total del pedido (productos + envío)',
+  //   example: 175.50,
+  // })
+  // @IsNotEmpty({ message: 'El total del pedido es requerido' })
+  // @IsNumber({}, { message: 'El total del pedido debe ser un número' })
+  // @Min(0, { message: 'El total del pedido debe ser mayor o igual a 0' })
+  // totalPedido: number;
 }

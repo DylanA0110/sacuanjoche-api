@@ -39,7 +39,7 @@ export class Pedido {
   @Column({ name: 'id_contacto_entrega' })
   idContactoEntrega: number;
 
-  @Column({ name: 'total_productos', type: 'decimal', precision: 10, scale: 2 })
+  @Column({ name: 'total_productos', type: 'decimal', precision: 10, scale: 2, default: 0 })
   totalProductos: number;
 
   @CreateDateColumn({
