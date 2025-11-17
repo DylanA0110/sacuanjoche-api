@@ -12,6 +12,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
+import * as https from 'node:https';
 
 export interface GenerateUploadUrlParams {
   /** Optional base folder where the object will be stored */
@@ -66,8 +67,23 @@ export class SpacesService {
     } else {
       this.bucket = bucket;
 
+      // Usar endpoint personalizado o construir el endpoint estándar
+      // Si hay problemas SSL, puedes configurar DO_SPACES_ENDPOINT con un endpoint alternativo
       const resolvedEndpoint =
         endpoint ?? `https://${bucket}.${region}.digitaloceanspaces.com`;
+
+      // Verificar que el endpoint use HTTPS
+      if (!resolvedEndpoint.startsWith('https://')) {
+        this.logger.warn(
+          `El endpoint de DigitalOcean Spaces debe usar HTTPS. Endpoint actual: ${resolvedEndpoint}`,
+        );
+      }
+
+      // Configuración SSL para manejar certificados correctamente
+      const httpsAgent = new https.Agent({
+        rejectUnauthorized: true, // Verificar certificados SSL
+        keepAlive: true,
+      });
 
       this.client = new S3Client({
         region,
@@ -76,6 +92,9 @@ export class SpacesService {
         credentials: {
           accessKeyId,
           secretAccessKey,
+        },
+        requestHandler: {
+          httpsAgent,
         },
       });
 
