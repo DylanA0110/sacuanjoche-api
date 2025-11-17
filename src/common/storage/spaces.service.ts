@@ -68,15 +68,49 @@ export class SpacesService {
       this.bucket = bucket;
 
       // Usar endpoint personalizado o construir el endpoint estándar
-      // Si hay problemas SSL, puedes configurar DO_SPACES_ENDPOINT con un endpoint alternativo
-      const resolvedEndpoint =
-        endpoint ?? `https://${bucket}.${region}.digitaloceanspaces.com`;
+      // Formato correcto: https://bucket.region.digitaloceanspaces.com
+      // NO debe ser: https://bucket.bucket.region.digitaloceanspaces.com
+      let resolvedEndpoint: string;
+      
+      if (endpoint) {
+        // Normalizar endpoint personalizado: eliminar duplicados del bucket
+        resolvedEndpoint = endpoint.trim();
+        // Si el endpoint tiene el bucket duplicado, corregirlo
+        const duplicatePattern = new RegExp(`^https?://${bucket}\\.${bucket}\\.`, 'i');
+        if (duplicatePattern.test(resolvedEndpoint)) {
+          this.logger.warn(
+            `Endpoint tiene el bucket duplicado. Corrigiendo de ${resolvedEndpoint}...`,
+          );
+          resolvedEndpoint = resolvedEndpoint.replace(
+            new RegExp(`^https?://${bucket}\\.${bucket}\\.`, 'i'),
+            `https://${bucket}.`,
+          );
+        }
+      } else {
+        // Construir endpoint estándar: bucket.region.digitaloceanspaces.com
+        resolvedEndpoint = `https://${bucket}.${region}.digitaloceanspaces.com`;
+      }
 
-      // Verificar que el endpoint use HTTPS
+      // Asegurar que use HTTPS
       if (!resolvedEndpoint.startsWith('https://')) {
+        if (resolvedEndpoint.startsWith('http://')) {
+          resolvedEndpoint = resolvedEndpoint.replace('http://', 'https://');
+        } else {
+          resolvedEndpoint = `https://${resolvedEndpoint}`;
+        }
         this.logger.warn(
-          `El endpoint de DigitalOcean Spaces debe usar HTTPS. Endpoint actual: ${resolvedEndpoint}`,
+          `Endpoint corregido para usar HTTPS: ${resolvedEndpoint}`,
         );
+      }
+
+      // Validar formato del endpoint
+      const validPattern = /^https:\/\/[^.]+\.[^.]+\.digitaloceanspaces\.com$/;
+      if (!validPattern.test(resolvedEndpoint)) {
+        this.logger.error(
+          `Endpoint inválido: ${resolvedEndpoint}. Debe ser: https://bucket.region.digitaloceanspaces.com`,
+        );
+      } else {
+        this.logger.log(`Endpoint configurado correctamente: ${resolvedEndpoint}`);
       }
 
       // Configuración SSL para manejar certificados correctamente
