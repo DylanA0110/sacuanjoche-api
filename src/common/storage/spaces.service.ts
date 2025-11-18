@@ -67,41 +67,34 @@ export class SpacesService {
     } else {
       this.bucket = bucket;
 
-      // Usar endpoint personalizado o construir el endpoint estándar
+      // Normalización segura del endpoint para evitar hosts corruptos y errores SSL
       // Formato correcto: https://bucket.region.digitaloceanspaces.com
       // NO debe ser: https://bucket.bucket.region.digitaloceanspaces.com
-      let resolvedEndpoint: string;
-      
-      if (endpoint) {
-        // Normalizar endpoint personalizado: eliminar duplicados del bucket
-        resolvedEndpoint = endpoint.trim();
-        // Si el endpoint tiene el bucket duplicado, corregirlo
-        const duplicatePattern = new RegExp(`^https?://${bucket}\\.${bucket}\\.`, 'i');
-        if (duplicatePattern.test(resolvedEndpoint)) {
-          this.logger.warn(
-            `Endpoint tiene el bucket duplicado. Corrigiendo de ${resolvedEndpoint}...`,
-          );
-          resolvedEndpoint = resolvedEndpoint.replace(
-            new RegExp(`^https?://${bucket}\\.${bucket}\\.`, 'i'),
-            `https://${bucket}.`,
-          );
-        }
-      } else {
-        // Construir endpoint estándar: bucket.region.digitaloceanspaces.com
+      let resolvedEndpoint = endpoint?.trim();
+
+      // Si no viene endpoint, construir el estándar
+      if (!resolvedEndpoint) {
         resolvedEndpoint = `https://${bucket}.${region}.digitaloceanspaces.com`;
       }
 
-      // Asegurar que use HTTPS
-      if (!resolvedEndpoint.startsWith('https://')) {
-        if (resolvedEndpoint.startsWith('http://')) {
-          resolvedEndpoint = resolvedEndpoint.replace('http://', 'https://');
-        } else {
-          resolvedEndpoint = `https://${resolvedEndpoint}`;
-        }
+      // Eliminar https:// si existiera para normalizar temporalmente
+      let host = resolvedEndpoint.replace(/^https?:\/\//, '');
+
+      // Dividir por puntos
+      const parts = host.split('.');
+
+      // Si el bucket aparece dos veces al inicio → corregir
+      while (parts[0] === bucket && parts[1] === bucket) {
+        parts.splice(0, 1); // eliminar duplicado
         this.logger.warn(
-          `Endpoint corregido para usar HTTPS: ${resolvedEndpoint}`,
+          `Endpoint tenía el bucket duplicado. Corrigiendo...`,
         );
       }
+
+      host = parts.join('.');
+
+      // Reconstruir URL final siempre con HTTPS
+      resolvedEndpoint = `https://${host}`;
 
       // Validar formato del endpoint
       const validPattern = /^https:\/\/[^.]+\.[^.]+\.digitaloceanspaces\.com$/;
