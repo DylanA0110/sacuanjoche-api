@@ -10,24 +10,18 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'node:crypto';
-import { extname } from 'node:path';
-import * as https from 'node:https';
+import { randomUUID } from 'crypto';
+import { extname } from 'path';
+import * as https from 'https';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 
 export interface GenerateUploadUrlParams {
-  /** Optional base folder where the object will be stored */
   keyPrefix?: string;
-  /** Optional original filename to help derive the extension */
   fileName?: string;
-  /** MIME type of the file that will be uploaded */
   contentType: string;
-  /** Size in bytes of the file that will be uploaded */
   contentLength: number;
-  /** Seconds for which the signed URL will remain valid */
   expiresInSeconds?: number;
-  /** Optional metadata to be stored directly on the object */
   metadata?: Record<string, string>;
-  /** ACL that should be applied to the uploaded object */
   acl?: 'private' | 'public-read';
 }
 
@@ -49,122 +43,118 @@ export class SpacesService {
   private readonly isConfigured: boolean;
   private readonly maxUploadBytes: number;
 
-  constructor(private readonly configService: ConfigService) {
-    const bucket = this.configService.get<string>('DO_SPACES_BUCKET');
-    const region = this.configService.get<string>('DO_SPACES_REGION');
-    const endpoint = this.configService.get<string>('DO_SPACES_ENDPOINT');
-    const accessKeyId = this.configService.get<string>('DO_SPACES_KEY');
-    const secretAccessKey = this.configService.get<string>('DO_SPACES_SECRET');
+  constructor(private readonly config: ConfigService) {
+    const bucket = this.config.get<string>('DO_SPACES_BUCKET');
+    const region = this.config.get<string>('DO_SPACES_REGION');
+    const endpointEnv = this.config.get<string>('DO_SPACES_ENDPOINT');
+    const accessKeyId = this.config.get<string>('DO_SPACES_KEY');
+    const secretAccessKey = this.config.get<string>('DO_SPACES_SECRET');
 
     if (!bucket || !region || !accessKeyId || !secretAccessKey) {
       this.logger.warn(
-        'DigitalOcean Spaces no está completamente configurado. Define las variables DO_SPACES_* para habilitar las cargas de imágenes.',
+        'DigitalOcean Spaces no está completamente configurado. Define las variables DO_SPACES_*.',
       );
-      this.bucket = null;
       this.client = null;
+      this.bucket = null;
       this.publicBaseUrl = '';
       this.isConfigured = false;
     } else {
       this.bucket = bucket;
 
-      // Normalización segura del endpoint para evitar hosts corruptos y errores SSL
-      // Formato correcto: https://bucket.region.digitaloceanspaces.com
-      // NO debe ser: https://bucket.bucket.region.digitaloceanspaces.com
-      let resolvedEndpoint = endpoint?.trim();
+      /** -------------------------
+       *  NORMALIZAR ENDPOINT
+       *  ------------------------- */
+      let endpoint = endpointEnv?.trim();
 
-      // Si no viene endpoint, construir el estándar
-      if (!resolvedEndpoint) {
-        resolvedEndpoint = `https://${bucket}.${region}.digitaloceanspaces.com`;
+      if (!endpoint) {
+        endpoint = `https://${bucket}.${region}.digitaloceanspaces.com`;
       }
 
-      // Eliminar https:// si existiera para normalizar temporalmente
-      let host = resolvedEndpoint.replace(/^https?:\/\//, '');
+      // Remover https://
+      let host = endpoint.replace(/^https?:\/\//, '');
 
-      // Dividir por puntos
-      const parts = host.split('.');
-
-      // Si el bucket aparece dos veces al inicio → corregir
-      while (parts[0] === bucket && parts[1] === bucket) {
-        parts.splice(0, 1); // eliminar duplicado
-        this.logger.warn(
-          `Endpoint tenía el bucket duplicado. Corrigiendo...`,
-        );
+      // Quitar duplicados del bucket (bucket.bucket.region.digitaloceanspaces.com)
+      while (host.startsWith(`${bucket}.${bucket}.`)) {
+        host = host.replace(`${bucket}.`, '');
       }
 
-      host = parts.join('.');
+      endpoint = `https://${host}`;
 
-      // Reconstruir URL final siempre con HTTPS
-      resolvedEndpoint = `https://${host}`;
+      // Validación correcta del endpoint
+      const endpointRegex =
+        /^https:\/\/[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.digitaloceanspaces\.com$/;
 
-      // Validar formato del endpoint
-      const validPattern = /^https:\/\/[^.]+\.[^.]+\.digitaloceanspaces\.com$/;
-      if (!validPattern.test(resolvedEndpoint)) {
+      if (!endpointRegex.test(endpoint)) {
         this.logger.error(
-          `Endpoint inválido: ${resolvedEndpoint}. Debe ser: https://bucket.region.digitaloceanspaces.com`,
+          `Endpoint inválido: ${endpoint}. Debe ser: https://bucket.region.digitaloceanspaces.com`,
         );
       } else {
-        this.logger.log(`Endpoint configurado correctamente: ${resolvedEndpoint}`);
+        this.logger.log(`Endpoint configurado correctamente: ${endpoint}`);
       }
 
-      // Configuración SSL para manejar certificados correctamente
-      // Permite configurar mediante variable de entorno DO_SPACES_REJECT_UNAUTHORIZED
-      // Por defecto, no rechazar certificados para evitar problemas SSL comunes
-      const rejectUnauthorizedEnv = this.configService.get<string>(
+      /** -------------------------
+       *  SSL CONFIG
+       *  ------------------------- */
+      const rejectUnauthorizedEnv = this.config.get<string>(
         'DO_SPACES_REJECT_UNAUTHORIZED',
       );
       const rejectUnauthorized =
-        rejectUnauthorizedEnv === 'true' || rejectUnauthorizedEnv === '1';
-      
+        rejectUnauthorizedEnv === 'true' ||
+        rejectUnauthorizedEnv === '1' ||
+        false;
+
       const httpsAgent = new https.Agent({
-        rejectUnauthorized: rejectUnauthorized,
+        rejectUnauthorized,
         keepAlive: true,
       });
 
-      this.logger.log(
-        `Configuración SSL: rejectUnauthorized=${rejectUnauthorized}`,
-      );
-
       this.client = new S3Client({
         region,
-        endpoint: resolvedEndpoint,
+        endpoint,
         forcePathStyle: false,
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-        },
-        requestHandler: {
+        credentials: { accessKeyId, secretAccessKey },
+        requestHandler: new NodeHttpHandler({
           httpsAgent,
-        },
+        }),
       });
 
-      const cdnUrl = this.configService.get<string>('DO_SPACES_CDN_URL');
-      const customPublicUrl = this.configService.get<string>(
-        'DO_SPACES_PUBLIC_BASE_URL',
-      );
+      /** -------------------------
+       *  URL PÚBLICA
+       *  ------------------------- */
+      const cdn = this.config.get<string>('DO_SPACES_CDN_URL');
+      const customPublic = this.config.get<string>('DO_SPACES_PUBLIC_BASE_URL');
+
       this.publicBaseUrl =
-        cdnUrl?.replace(/\/$/, '') ??
-        customPublicUrl?.replace(/\/$/, '') ??
-        resolvedEndpoint.replace(/\/$/, '');
+        cdn?.replace(/\/$/, '') ??
+        customPublic?.replace(/\/$/, '') ??
+        endpoint.replace(/\/$/, '');
 
       this.isConfigured = true;
     }
 
+    /** -------------------------
+     *  CONFIG GENERALES
+     *  ------------------------- */
     this.defaultExpirySeconds = Number(
-      this.configService.get<string>('DO_SPACES_UPLOAD_EXPIRATION') ?? '3600',
+      this.config.get<string>('DO_SPACES_UPLOAD_EXPIRATION') ?? '3600',
     );
 
-    this.defaultAcl = (this.configService.get<string>(
+    this.defaultAcl = (this.config.get<string>(
       'DO_SPACES_DEFAULT_ACL',
     ) ?? 'public-read') as 'public-read' | 'private';
 
-    const configuredMaxBytes = this.configService.get<string>(
-      'DO_SPACES_MAX_UPLOAD_BYTES',
-    );
-    const parsedMax = configuredMaxBytes ? Number(configuredMaxBytes) : NaN;
+    const maxBytesEnv = this.config.get<string>('DO_SPACES_MAX_UPLOAD_BYTES');
+    const parsedMax = maxBytesEnv ? Number(maxBytesEnv) : NaN;
+
     this.maxUploadBytes =
-      Number.isFinite(parsedMax) && parsedMax > 0 ? parsedMax : 5 * 1024 * 1024;
+      Number.isFinite(parsedMax) && parsedMax > 0
+        ? parsedMax
+        : 5 * 1024 * 1024;
   }
 
+  /** ====================================================================== */
+  /**                         GENERAR URL FIRMADA                            */
+  /** ====================================================================== */
   async generateUploadUrl(
     params: GenerateUploadUrlParams,
   ): Promise<GeneratedUploadUrl> {
@@ -172,19 +162,19 @@ export class SpacesService {
 
     if (!params.contentType) {
       throw new InternalServerErrorException(
-        'El parámetro contentType es obligatorio para generar la URL firmada.',
+        'Se requiere contentType para subir archivos.',
       );
     }
 
     if (!Number.isFinite(params.contentLength) || params.contentLength <= 0) {
       throw new InternalServerErrorException(
-        'El tamaño del archivo (contentLength) debe ser un número positivo.',
+        'contentLength debe ser un número positivo.',
       );
     }
 
     if (params.contentLength > this.maxUploadBytes) {
       throw new InternalServerErrorException(
-        `El archivo excede el tamaño máximo permitido de ${this.maxUploadBytes} bytes.`,
+        `El archivo excede el tamaño máximo permitido (${this.maxUploadBytes} bytes).`,
       );
     }
 
@@ -212,112 +202,72 @@ export class SpacesService {
         expiresIn,
       });
 
-      const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
-
       return {
         uploadUrl,
-        expiresAt,
+        expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
         objectKey: key,
         publicUrl: this.buildPublicUrl(key),
       };
     } catch (error: any) {
-      // Log detallado del error
-      this.logger.error('No se pudo generar la URL firmada para Spaces', {
-        error: error.message,
-        stack: error.stack,
-        code: error.code,
-        name: error.name,
-        fileName: params.fileName,
-        contentType: params.contentType,
-        contentLength: params.contentLength,
-      });
-
-      // Detectar errores SSL específicos
-      const isSSLError =
-        error.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE' ||
-        error.code === 'CERT_HAS_EXPIRED' ||
-        error.code === 'SELF_SIGNED_CERT_IN_CHAIN' ||
-        error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' ||
-        error.code === 'CERT_UNTRUSTED' ||
-        error.message?.toLowerCase().includes('certificate') ||
-        error.message?.toLowerCase().includes('ssl') ||
-        error.message?.toLowerCase().includes('tls') ||
-        error.name === 'SSLException';
-
-      if (isSSLError) {
-        throw new InternalServerErrorException(
-          `Error SSL al conectar con DigitalOcean Spaces: ${error.message || error.code || 'Error desconocido de certificado SSL'}. Verifica la configuración del certificado SSL del servidor o configura DO_SPACES_REJECT_UNAUTHORIZED=false en las variables de entorno.`,
-        );
-      }
-
+      this.logError('Error al generar URL firmada', params, error);
+      this.handleSSLError(error);
       throw new InternalServerErrorException(
-        `No se pudo generar la URL de carga para DigitalOcean Spaces: ${error.message || 'Error desconocido'}.`,
+        `Error generando URL: ${error.message || 'desconocido'}`,
       );
     }
   }
 
+  /** ====================================================================== */
+  /**                             OBJETO PÚBLICO                              */
+  /** ====================================================================== */
   buildPublicUrl(objectKey: string): string {
-    const cleanKey = objectKey.replace(/^\//, '');
-    return `${this.publicBaseUrl}/${cleanKey}`;
+    return `${this.publicBaseUrl}/${objectKey.replace(/^\//, '')}`;
   }
 
+  /** ====================================================================== */
+  /**                               ELIMINAR                                  */
+  /** ====================================================================== */
   async deleteObject(objectKey: string): Promise<void> {
     this.ensureConfigured();
 
     try {
       await this.client!.send(
-        new DeleteObjectCommand({ Bucket: this.bucket!, Key: objectKey }),
+        new DeleteObjectCommand({
+          Bucket: this.bucket!,
+          Key: objectKey,
+        }),
       );
     } catch (error: any) {
-      this.logger.error(`No se pudo eliminar el objeto ${objectKey}`, {
-        error: error.message,
-        stack: error.stack,
-        code: error.code,
-        name: error.name,
-        objectKey,
-      });
-
-      // Detectar errores SSL también en delete
-      const isSSLError =
-        error.code === 'UNABLE_TO_VERIFY_LEAF_SIGNATURE' ||
-        error.code === 'CERT_HAS_EXPIRED' ||
-        error.message?.toLowerCase().includes('certificate') ||
-        error.message?.toLowerCase().includes('ssl');
-
-      if (isSSLError) {
-        throw new InternalServerErrorException(
-          `Error SSL al eliminar objeto en DigitalOcean Spaces: ${error.message || error.code}. Verifica la configuración SSL.`,
-        );
-      }
-
+      this.logError(`Error eliminando objeto ${objectKey}`, {}, error);
+      this.handleSSLError(error);
       throw new InternalServerErrorException(
-        `No se pudo eliminar el objeto en DigitalOcean Spaces: ${error.message || 'Error desconocido'}.`,
+        `No se pudo eliminar: ${error.message || 'error desconocido'}`,
       );
     }
   }
 
+  /** ====================================================================== */
+  /**                              UTILITARIOS                                */
+  /** ====================================================================== */
+
   private ensureConfigured() {
-    if (!this.isConfigured || !this.client || !this.bucket) {
+    if (!this.isConfigured || !this.bucket || !this.client) {
       throw new InternalServerErrorException(
-        'DigitalOcean Spaces no está configurado. Define las variables DO_SPACES_* y reinicia la aplicación.',
+        'DigitalOcean Spaces no está configurado.',
       );
     }
   }
 
   private buildObjectName(extension: string): string {
     const uuid = randomUUID();
-    const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
-    const sanitizedExtension = extension ? extension.replace(/^\./, '') : '';
-    return sanitizedExtension
-      ? `${timestamp}-${uuid}.${sanitizedExtension}`
-      : `${timestamp}-${uuid}`;
+    const ts = new Date().toISOString().replace(/[-:.TZ]/g, '');
+    extension = extension.replace(/^\./, '');
+    return extension ? `${ts}-${uuid}.${extension}` : `${ts}-${uuid}`;
   }
 
   private resolveExtension(contentType: string, fileName?: string): string {
-    const extFromName = fileName ? extname(fileName) : '';
-    if (extFromName) {
-      return extFromName;
-    }
+    const extFromFile = fileName ? extname(fileName) : '';
+    if (extFromFile) return extFromFile;
 
     const map: Record<string, string> = {
       'image/jpeg': '.jpg',
@@ -328,5 +278,32 @@ export class SpacesService {
     };
 
     return map[contentType] ?? '';
+  }
+
+  private logError(message: string, params: any, error: any) {
+    this.logger.error(message, {
+      ...params,
+      error: error?.message,
+      code: error?.code,
+      name: error?.name,
+      stack: error?.stack,
+    });
+  }
+
+  private handleSSLError(error: any) {
+    const msg = error?.message?.toLowerCase() ?? '';
+    const codes = [
+      'unable_to_verify_leaf_signature',
+      'cert_has_expired',
+      'self_signed_cert_in_chain',
+      'depth_zero_self_signed_cert',
+      'cert_untrusted',
+    ];
+
+    if (codes.includes(error.code) || msg.includes('certificate')) {
+      throw new InternalServerErrorException(
+        `Error SSL: ${error.message}. Revisa DO_SPACES_REJECT_UNAUTHORIZED.`,
+      );
+    }
   }
 }
