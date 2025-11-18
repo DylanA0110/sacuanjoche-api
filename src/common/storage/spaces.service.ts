@@ -195,9 +195,14 @@ export class SpacesService {
       ContentLength: params.contentLength,
       ACL: acl,
       Metadata: params.metadata,
+      // CacheControl ayuda con la compatibilidad CORS
+      CacheControl: 'max-age=31536000',
     });
 
     try {
+      // Generar URL firmada con headers incluidos para compatibilidad CORS
+      // Los headers ContentType y ContentLength ya están en el comando,
+      // por lo que se incluirán automáticamente en la firma
       const uploadUrl = await getSignedUrl(this.client!, command, {
         expiresIn,
       });

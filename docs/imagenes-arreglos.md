@@ -67,3 +67,66 @@ Esta guía explica cómo funciona la gestión de imágenes para los arreglos flo
 - Las URLs firmadas caducan según `DO_SPACES_UPLOAD_EXPIRATION` (default 3600s).
 - `SpacesService` usa `DO_SPACES_*` para construir URLs y eliminar objetos.
 - `DO_SPACES_MAX_UPLOAD_BYTES` define el tamaño máximo permitido (por defecto 5 MB).
+
+## Configuración CORS
+
+Para que el frontend pueda subir archivos directamente a DigitalOcean Spaces, es necesario configurar CORS en el Space:
+
+1. Ve a tu Space en DigitalOcean → Settings → CORS Configurations
+2. Agrega una configuración con:
+   - **Origin**: `http://localhost:5173` (y tu dominio de producción)
+   - **Allowed Methods**: `GET`, `PUT`, `POST`, `DELETE`, `HEAD`
+   - **Allowed Headers**: `*`
+   - **Access Control Max Age**: `3000`
+
+## Cómo hacer la petición desde el frontend
+
+Cuando recibas la `uploadUrl` del endpoint, úsala así:
+
+```typescript
+// Ejemplo de subida de archivo
+const uploadFile = async (file: File) => {
+  // 1. Obtener URL firmada
+  const { uploadUrl, objectKey, publicUrl } = await fetch('/api/arreglo/media/upload-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contentType: file.type,
+      contentLength: file.size,
+      fileName: file.name,
+      arregloId: 1, // opcional
+    }),
+  }).then(res => res.json());
+
+  // 2. Subir archivo directamente a Spaces
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type, // Debe coincidir con el contentType usado para generar la URL
+      'Content-Length': file.size.toString(), // Debe coincidir con el contentLength usado
+    },
+    body: file, // El archivo directamente, NO usar FormData
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error('Error al subir el archivo');
+  }
+
+  // 3. Registrar la imagen en la API
+  await fetch(`/api/arreglo/${arregloId}/media`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url: publicUrl,
+      objectKey: objectKey,
+      contentType: file.type,
+      isPrimary: true, // opcional
+    }),
+  });
+};
+```
+
+**Importante:**
+- Los headers `Content-Type` y `Content-Length` en el `PUT` deben coincidir exactamente con los valores usados para generar la URL firmada.
+- No uses `FormData` para el body del `PUT`, envía el archivo directamente.
+- Si persisten errores CORS, verifica que la configuración CORS en DigitalOcean Spaces esté guardada y espera 2-3 minutos para que se propague.
