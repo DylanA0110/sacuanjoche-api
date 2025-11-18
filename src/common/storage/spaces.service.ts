@@ -188,21 +188,26 @@ export class SpacesService {
     const expiresIn = params.expiresInSeconds ?? this.defaultExpirySeconds;
     const acl = params.acl ?? this.defaultAcl;
 
+    // No incluir ContentType en el comando para evitar problemas con CORS
+    // El navegador lo agregará automáticamente y no causará conflictos con la firma
     const command = new PutObjectCommand({
       Bucket: this.bucket!,
       Key: key,
-      ContentType: params.contentType,
+      // ContentType se omite intencionalmente para evitar problemas de CORS
+      // El navegador lo agregará automáticamente y DigitalOcean Spaces lo aceptará
       ContentLength: params.contentLength,
       ACL: acl,
-      Metadata: params.metadata,
+      Metadata: {
+        ...params.metadata,
+        'content-type': params.contentType, // Guardamos el tipo en metadata como respaldo
+      },
       // CacheControl ayuda con la compatibilidad CORS
       CacheControl: 'max-age=31536000',
     });
 
     try {
-      // Generar URL firmada con headers incluidos para compatibilidad CORS
-      // Los headers ContentType y ContentLength ya están en el comando,
-      // por lo que se incluirán automáticamente en la firma
+      // Generar URL firmada sin ContentType en los signed headers
+      // Esto permite que el navegador agregue Content-Type sin causar problemas de CORS
       const uploadUrl = await getSignedUrl(this.client!, command, {
         expiresIn,
       });

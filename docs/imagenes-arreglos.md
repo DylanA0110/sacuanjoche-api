@@ -99,11 +99,13 @@ const uploadFile = async (file: File) => {
   }).then(res => res.json());
 
   // 2. Subir archivo directamente a Spaces
+  // IMPORTANTE: No incluyas Content-Type manualmente - el navegador lo agregará automáticamente
+  // Si lo incluyes manualmente, puede causar problemas de CORS
   const uploadResponse = await fetch(uploadUrl, {
     method: 'PUT',
     headers: {
-      'Content-Type': file.type, // Debe coincidir con el contentType usado para generar la URL
-      'Content-Length': file.size.toString(), // Debe coincidir con el contentLength usado
+      // NO incluyas 'Content-Type' aquí - el navegador lo detectará automáticamente del archivo
+      // El backend ya no incluye ContentType en los signed headers para evitar problemas de CORS
     },
     body: file, // El archivo directamente, NO usar FormData
   });
@@ -127,6 +129,8 @@ const uploadFile = async (file: File) => {
 ```
 
 **Importante:**
-- Los headers `Content-Type` y `Content-Length` en el `PUT` deben coincidir exactamente con los valores usados para generar la URL firmada.
+- **NO incluyas `Content-Type` manualmente** en los headers del `PUT` - el navegador lo detectará y agregará automáticamente del archivo.
+- El backend ya no incluye `ContentType` en los signed headers para evitar problemas de CORS.
 - No uses `FormData` para el body del `PUT`, envía el archivo directamente.
-- Si persisten errores CORS, verifica que la configuración CORS en DigitalOcean Spaces esté guardada y espera 2-3 minutos para que se propague.
+- Si persisten errores CORS, verifica que la configuración CORS en DigitalOcean Spaces esté guardada y espera 2-5 minutos para que se propague.
+- Asegúrate de que `OPTIONS` esté incluido en los métodos permitidos en la configuración CORS de DigitalOcean Spaces.
