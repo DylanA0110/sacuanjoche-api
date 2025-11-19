@@ -5,16 +5,20 @@ import { ArregloController } from './arreglo.controller';
 import { Arreglo } from './entities/arreglo.entity';
 import { FormaArreglo } from 'src/forma-arreglo/entities/forma-arreglo.entity';
 import { ArregloMedia } from './entities/arreglo-media.entity';
-import { StorageModule } from 'src/common/storage/storage.module';
 import { ArregloMediaService } from './services/arreglo-media.service';
-import { ArregloMediaController } from './controllers/arreglo-media.controller';
+import { ArreglosMediaController } from './controllers/arreglos-media.controller';
+import { ArregloFlor } from 'src/arreglo-flor/entities/arreglo-flor.entity';
+import { CatalogoController } from './controllers/catalogo.controller';
 
 @Module({
   imports: [
-    StorageModule,
-    TypeOrmModule.forFeature([Arreglo, FormaArreglo, ArregloMedia]),
+    TypeOrmModule.forFeature([Arreglo, FormaArreglo, ArregloMedia, ArregloFlor]),
   ],
-  controllers: [ArregloController, ArregloMediaController],
+  controllers: [
+    ArregloController,
+    ArreglosMediaController,
+    CatalogoController,
+  ],
   providers: [ArregloService, ArregloMediaService],
   exports: [ArregloService, ArregloMediaService],
 })

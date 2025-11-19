@@ -23,7 +23,7 @@ import { Arreglo } from './entities/arreglo.entity';
 import { FindArreglosDto } from './dto/find-arreglos.dto';
 
 @ApiTags('Arreglos')
-@Controller('arreglo')
+@Controller('arreglos')
 export class ArregloController {
   constructor(private readonly arregloService: ArregloService) {}
 
@@ -43,7 +43,7 @@ export class ArregloController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los arreglos con paginación' })
+  @ApiOperation({ summary: 'Listar arreglos (admin) con filtros' })
   @ApiQuery({
     name: 'limit',
     required: false,
@@ -78,6 +78,75 @@ export class ArregloController {
   })
   findAll(@Query() filters: FindArreglosDto) {
     return this.arregloService.findAll(filters);
+  }
+
+  @Get('public')
+  @ApiOperation({ summary: 'Catálogo público con filtros avanzados' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Número de elementos por página',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Número de elementos a omitir',
+    example: 0,
+  })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Texto a buscar',
+    example: 'Bouquet',
+  })
+  @ApiQuery({
+    name: 'idFormaArreglo',
+    required: false,
+    description: 'Filtrar por forma de arreglo',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'precioMin',
+    required: false,
+    description: 'Precio mínimo',
+    example: 50.00,
+  })
+  @ApiQuery({
+    name: 'precioMax',
+    required: false,
+    description: 'Precio máximo',
+    example: 200.00,
+  })
+  @ApiQuery({
+    name: 'flores',
+    required: false,
+    description: 'IDs de flores (separados por coma)',
+    example: '1,2,3',
+  })
+  @ApiQuery({
+    name: 'ordenarPor',
+    required: false,
+    description: 'Campo para ordenar',
+    enum: ['nombre', 'precio', 'fechaCreacion'],
+  })
+  @ApiQuery({
+    name: 'orden',
+    required: false,
+    description: 'Dirección del orden',
+    enum: ['ASC', 'DESC'],
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Catálogo público obtenido exitosamente',
+    type: [Arreglo],
+  })
+  findPublic(@Query() filters: any) {
+    // Transformar flores de string a array si viene como string
+    if (filters.flores && typeof filters.flores === 'string') {
+      filters.flores = filters.flores.split(',').map((id: string) => parseInt(id, 10));
+    }
+    return this.arregloService.findPublic(filters);
   }
 
   @Get(':id')

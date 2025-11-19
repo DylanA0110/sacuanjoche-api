@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pedido } from './entities/pedido.entity';
@@ -12,9 +16,15 @@ import { Direccion } from 'src/direccion/entities/direccion.entity';
 import { findEntityOrFail } from 'src/common/helpers/find-entity.helper';
 import { FindPedidosDto } from './dto/find-pedidos.dto';
 import { Pago } from 'src/pago/entities/pago.entity';
-import { PedidoCanal, PedidoEstado, PagoEstado, EstadoActivo } from 'src/common/enums';
+import {
+  PedidoCanal,
+  PedidoEstado,
+  PagoEstado,
+  EstadoActivo,
+} from 'src/common/enums';
 import { PedidoHistorialService } from 'src/pedido-historial/pedido-historial.service';
 import { FolioService } from 'src/folio/folio.service';
+import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
 
 @Injectable()
 export class PedidoService {
@@ -31,6 +41,8 @@ export class PedidoService {
     private readonly contactoEntregaRepository: Repository<ContactoEntrega>,
     @InjectRepository(Pago)
     private readonly pagoRepository: Repository<Pago>,
+    @InjectRepository(DetallePedido)
+    private readonly detallePedidoRepository: Repository<DetallePedido>,
     private readonly pedidoHistorialService: PedidoHistorialService,
     private readonly folioService: FolioService,
   ) {}
@@ -74,11 +86,10 @@ export class PedidoService {
 
         // Validar que el método de pago sea compatible con el canal WEB
         if (pago.metodoPago) {
-          const canalesDisponibles =
-            pago.metodoPago.canalesDisponibles || [
-              PedidoCanal.WEB,
-              PedidoCanal.INTERNO,
-            ];
+          const canalesDisponibles = pago.metodoPago.canalesDisponibles || [
+            PedidoCanal.WEB,
+            PedidoCanal.INTERNO,
+          ];
 
           if (!canalesDisponibles.includes(PedidoCanal.WEB)) {
             throw new BadRequestException(
@@ -180,9 +191,11 @@ export class PedidoService {
       let idFolio: number | undefined;
       try {
         // Buscar el folio activo para PEDIDO
-        const folioPedido = await this.folioService.buscarFolioPorDocumento('PEDIDO');
+        const folioPedido =
+          await this.folioService.buscarFolioPorDocumento('PEDIDO');
         if (folioPedido) {
-          numeroPedido = await this.folioService.obtenerSiguienteFolio('PEDIDO');
+          numeroPedido =
+            await this.folioService.obtenerSiguienteFolio('PEDIDO');
           idFolio = folioPedido.idFolio;
         }
       } catch (error) {
@@ -209,10 +222,19 @@ export class PedidoService {
 
       return await this.pedidoRepository.findOne({
         where: { idPedido: newPedido.idPedido },
-        relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'pago'],
+        relations: [
+          'empleado',
+          'cliente',
+          'direccion',
+          'contactoEntrega',
+          'pago',
+        ],
       });
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       handleDbException(error);
@@ -267,7 +289,18 @@ export class PedidoService {
       throw new NotFoundException(`El pedido con id ${id} no fue encontrado`);
     }
 
-    return pedido;
+    // Obtener los detalles del pedido con la relación al arreglo
+    const detalles = await this.detallePedidoRepository.find({
+      where: { idPedido: id },
+      relations: ['arreglo'],
+      order: { idDetallePedido: 'ASC' },
+    });
+
+    // Agregar los detalles al objeto pedido
+    return {
+      ...pedido,
+      detalles: detalles || [],
+    };
   }
 
   async update(id: number, updatePedidoDto: UpdatePedidoDto) {
@@ -346,11 +379,10 @@ export class PedidoService {
     // Validar que el método de pago sea compatible con el canal del pedido
     if (pago.metodoPago) {
       const canalPedido = pedido.canal || PedidoCanal.WEB;
-      const canalesDisponibles =
-        pago.metodoPago.canalesDisponibles || [
-          PedidoCanal.WEB,
-          PedidoCanal.INTERNO,
-        ];
+      const canalesDisponibles = pago.metodoPago.canalesDisponibles || [
+        PedidoCanal.WEB,
+        PedidoCanal.INTERNO,
+      ];
 
       if (!canalesDisponibles.includes(canalPedido)) {
         throw new BadRequestException(

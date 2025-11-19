@@ -1,16 +1,14 @@
 import {
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
-import { SpacesService } from 'src/common/storage/spaces.service';
 import { Arreglo } from '../entities/arreglo.entity';
 import { ArregloMedia } from '../entities/arreglo-media.entity';
-import { CreateArregloMediaDto } from '../dto/create-arreglo-media.dto';
-import { UpdateArregloMediaDto } from '../dto/update-arreglo-media.dto';
-import { GenerateUploadUrlDto } from '../dto/generate-upload-url.dto';
+import { CreateArregloMediaSimpleDto } from '../dto/create-arreglo-media-simple.dto';
+import { CreateArregloMediaBatchDto } from '../dto/create-arreglo-media-batch.dto';
+import { UpdateArregloMediaSupabaseDto } from '../dto/update-arreglo-media-supabase.dto';
 
 @Injectable()
 export class ArregloMediaService {
@@ -19,26 +17,11 @@ export class ArregloMediaService {
     private readonly arregloRepository: Repository<Arreglo>,
     @InjectRepository(ArregloMedia)
     private readonly mediaRepository: Repository<ArregloMedia>,
-    private readonly spacesService: SpacesService,
   ) {}
 
-  async generateUploadUrl(dto: GenerateUploadUrlDto) {
-    if (dto.arregloId) {
-      await this.findArregloOrFail(dto.arregloId);
-    }
-
-    const keyPrefix = dto.arregloId
-      ? `arreglos/${dto.arregloId}/media`
-      : 'arreglos/general';
-
-    return this.spacesService.generateUploadUrl({
-      keyPrefix,
-      fileName: dto.fileName,
-      contentType: dto.contentType,
-      contentLength: dto.contentLength,
-    });
-  }
-
+  /**
+   * Obtener todas las imágenes activas de un arreglo
+   */
   async listByArreglo(arregloId: number): Promise<ArregloMedia[]> {
     return this.mediaRepository.find({
       where: { idArreglo: arregloId, activo: true },
@@ -46,35 +29,112 @@ export class ArregloMediaService {
     });
   }
 
-  async create(arregloId: number, dto: CreateArregloMediaDto) {
+  /**
+   * Crear un registro de media desde Supabase (solo URL)
+   */
+  async create(
+    arregloId: number,
+    dto: CreateArregloMediaSimpleDto,
+  ): Promise<ArregloMedia> {
     const arreglo = await this.findArregloOrFail(arregloId);
 
     const orden = dto.orden ?? (await this.getNextOrden(arregloId));
 
+    // Extraer objectKey de la URL de Supabase si es posible
+    // Formato: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
+    let objectKey = '';
+    try {
+      const urlObj = new URL(dto.url);
+      const pathParts = urlObj.pathname.split('/');
+      const bucketIndex = pathParts.indexOf('public');
+      if (bucketIndex !== -1 && pathParts[bucketIndex + 1]) {
+        objectKey = pathParts.slice(bucketIndex + 1).join('/');
+      } else {
+        objectKey = dto.url; // Fallback a la URL completa
+      }
+    } catch {
+      objectKey = dto.url; // Fallback a la URL completa
+    }
+
     const media = this.mediaRepository.create({
-      ...dto,
-      orden,
       idArreglo: arregloId,
-      provider: dto.provider ?? 'spaces',
+      url: dto.url,
+      objectKey: objectKey,
+      provider: 'supabase',
+      contentType: 'image/jpeg',
+      orden: orden,
       isPrimary: dto.isPrimary ?? false,
+      altText: dto.altText,
       activo: true,
     });
 
-    if (dto.metadata) {
-      media.metadata = dto.metadata;
-    }
-
     const saved = await this.mediaRepository.save(media);
 
-    await this.syncPrimaryState(arreglo, saved, dto.isPrimary ?? false);
+    // Sincronizar estado de imagen principal
+    if (dto.isPrimary) {
+      await this.syncPrimaryState(arreglo, saved, true);
+    }
 
     return saved;
   }
 
+  /**
+   * Crear múltiples registros de media en batch
+   */
+  async createBatch(
+    arregloId: number,
+    dto: CreateArregloMediaBatchDto,
+  ): Promise<ArregloMedia[]> {
+    const arreglo = await this.findArregloOrFail(arregloId);
+    const nextOrden = await this.getNextOrden(arregloId);
+
+    const mediaArray = dto.imagenes.map((imagen, index) => {
+      // Extraer objectKey de la URL de Supabase
+      let objectKey = '';
+      try {
+        const urlObj = new URL(imagen.url);
+        const pathParts = urlObj.pathname.split('/');
+        const bucketIndex = pathParts.indexOf('public');
+        if (bucketIndex !== -1 && pathParts[bucketIndex + 1]) {
+          objectKey = pathParts.slice(bucketIndex + 1).join('/');
+        } else {
+          objectKey = imagen.url;
+        }
+      } catch {
+        objectKey = imagen.url;
+      }
+
+      return this.mediaRepository.create({
+        idArreglo: arregloId,
+        url: imagen.url,
+        objectKey: objectKey,
+        provider: 'supabase',
+        contentType: 'image/jpeg',
+        orden: imagen.orden ?? nextOrden + index,
+        isPrimary: imagen.isPrimary ?? false,
+        altText: imagen.altText,
+        activo: true,
+      });
+    });
+
+    const saved = await this.mediaRepository.save(mediaArray);
+
+    // Si alguna imagen es principal, sincronizar
+    const primaryImage = saved.find((m) => m.isPrimary);
+    if (primaryImage) {
+      await this.syncPrimaryState(arreglo, primaryImage, true);
+    }
+
+    return saved;
+  }
+
+  /**
+   * Actualizar un registro de media
+   */
   async update(
     arregloId: number,
     mediaId: number,
-    dto: UpdateArregloMediaDto,
+    dto: UpdateArregloMediaSupabaseDto,
   ): Promise<ArregloMedia> {
     const media = await this.mediaRepository.findOne({
       where: { idArregloMedia: mediaId, idArreglo: arregloId },
@@ -84,27 +144,26 @@ export class ArregloMediaService {
       throw new NotFoundException('La imagen solicitada no existe.');
     }
 
-    Object.assign(media, dto);
-
-    if (dto.metadata) {
-      media.metadata = dto.metadata;
+    if (dto.orden !== undefined) {
+      media.orden = dto.orden;
     }
 
-    const saved = await this.mediaRepository.save(media);
-
-    if (dto.isPrimary !== undefined) {
-      const arreglo = await this.findArregloOrFail(arregloId);
-      await this.syncPrimaryState(arreglo, saved, dto.isPrimary);
+    // Si se proporciona tipo, actualizar contentType
+    if (dto.tipo !== undefined) {
+      if (dto.tipo === 'imagen') {
+        media.contentType = 'image/jpeg';
+      } else if (dto.tipo === 'video') {
+        media.contentType = 'video/mp4';
+      }
     }
 
-    return saved;
+    return await this.mediaRepository.save(media);
   }
 
-  async deactivate(
-    arregloId: number,
-    mediaId: number,
-    options?: { deleteObject?: boolean },
-  ): Promise<void> {
+  /**
+   * Eliminar (desactivar) un registro de media
+   */
+  async delete(arregloId: number, mediaId: number): Promise<void> {
     const media = await this.mediaRepository.findOne({
       where: { idArregloMedia: mediaId, idArreglo: arregloId },
     });
@@ -113,13 +172,11 @@ export class ArregloMediaService {
       throw new NotFoundException('La imagen solicitada no existe.');
     }
 
+    // Solo desactivamos (no eliminamos el archivo de Supabase)
     media.activo = false;
     await this.mediaRepository.save(media);
 
-    if (options?.deleteObject) {
-      await this.safeDeleteObject(media.objectKey);
-    }
-
+    // Si era principal, resetear
     if (media.isPrimary) {
       await this.resetArregloPrimaryFromGallery(arregloId);
     }
@@ -207,16 +264,6 @@ export class ArregloMediaService {
     if (fallback) {
       fallback.isPrimary = true;
       await this.mediaRepository.save(fallback);
-    }
-  }
-
-  private async safeDeleteObject(objectKey: string) {
-    try {
-      await this.spacesService.deleteObject(objectKey);
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'No se pudo eliminar el objeto remoto. Intenta nuevamente más tarde.',
-      );
     }
   }
 }

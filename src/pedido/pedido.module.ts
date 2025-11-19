@@ -10,6 +10,7 @@ import { ContactoEntrega } from 'src/contacto-entrega/entities/contacto-entrega.
 import { Pago } from 'src/pago/entities/pago.entity';
 import { PedidoHistorialModule } from 'src/pedido-historial/pedido-historial.module';
 import { FolioModule } from 'src/folio/folio.module';
+import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { FolioModule } from 'src/folio/folio.module';
       Direccion,
       ContactoEntrega,
       Pago,
+      DetallePedido,
     ]),
     PedidoHistorialModule,
     FolioModule,
