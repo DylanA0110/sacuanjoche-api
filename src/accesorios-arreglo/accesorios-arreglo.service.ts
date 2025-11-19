@@ -23,7 +23,7 @@ export class AccesoriosArregloService {
 
   async create(createAccesoriosArregloDto: CreateAccesoriosArregloDto) {
     try {
-      const { idAccesorio, idArreglo } = createAccesoriosArregloDto;
+      const { idAccesorio, idArreglo, cantidad } = createAccesoriosArregloDto;
 
       const [accesorio, arreglo] = await Promise.all([
         findEntityOrFail(
@@ -41,6 +41,7 @@ export class AccesoriosArregloService {
       const newAccesorioArreglo = this.accesoriosArregloRepository.create({
         accesorio,
         arreglo,
+        cantidad,
       });
 
       await this.accesoriosArregloRepository.save(newAccesorioArreglo);

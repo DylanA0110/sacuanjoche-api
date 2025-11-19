@@ -19,7 +19,7 @@ export class AccesoriosArreglo {
   @Column({ name: 'id_arreglo' })
   idArreglo: number;
 
-  @Column({ name: 'cantidad', type: 'int', nullable: true, default: 0 })
+  @Column({ name: 'cantidad', type: 'int', nullable: true })
   cantidad: number;
 
   // Relaciones
