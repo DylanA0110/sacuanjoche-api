@@ -30,6 +30,21 @@ export class DireccionService {
         Number.isFinite(direccionData.lat) &&
         Number.isFinite(direccionData.lng);
 
+      // Verificar si ya existe una dirección con las mismas coordenadas
+      // Si existe, retornar el registro existente
+      if (hasCoordinates) {
+        const existingDireccion = await this.direccionRepository.findOne({
+          where: {
+            lat: direccionData.lat,
+            lng: direccionData.lng,
+          },
+        });
+
+        if (existingDireccion) {
+          return { ...existingDireccion };
+        }
+      }
+
       const fieldsToAutofill: Array<keyof CreateDireccionDto> = [
         'formattedAddress',
         'country',
@@ -153,6 +168,27 @@ export class DireccionService {
   async update(id: number, updateDireccionDto: UpdateDireccionDto) {
     try {
       const { stateProv, ...toUpdate } = updateDireccionDto;
+
+      // Validar coordenadas duplicadas si se están actualizando
+      if (
+        toUpdate.lat !== undefined &&
+        toUpdate.lng !== undefined &&
+        Number.isFinite(toUpdate.lat) &&
+        Number.isFinite(toUpdate.lng)
+      ) {
+        const existingDireccion = await this.direccionRepository.findOne({
+          where: {
+            lat: toUpdate.lat,
+            lng: toUpdate.lng,
+          },
+        });
+
+        if (existingDireccion && existingDireccion.idDireccion !== id) {
+          throw new BadRequestException(
+            'Ya existe otra dirección con las mismas coordenadas (lat, lng)',
+          );
+        }
+      }
 
       const direccion = await this.direccionRepository.preload({
         idDireccion: id,
