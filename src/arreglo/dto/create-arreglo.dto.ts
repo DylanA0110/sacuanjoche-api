@@ -35,15 +35,6 @@ export class CreateArregloDto {
   descripcion?: string;
 
   @ApiProperty({
-    description: 'URL del recurso multimedia principal del arreglo',
-    example: 'https://example.com/images/arreglo-rosas.jpg',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  url?: string;
-
-  @ApiProperty({
     description: 'Precio unitario del arreglo',
     example: 25.99,
   })

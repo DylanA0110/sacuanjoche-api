@@ -218,50 +218,62 @@ export class ArregloService {
    * Obtener opciones de filtros disponibles para el catálogo
    */
   async getFiltrosDisponibles() {
-    const [formasArreglo, precios, flores] = await Promise.all([
-      // Formas de arreglo activas
-      this.formaArregloRepository.find({
-        where: { activo: true },
-        select: ['idFormaArreglo', 'descripcion'],
-        order: { descripcion: 'ASC' },
-      }),
+    try {
+      const [formasArreglo, precios, arreglosFlor] = await Promise.all([
+        // Formas de arreglo activas
+        this.formaArregloRepository.find({
+          where: { activo: true },
+          select: ['idFormaArreglo', 'descripcion'],
+          order: { descripcion: 'ASC' },
+        }),
 
-      // Rango de precios
-      this.arregloRepository
-        .createQueryBuilder('arreglo')
-        .select('MIN(arreglo.precioUnitario)', 'min')
-        .addSelect('MAX(arreglo.precioUnitario)', 'max')
-        .where('arreglo.estado = :estado', { estado: 'activo' })
-        .getRawOne(),
+        // Rango de precios
+        this.arregloRepository
+          .createQueryBuilder('arreglo')
+          .select('MIN(arreglo.precioUnitario)', 'min')
+          .addSelect('MAX(arreglo.precioUnitario)', 'max')
+          .where('arreglo.estado = :estado', { estado: 'activo' })
+          .getRawOne(),
 
-      // Flores disponibles en arreglos activos
-      this.arregloFlorRepository
-        .createQueryBuilder('af')
-        .leftJoin('af.flor', 'flor')
-        .leftJoin('af.arreglo', 'arreglo')
-        .where('arreglo.estado = :estado', { estado: 'activo' })
-        .andWhere('flor.estado = :florEstado', { florEstado: 'activo' })
-        .select('DISTINCT flor.idFlor', 'idFlor')
-        .addSelect('flor.nombre', 'nombre')
-        .addSelect('flor.color', 'color')
-        .orderBy('flor.nombre', 'ASC')
-        .getRawMany(),
-    ]);
+        // Flores disponibles en arreglos activos
+        this.arregloFlorRepository
+          .createQueryBuilder('af')
+          .innerJoinAndSelect('af.flor', 'flor')
+          .innerJoin('af.arreglo', 'arreglo')
+          .where('arreglo.estado = :estado', { estado: 'activo' })
+          .andWhere('flor.estado = :florEstado', { florEstado: 'activo' })
+          .getMany(),
+      ]);
 
-    return {
-      formasArreglo: formasArreglo.map((f) => ({
-        id: f.idFormaArreglo,
-        descripcion: f.descripcion,
-      })),
-      precios: {
-        min: parseFloat(precios?.min || '0'),
-        max: parseFloat(precios?.max || '0'),
-      },
-      flores: flores.map((f) => ({
-        id: f.idFlor,
-        nombre: f.nombre,
-        color: f.color,
-      })),
-    };
+      // Obtener flores únicas y ordenadas
+      const floresMap = new Map<number, { id: number; nombre: string; color: string }>();
+      arreglosFlor.forEach((af) => {
+        if (af.flor && !floresMap.has(af.flor.idFlor)) {
+          floresMap.set(af.flor.idFlor, {
+            id: af.flor.idFlor,
+            nombre: af.flor.nombre,
+            color: af.flor.color,
+          });
+        }
+      });
+      const flores = Array.from(floresMap.values()).sort((a, b) =>
+        a.nombre.localeCompare(b.nombre),
+      );
+
+      return {
+        formasArreglo: formasArreglo.map((f) => ({
+          id: f.idFormaArreglo,
+          descripcion: f.descripcion,
+        })),
+        precios: {
+          min: parseFloat(precios?.min || '0'),
+          max: parseFloat(precios?.max || '0'),
+        },
+        flores: flores,
+      };
+    } catch (error) {
+      console.error('Error en getFiltrosDisponibles:', error);
+      throw error;
+    }
   }
 }
