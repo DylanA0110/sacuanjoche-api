@@ -11,7 +11,6 @@ import { ClienteDireccion } from '../../cliente-direccion/entities/cliente-direc
 import { Pedido } from '../../pedido/entities/pedido.entity';
 
 @Entity('direccion')
-@Unique(['lat', 'lng'])
 export class Direccion {
   @PrimaryGeneratedColumn({ name: 'id_direccion' })
   idDireccion: number;
