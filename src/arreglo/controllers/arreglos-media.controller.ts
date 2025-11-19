@@ -75,7 +75,7 @@ export class ArreglosMediaController {
   }
 
   @Patch(':id/media/:mediaId')
-  @ApiOperation({ summary: 'Actualizar el orden o tipo de una imagen' })
+  @ApiOperation({ summary: 'Actualizar orden, tipo, isPrimary o altText de una imagen' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiParam({ name: 'mediaId', description: 'ID del registro de media', example: 1 })
   @ApiBody({ type: UpdateArregloMediaSupabaseDto })

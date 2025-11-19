@@ -157,7 +157,19 @@ export class ArregloMediaService {
       }
     }
 
-    return await this.mediaRepository.save(media);
+    if (dto.altText !== undefined) {
+      media.altText = dto.altText;
+    }
+
+    const saved = await this.mediaRepository.save(media);
+
+    // Si se actualiza isPrimary, sincronizar estado
+    if (dto.isPrimary !== undefined) {
+      const arreglo = await this.findArregloOrFail(arregloId);
+      await this.syncPrimaryState(arreglo, saved, dto.isPrimary);
+    }
+
+    return saved;
   }
 
   /**
