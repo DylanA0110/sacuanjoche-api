@@ -26,6 +26,14 @@ export class CreateFacturaDto {
   @MaxLength(50)
   numFactura: string;
 
+  
+  @ApiProperty({
+    description: 'ID del folio',
+    example: 1
+  })
+  @IsNumber()
+  idFolio: number;
+
   @ApiPropertyOptional({
     description: 'Estado de la factura',
     example: FacturaEstado.PENDIENTE,

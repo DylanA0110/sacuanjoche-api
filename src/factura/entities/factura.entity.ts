@@ -15,12 +15,9 @@ export class Factura {
 
   @Column({ name: 'id_empleado' })
   idEmpleado: number;
-
+ 
   @Column({ name: 'num_factura', type: 'varchar', length: 50, unique: true })
   numFactura: string;
-
-  @Column({ name: 'numero_factura', type: 'varchar', length: 50, nullable: true })
-  numeroFactura: string;
 
   @Column({ name: 'id_folio', nullable: true })
   idFolio?: number;

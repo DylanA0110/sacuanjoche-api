@@ -51,6 +51,7 @@ export class FacturaService {
         idPedido: pedido.idPedido,
         idEmpleado: empleado.idEmpleado,
         numFactura: facturaData.numFactura,
+        idFolio: facturaData.idFolio,
         montoTotal: facturaData.montoTotal,
         estado: facturaData.estado || FacturaEstado.PENDIENTE,
       });
@@ -270,7 +271,6 @@ export class FacturaService {
         idPedido: pedido.idPedido,
         idEmpleado: empleado.idEmpleado,
         numFactura,
-        numeroFactura,
         idFolio,
         montoTotal: pedido.totalPedido,
         estado: estadoFactura, // PAGADO si hay pago completado, PENDIENTE si no
