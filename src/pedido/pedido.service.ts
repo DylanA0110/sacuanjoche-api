@@ -25,6 +25,7 @@ import {
 import { PedidoHistorialService } from 'src/pedido-historial/pedido-historial.service';
 import { FolioService } from 'src/folio/folio.service';
 import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
+import { Folio } from 'src/folio/entities/folio.entity';
 
 @Injectable()
 export class PedidoService {
@@ -43,6 +44,8 @@ export class PedidoService {
     private readonly pagoRepository: Repository<Pago>,
     @InjectRepository(DetallePedido)
     private readonly detallePedidoRepository: Repository<DetallePedido>,
+    @InjectRepository(Folio)
+    private readonly folioRepository: Repository<Folio>,
     private readonly pedidoHistorialService: PedidoHistorialService,
     private readonly folioService: FolioService,
   ) {}
@@ -55,6 +58,7 @@ export class PedidoService {
         idDireccion,
         idContactoEntrega,
         idPago,
+        idFolio,
         canal = PedidoCanal.WEB, // Por defecto es 'web' si no se especifica
         ...pedido
       } = createPedidoDto;
@@ -186,20 +190,48 @@ export class PedidoService {
         `El contacto de entrega no fue encontrado o no existe`,
       );
 
+      // Validar y obtener el folio del DTO
+      const folio = await findEntityOrFail(
+        this.folioRepository,
+        { idFolio: idFolio },
+        `El folio con id ${idFolio} no fue encontrado o no existe`,
+      );
+
+      // Verificar que el folio esté activo
+      if (folio.activo !== EstadoActivo.ACTIVO) {
+        throw new BadRequestException(
+          `El folio con id ${idFolio} no está activo`,
+        );
+      }
+
       // Generar número de folio para el pedido
       let numeroPedido: string | undefined;
-      let idFolio: number | undefined;
       try {
-        // Buscar el folio activo para PEDIDO
-        const folioPedido =
-          await this.folioService.buscarFolioPorDocumento('PEDIDO');
-        if (folioPedido) {
-          numeroPedido =
-            await this.folioService.obtenerSiguienteFolio('PEDIDO');
-          idFolio = folioPedido.idFolio;
+        let siguiente = folio.ultimoValor + 1;
+
+        if (siguiente > folio.valorFinal) {
+          throw new BadRequestException(
+            `Se alcanzó el valor máximo del folio (${folio.valorFinal}).`,
+          );
         }
+
+        // .padStart rellena con ceros a la izquierda hasta que alcanza la longitud establecida para ese folio
+        const numeroFormateado = String(siguiente).padStart(folio.longitud, '0');
+
+        if (folio.mascara) {
+          numeroPedido = folio.mascara.replace(/\{0+\}/, numeroFormateado);
+        } else {
+          numeroPedido = numeroFormateado;
+        }
+
+        // Actualizar el último valor del folio
+        folio.ultimoValor = siguiente;
+        await this.folioRepository.save(folio);
       } catch (error) {
-        // Si no existe el folio, continuar sin número de pedido
+        if (error instanceof BadRequestException) {
+          throw error;
+        }
+        // Si hay otro error, continuar sin número de pedido
         // No lanzar error para no bloquear la creación del pedido
       }
 
@@ -228,6 +260,7 @@ export class PedidoService {
           'direccion',
           'contactoEntrega',
           'pago',
+          'envio',
         ],
       });
     } catch (error) {
@@ -249,7 +282,8 @@ export class PedidoService {
       .leftJoinAndSelect('pedido.empleado', 'empleado')
       .leftJoinAndSelect('pedido.cliente', 'cliente')
       .leftJoinAndSelect('pedido.direccion', 'direccion')
-      .leftJoinAndSelect('pedido.contactoEntrega', 'contactoEntrega');
+      .leftJoinAndSelect('pedido.contactoEntrega', 'contactoEntrega')
+      .leftJoinAndSelect('pedido.envio', 'envio');
 
     qb.take(limit).skip(offset);
 
@@ -282,7 +316,7 @@ export class PedidoService {
   async findOne(id: number) {
     const pedido = await this.pedidoRepository.findOne({
       where: { idPedido: id },
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega'],
+      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'envio'],
     });
 
     if (!pedido) {

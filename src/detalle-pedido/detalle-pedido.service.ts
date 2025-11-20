@@ -191,12 +191,27 @@ export class DetallePedidoService {
       .where('detalle.idPedido = :idPedido', { idPedido })
       .getRawOne<{ total: string }>();
 
-    const total = Number(aggregate?.total ?? 0);
-    const rounded = Number(total.toFixed(2));
+    const totalProductos = Number(aggregate?.total ?? 0);
+    const roundedProductos = Number(totalProductos.toFixed(2));
+
+    // Obtener el pedido con la relación de envío para acceder al costo de envío
+    const pedido = await this.pedidoRepository.findOne({
+      where: { idPedido },
+      relations: ['envio'],
+    });
+
+    // Obtener el costo de envío de la tabla envio
+    const costoEnvio = pedido?.envio?.costoEnvio 
+      ? Number(pedido.envio.costoEnvio) 
+      : 0;
+
+    // Calcular el total del pedido: productos + costo de envío
+    const totalPedido = roundedProductos + costoEnvio;
+    const roundedTotal = Number(totalPedido.toFixed(2));
 
     await this.pedidoRepository.update(idPedido, {
-      totalProductos: rounded,
-      totalPedido: rounded,
+      totalProductos: roundedProductos,
+      totalPedido: roundedTotal,
     });
   }
 }

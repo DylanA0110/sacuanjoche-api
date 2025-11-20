@@ -48,6 +48,14 @@ export class CreatePedidoDto {
   idDireccion: number;
 
   @ApiProperty({
+    description: 'ID del folio',
+    example: 1,
+  })
+  @IsNotEmpty({ message: 'El ID del folio es requerido' })
+  @IsNumber({}, { message: 'El ID del folio debe ser un número' })
+  idFolio: number;
+
+  @ApiProperty({
     description: 'ID del contacto de entrega',
     example: 1,
   })
@@ -80,14 +88,14 @@ export class CreatePedidoDto {
   @IsString({ message: 'La dirección de entrega debe ser un texto' })
   direccionTxt: string;
 
-  @ApiProperty({
-    description: 'Costo de envío del pedido',
-    example: 25.00,
-  })
-  @IsNotEmpty({ message: 'El costo de envío es requerido' })
-  @IsNumber({}, { message: 'El costo de envío debe ser un número' })
-  @Min(0, { message: 'El costo de envío debe ser mayor o igual a 0' })
-  costoEnvio: number;
+  // @ApiProperty({
+  //   description: 'Costo de envío del pedido',
+  //   example: 25.00,
+  // })
+  // @IsNotEmpty({ message: 'El costo de envío es requerido' })
+  // @IsNumber({}, { message: 'El costo de envío debe ser un número' })
+  // @Min(0, { message: 'El costo de envío debe ser mayor o igual a 0' })
+  // costoEnvio: number;
 
   // @ApiProperty({
   //   description: 'Total del pedido (productos + envío)',
