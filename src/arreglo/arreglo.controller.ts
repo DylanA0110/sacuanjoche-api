@@ -21,6 +21,7 @@ import { CreateArregloDto } from './dto/create-arreglo.dto';
 import { UpdateArregloDto } from './dto/update-arreglo.dto';
 import { Arreglo } from './entities/arreglo.entity';
 import { FindArreglosDto } from './dto/find-arreglos.dto';
+import { FindArreglosPublicDto } from './dto/find-arreglos-public.dto';
 
 @ApiTags('Arreglos')
 @Controller('arreglos')
@@ -143,10 +144,23 @@ export class ArregloController {
   })
   findPublic(@Query() filters: any) {
     // Transformar flores de string a array si viene como string
-    if (filters.flores && typeof filters.flores === 'string') {
-      filters.flores = filters.flores.split(',').map((id: string) => parseInt(id, 10));
+    // Los query params pueden venir como string aunque el DTO espere number[]
+    if (filters.flores) {
+      if (typeof filters.flores === 'string') {
+        filters.flores = filters.flores
+          .split(',')
+          .map((id: string) => parseInt(id, 10))
+          .filter((id) => !isNaN(id) && id > 0);
+      } else if (Array.isArray(filters.flores)) {
+        // Asegurar que todos los valores sean números válidos
+        filters.flores = filters.flores
+          .map((id: any) => (typeof id === 'string' ? parseInt(id, 10) : id))
+          .filter((id: any) => typeof id === 'number' && !isNaN(id) && id > 0);
+      }
     }
-    return this.arregloService.findPublic(filters);
+    // Validar y convertir el objeto a FindArreglosPublicDto
+    // Usar 'as' para indicar que ya transformamos los tipos
+    return this.arregloService.findPublic(filters as FindArreglosPublicDto);
   }
 
   @Get(':id')

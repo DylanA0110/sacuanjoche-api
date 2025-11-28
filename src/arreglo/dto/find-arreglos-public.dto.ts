@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsOptional, IsString, IsNumber, Min } from 'class-validator';
+import { IsArray, IsOptional, IsString, IsNumber, Min, IsIn } from 'class-validator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class FindArreglosPublicDto extends PaginationDto {
@@ -67,6 +67,9 @@ export class FindArreglosPublicDto extends PaginationDto {
   })
   @IsOptional()
   @IsString()
+  @IsIn(['nombre', 'precio', 'fechaCreacion'], {
+    message: 'ordenarPor debe ser uno de: nombre, precio, fechaCreacion',
+  })
   ordenarPor?: 'nombre' | 'precio' | 'fechaCreacion';
 
   @ApiPropertyOptional({
@@ -76,6 +79,9 @@ export class FindArreglosPublicDto extends PaginationDto {
   })
   @IsOptional()
   @IsString()
+  @IsIn(['ASC', 'DESC'], {
+    message: 'orden debe ser ASC o DESC',
+  })
   orden?: 'ASC' | 'DESC';
 }
 

@@ -13,13 +13,14 @@ import { FacturasReport } from './report/facturas.report';
 import { ArreglosReport } from './report/arreglos.report';
 import { Factura } from '../factura/entities/factura.entity';
 import { Arreglo } from '../arreglo/entities/arreglo.entity';
+import { DetallePedido } from '../detalle-pedido/entities/detalle-pedido.entity';
 
 @Module({
   imports: [
     PrinterModule,
     FacturaModule,
     PedidoModule,
-    TypeOrmModule.forFeature([Pedido, Factura, Arreglo]),
+    TypeOrmModule.forFeature([Pedido, Factura, Arreglo, DetallePedido]),
   ],
   controllers: [ReportsController],
   providers: [

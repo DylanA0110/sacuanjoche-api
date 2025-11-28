@@ -17,6 +17,7 @@ import {
 import { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { FindPedidosDto } from '../pedido/dto/find-pedidos.dto';
+import { FindPedidosReporteDto } from '../pedido/dto/find-pedidos-reporte.dto';
 import { FindFacturasDto } from '../factura/dto/find-facturas.dto';
 import { FindArreglosDto } from '../arreglo/dto/find-arreglos.dto';
 
@@ -282,6 +283,62 @@ export class ReportsController {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Error al generar el PDF del reporte de arreglos',
+      });
+    }
+  }
+
+  @Get('pedidos/detallado/pdf')
+  @ApiOperation({
+    summary: 'Generar PDF de reporte detallado de pedidos',
+    description:
+      'Genera un PDF con el reporte detallado de pedidos, incluyendo descripción del pedido y arreglos florales detallados (con flores y accesorios). Si no se especifica el rango de fechas, se usa la fecha de hoy.',
+  })
+  @ApiQuery({
+    name: 'fechaInicio',
+    required: false,
+    description: 'Fecha de inicio del rango (formato YYYY-MM-DD). Si no se especifica, se usa la fecha de hoy',
+    example: '2024-01-01',
+  })
+  @ApiQuery({
+    name: 'fechaFin',
+    required: false,
+    description: 'Fecha de fin del rango (formato YYYY-MM-DD). Si no se especifica, se usa la fecha de hoy',
+    example: '2024-12-31',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'PDF generado exitosamente',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async generarPedidosDetalladoPDF(
+    @Query() filters: FindPedidosReporteDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const pdfDoc = await this.reportsService.generarPedidosDetalladoPDF(
+        filters,
+      );
+
+      res.setHeader('Content-Type', 'application/pdf');
+      const fecha = new Date().toISOString().split('T')[0];
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=reporte-pedidos-detallado-${fecha}.pdf`,
+      );
+
+      pdfDoc.pipe(res);
+      pdfDoc.end();
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Error al generar el PDF del reporte detallado de pedidos',
       });
     }
   }

@@ -5,6 +5,7 @@ import { PedidosReport } from './report/pedidos.report';
 import { FacturasReport } from './report/facturas.report';
 import { ArreglosReport } from './report/arreglos.report';
 import { FindPedidosDto } from '../pedido/dto/find-pedidos.dto';
+import { FindPedidosReporteDto } from '../pedido/dto/find-pedidos-reporte.dto';
 import { FindFacturasDto } from '../factura/dto/find-facturas.dto';
 import { FindArreglosDto } from '../arreglo/dto/find-arreglos.dto';
 
@@ -57,5 +58,14 @@ export class ReportsService {
     filters?: FindArreglosDto,
   ): Promise<PDFKit.PDFDocument> {
     return this.arreglosReport.generarPDF(filters);
+  }
+
+  /**
+   * Genera un PDF con el reporte detallado de pedidos, incluyendo descripción del pedido y arreglos florales detallados
+   */
+  async generarPedidosDetalladoPDF(
+    filters?: FindPedidosReporteDto,
+  ): Promise<PDFKit.PDFDocument> {
+    return this.pedidosReport.generarPDFDetallado(filters);
   }
 }

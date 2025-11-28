@@ -157,6 +157,16 @@ export class ArregloService {
       orden = 'DESC',
     } = filters;
 
+    // Validar y normalizar el orden para prevenir errores SQL
+    const ordenNormalizado =
+      orden === 'ASC' || orden === 'DESC' ? orden : 'DESC';
+
+    // Validar y normalizar ordenarPor para prevenir errores
+    const ordenarPorValidos = ['nombre', 'precio', 'fechaCreacion'];
+    const ordenarPorNormalizado = ordenarPorValidos.includes(ordenarPor)
+      ? ordenarPor
+      : 'fechaCreacion';
+
     const qb = this.arregloRepository
       .createQueryBuilder('arreglo')
       .leftJoinAndSelect('arreglo.formaArreglo', 'formaArreglo')
@@ -189,20 +199,25 @@ export class ArregloService {
       qb.andWhere('arreglo.precioUnitario <= :precioMax', { precioMax });
     }
 
-    // Filtro por flores
-    if (flores && flores.length > 0) {
-      qb.leftJoin('arreglo.arreglosFlor', 'arregloFlor')
-        .leftJoin('arregloFlor.flor', 'flor')
-        .andWhere('flor.idFlor IN (:...flores)', { flores });
+    // Filtro por flores - validar que sea un array válido
+    if (flores && Array.isArray(flores) && flores.length > 0) {
+      const floresValidos = flores.filter(
+        (id) => typeof id === 'number' && id > 0 && !isNaN(id),
+      );
+      if (floresValidos.length > 0) {
+        qb.leftJoin('arreglo.arreglosFlor', 'arregloFlor')
+          .leftJoin('arregloFlor.flor', 'flor')
+          .andWhere('flor.idFlor IN (:...flores)', { flores: floresValidos });
+      }
     }
 
-    // Ordenamiento
-    if (ordenarPor === 'nombre') {
-      qb.orderBy('arreglo.nombre', orden);
-    } else if (ordenarPor === 'precio') {
-      qb.orderBy('arreglo.precioUnitario', orden);
+    // Ordenamiento con valores validados
+    if (ordenarPorNormalizado === 'nombre') {
+      qb.orderBy('arreglo.nombre', ordenNormalizado);
+    } else if (ordenarPorNormalizado === 'precio') {
+      qb.orderBy('arreglo.precioUnitario', ordenNormalizado);
     } else {
-      qb.orderBy('arreglo.fechaCreacion', orden);
+      qb.orderBy('arreglo.fechaCreacion', ordenNormalizado);
     }
 
     qb.addOrderBy('arreglo.idArreglo', 'DESC')
