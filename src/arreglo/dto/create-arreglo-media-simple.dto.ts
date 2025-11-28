@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUrl, Min, MaxLength } from 'class-validator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateArregloMediaSimpleDto {
   @ApiProperty({
@@ -10,6 +14,7 @@ export class CreateArregloMediaSimpleDto {
   })
   @IsUrl()
   @IsString()
+  @NoSqlInjection()
   url: string;
 
   @ApiProperty({
@@ -41,6 +46,11 @@ export class CreateArregloMediaSimpleDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(200)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(4)
   altText?: string;
 }
 

@@ -8,7 +8,12 @@ import {
   Max,
   Min,
   MinLength,
+  MaxLength,
 } from 'class-validator';
+import { AllowedCharacters } from '../../validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../validators/no-excessive-repetition.decorator';
 
 export class ForwardGeocodeQueryDto {
   @ApiProperty({
@@ -17,6 +22,11 @@ export class ForwardGeocodeQueryDto {
   })
   @IsString()
   @MinLength(2)
+  @MaxLength(200)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(4)
   query!: string;
 
   @ApiProperty({
@@ -40,6 +50,8 @@ export class ForwardGeocodeQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
+  @NoSqlInjection()
   language?: string;
 
   @ApiProperty({
@@ -50,6 +62,8 @@ export class ForwardGeocodeQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(50)
+  @NoSqlInjection()
   country?: string;
 
   @ApiProperty({
@@ -60,6 +74,8 @@ export class ForwardGeocodeQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
+  @NoSqlInjection()
   types?: string;
 
   @ApiProperty({
@@ -70,6 +86,8 @@ export class ForwardGeocodeQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
+  @NoSqlInjection()
   bbox?: string;
 
   @ApiProperty({

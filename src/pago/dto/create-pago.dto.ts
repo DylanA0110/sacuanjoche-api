@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, IsOptional, MaxLength, IsEnum } from 'class-validator';
 import { PagoEstado } from '../../common/enums';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreatePagoDto {
   @ApiProperty({
@@ -36,6 +40,8 @@ export class CreatePagoDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  @NoSqlInjection()
+  @NoExcessiveRepetition(4)
   referencia?: string;
 
   @ApiProperty({
@@ -47,6 +53,10 @@ export class CreatePagoDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   gateway?: string;
 
   @ApiProperty({
@@ -58,6 +68,8 @@ export class CreatePagoDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  @NoSqlInjection()
+  @NoExcessiveRepetition(4)
   idGateway?: string;
 
   @ApiProperty({
@@ -67,6 +79,7 @@ export class CreatePagoDto {
   })
   @IsOptional()
   @IsString()
+  @NoSqlInjection()
   paymentLinkUrl?: string;
 
   @ApiProperty({
@@ -76,6 +89,7 @@ export class CreatePagoDto {
   })
   @IsOptional()
   @IsString()
+  @NoSqlInjection()
   paymentUrlExt?: string;
 
   @ApiProperty({
@@ -85,6 +99,7 @@ export class CreatePagoDto {
   })
   @IsOptional()
   @IsString()
+  @NoSqlInjection()
   rawPayload?: string;
 }
 

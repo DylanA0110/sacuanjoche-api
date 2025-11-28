@@ -7,6 +7,11 @@ import {
   MaxLength,
   IsOptional,
 } from 'class-validator';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoRandomAddress } from '../../common/validators/no-random-address.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateDireccionDto {
   @ApiProperty({
@@ -16,6 +21,10 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomAddress()
+  @NoExcessiveRepetition(4)
   formattedAddress: string;
 
   @ApiProperty({
@@ -27,6 +36,10 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   country: string;
 
   @ApiProperty({
@@ -38,6 +51,10 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   stateProv: string;
 
   @ApiProperty({
@@ -49,6 +66,10 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   city: string;
 
   @ApiProperty({
@@ -60,6 +81,10 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   neighborhood?: string;
 
   @ApiProperty({
@@ -71,6 +96,10 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomAddress()
+  @NoExcessiveRepetition(4)
   street: string;
 
   @ApiProperty({
@@ -82,6 +111,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(20)
+  @NoSqlInjection()
   houseNumber: string;
 
   @ApiProperty({
@@ -93,6 +123,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(20)
+  @NoSqlInjection()
   postalCode: string;
 
   @ApiProperty({
@@ -102,6 +133,10 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(4)
   referencia?: string;
 
   @ApiProperty({
@@ -129,6 +164,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
+  @NoSqlInjection()
   provider: string;
 
   @ApiProperty({
@@ -140,6 +176,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  @NoSqlInjection()
   placeId?: string;
 
   @ApiProperty({
@@ -151,6 +188,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
+  @NoSqlInjection()
   accuracy?: string;
 
   @ApiProperty({
@@ -160,6 +198,7 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @NoSqlInjection()
   geolocation?: string;
 
   @ApiProperty({

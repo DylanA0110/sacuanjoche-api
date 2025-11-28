@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNumber, IsBoolean, MaxLength, IsOptional } from 'class-validator';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateClienteDireccionDto {
   @ApiProperty({
@@ -23,6 +27,10 @@ export class CreateClienteDireccionDto {
   })
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   etiqueta: string;
 
   @ApiProperty({

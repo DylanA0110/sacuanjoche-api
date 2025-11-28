@@ -7,6 +7,10 @@ import {
   IsOptional,
 } from 'class-validator';
 import { ArregloEstado } from '../../common/enums';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateArregloDto {
   @ApiProperty({
@@ -23,6 +27,10 @@ export class CreateArregloDto {
   })
   @IsString()
   @MaxLength(200)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(4)
   nombre: string;
 
   @ApiProperty({
@@ -32,6 +40,10 @@ export class CreateArregloDto {
   })
   @IsOptional()
   @IsString()
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(4)
   descripcion?: string;
 
   @ApiProperty({

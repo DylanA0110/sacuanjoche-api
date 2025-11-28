@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum, MaxLength } from 'class-validator';
 import { PedidoEstado } from '../../common/enums';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreatePedidoHistorialDto {
   @ApiProperty({
@@ -40,6 +44,11 @@ export class CreatePedidoHistorialDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(4)
   nota?: string;
 }
 

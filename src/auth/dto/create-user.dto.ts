@@ -11,11 +11,13 @@ import {
   IsEnum,
 } from 'class-validator';
 import { UserEstado } from '../../common/enums';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
 
 export class CreateUserDto {
   @ApiProperty()
   @IsString()
   @IsEmail()
+  @NoSqlInjection()
   @ApiProperty({ description: 'email', example: 'juanito32@gmail.com' })
   email: string;
 

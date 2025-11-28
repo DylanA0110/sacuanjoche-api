@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, MaxLength, IsOptional, IsEnum } from 'class-validator';
 import { FacturaEstado } from '../../common/enums';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateFacturaDto {
   @ApiProperty({
@@ -24,6 +28,10 @@ export class CreateFacturaDto {
   })
   @IsString()
   @MaxLength(50)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   numFactura: string;
 
   

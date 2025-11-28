@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsDateString, IsEnum, MaxLength, IsOptional } from 'class-validator';
 import { EmpleadoEstado } from '../../common/enums';
+import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
+import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
+import { NoRandomString } from '../../common/validators/no-random-string.decorator';
+import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateEmpleadoDto {
   @ApiProperty({
@@ -10,6 +14,10 @@ export class CreateEmpleadoDto {
   })
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   primerNombre: string;
 
   @ApiProperty({
@@ -19,6 +27,10 @@ export class CreateEmpleadoDto {
   })
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   segundoNombre: string;
 
   @ApiProperty({
@@ -28,6 +40,10 @@ export class CreateEmpleadoDto {
   })
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   primerApellido: string;
 
   @ApiProperty({
@@ -39,6 +55,10 @@ export class CreateEmpleadoDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @AllowedCharacters()
+  @NoSqlInjection()
+  @NoRandomString()
+  @NoExcessiveRepetition(3)
   segundoApellido?: string;
 
   @ApiProperty({
@@ -48,6 +68,8 @@ export class CreateEmpleadoDto {
   })
   @IsString()
   @MaxLength(10)
+  @AllowedCharacters()
+  @NoSqlInjection()
   sexo: string;
 
   @ApiProperty({
@@ -57,6 +79,7 @@ export class CreateEmpleadoDto {
   })
   @IsString()
   @MaxLength(20)
+  @NoSqlInjection()
   telefono: string;
 
   @ApiProperty({
