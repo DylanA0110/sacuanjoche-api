@@ -40,8 +40,10 @@ export class FolioService {
       }
 
       // Validar que ultimoValor esté en el rango válido
+      // Permitir que ultimoValor sea valorInicial - 1 (ej: 0 cuando valorInicial es 1) para folios nuevos
+      // O que esté entre valorInicial y valorFinal si ya se han usado números
       if (
-        createFolioDto.ultimoValor < createFolioDto.valorInicial ||
+        createFolioDto.ultimoValor < createFolioDto.valorInicial - 1 ||
         createFolioDto.ultimoValor > createFolioDto.valorFinal
       ) {
         throw new BadRequestException(

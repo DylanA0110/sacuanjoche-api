@@ -261,6 +261,7 @@ export class PedidoService {
           'contactoEntrega',
           'pago',
           'envio',
+          'folio',
         ],
       });
     } catch (error) {
@@ -283,7 +284,8 @@ export class PedidoService {
       .leftJoinAndSelect('pedido.cliente', 'cliente')
       .leftJoinAndSelect('pedido.direccion', 'direccion')
       .leftJoinAndSelect('pedido.contactoEntrega', 'contactoEntrega')
-      .leftJoinAndSelect('pedido.envio', 'envio');
+      .leftJoinAndSelect('pedido.envio', 'envio')
+      .leftJoinAndSelect('pedido.folio', 'folio');
 
     qb.take(limit).skip(offset);
 
@@ -316,7 +318,7 @@ export class PedidoService {
   async findOne(id: number) {
     const pedido = await this.pedidoRepository.findOne({
       where: { idPedido: id },
-      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'envio'],
+      relations: ['empleado', 'cliente', 'direccion', 'contactoEntrega', 'envio', 'folio'],
     });
 
     if (!pedido) {
