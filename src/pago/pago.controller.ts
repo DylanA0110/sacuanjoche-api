@@ -24,6 +24,8 @@ import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
 import { Pago } from './entities/pago.entity';
 import { FindPagosDto } from './dto/find-pagos.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Pagos')
 @Controller('pago')
@@ -31,6 +33,7 @@ export class PagoController {
   constructor(private readonly pagoService: PagoService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo pago' })
   @ApiResponse({
     status: 201,
@@ -46,6 +49,7 @@ export class PagoController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los pagos con paginación' })
   @ApiQuery({
     name: 'q',
@@ -72,6 +76,7 @@ export class PagoController {
     return this.pagoService.findAll(filters);
   }
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un pago por ID' })
   @ApiParam({ name: 'id', description: 'ID del pago', example: 1 })
   @ApiResponse({
@@ -88,6 +93,7 @@ export class PagoController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar un pago' })
   @ApiParam({ name: 'id', description: 'ID del pago', example: 1 })
   @ApiResponse({
@@ -111,6 +117,7 @@ export class PagoController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un pago' })
   @ApiParam({ name: 'id', description: 'ID del pago', example: 1 })
   @ApiResponse({
@@ -126,6 +133,7 @@ export class PagoController {
   }
 
   @Post('paypal/create')
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ 
     summary: 'Crear pago con PayPal',
     description: 'Crea un pago con PayPal. El pedido se creará después de confirmar el pago. Este endpoint retorna una URL de aprobación de PayPal que debe usarse para redirigir al usuario.',
@@ -153,6 +161,7 @@ export class PagoController {
   }
 
   @Post('paypal/confirm/:idPago')
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ 
     summary: 'Confirmar pago de PayPal después de la aprobación',
     description: 'Confirma un pago de PayPal después de que el usuario lo aprueba. Cambia el estado del pago a PAGADO. Después de confirmar, se puede crear el pedido asociado a este pago usando el idPago.',
@@ -192,7 +201,7 @@ export class PagoController {
   }
 
   @Post('paypal/webhook')
-  @ApiOperation({ summary: 'Webhook de PayPal para notificaciones' })
+  @ApiOperation({ summary: 'Webhook de PayPal para notificaciones (público)' })
   @ApiHeader({
     name: 'paypal-transmission-id',
     description: 'ID de transmisión de PayPal',

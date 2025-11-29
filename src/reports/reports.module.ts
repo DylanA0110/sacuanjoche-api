@@ -14,6 +14,7 @@ import { ArreglosReport } from './report/arreglos.report';
 import { Factura } from '../factura/entities/factura.entity';
 import { Arreglo } from '../arreglo/entities/arreglo.entity';
 import { DetallePedido } from '../detalle-pedido/entities/detalle-pedido.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DetallePedido } from '../detalle-pedido/entities/detalle-pedido.entity'
     FacturaModule,
     PedidoModule,
     TypeOrmModule.forFeature([Pedido, Factura, Arreglo, DetallePedido]),
+    AuthModule,
   ],
   controllers: [ReportsController],
   providers: [

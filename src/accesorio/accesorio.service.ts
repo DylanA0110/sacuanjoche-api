@@ -6,6 +6,7 @@ import { CreateAccesorioDto } from './dto/create-accesorio.dto';
 import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { FindAccesoriosDto } from './dto/find-accesorios.dto';
+import { ArticuloEstado } from 'src/common/enums';
 
 @Injectable()
 export class AccesorioService {
@@ -87,6 +88,20 @@ export class AccesorioService {
   async remove(id: number) {
     const accesorio = await this.findOne(id);
     await this.accesorioRepository.remove(accesorio);
+  }
+
+  /**
+   * Obtener accesorios activos para catálogo público
+   * Solo retorna id, descripción y categoría
+   */
+  async findPublic() {
+    const accesorios = await this.accesorioRepository.find({
+      where: { estado: ArticuloEstado.ACTIVO },
+      select: ['idAccesorio', 'descripcion', 'categoria'],
+      order: { descripcion: 'ASC' },
+    });
+
+    return accesorios;
   }
 
   // async findByCategoria(categoria: string) {}

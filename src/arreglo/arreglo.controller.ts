@@ -22,6 +22,9 @@ import { UpdateArregloDto } from './dto/update-arreglo.dto';
 import { Arreglo } from './entities/arreglo.entity';
 import { FindArreglosDto } from './dto/find-arreglos.dto';
 import { FindArreglosPublicDto } from './dto/find-arreglos-public.dto';
+import { ArregloPublicResponseDto } from './dto/arreglo-public-response.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Arreglos')
 @Controller('arreglos')
@@ -29,6 +32,7 @@ export class ArregloController {
   constructor(private readonly arregloService: ArregloService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear un nuevo arreglo floral' })
   @ApiResponse({
     status: 201,
@@ -44,6 +48,7 @@ export class ArregloController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Listar arreglos (admin) con filtros' })
   @ApiQuery({
     name: 'limit',
@@ -82,7 +87,7 @@ export class ArregloController {
   }
 
   @Get('public')
-  @ApiOperation({ summary: 'Catálogo público con filtros avanzados' })
+  @ApiOperation({ summary: 'Catálogo público con filtros avanzados (sin autenticación)' })
   @ApiQuery({
     name: 'limit',
     required: false,
@@ -140,7 +145,7 @@ export class ArregloController {
   @ApiResponse({
     status: 200,
     description: 'Catálogo público obtenido exitosamente',
-    type: [Arreglo],
+    type: [ArregloPublicResponseDto],
   })
   findPublic(@Query() filters: any) {
     // Transformar flores de string a array si viene como string
@@ -164,6 +169,7 @@ export class ArregloController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener un arreglo por ID' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiResponse({
@@ -180,6 +186,7 @@ export class ArregloController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar un arreglo' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiResponse({
@@ -203,6 +210,7 @@ export class ArregloController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un arreglo' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiResponse({

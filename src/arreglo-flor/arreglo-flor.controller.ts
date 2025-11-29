@@ -21,6 +21,8 @@ import { CreateArregloFlorDto } from './dto/create-arreglo-flor.dto';
 import { UpdateArregloFlorDto } from './dto/update-arreglo-flor.dto';
 import { ArregloFlor } from './entities/arreglo-flor.entity';
 import { FindArreglosFlorDto } from './dto/find-arreglos-flor.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Arreglo Flores')
 @Controller('arreglo-flor')
@@ -28,6 +30,7 @@ export class ArregloFlorController {
   constructor(private readonly arregloFlorService: ArregloFlorService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear una nueva arreglo flor' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class ArregloFlorController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener todas las arreglo flores con paginación' })
   @ApiQuery({
     name: 'q',
@@ -70,6 +74,7 @@ export class ArregloFlorController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener una arreglo flor por ID' })
   @ApiParam({ name: 'id', description: 'ID de la arreglo flor', example: 1 })
   @ApiResponse({
@@ -86,6 +91,7 @@ export class ArregloFlorController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar una arreglo flor' })
   @ApiParam({ name: 'id', description: 'ID de la arreglo flor', example: 1 })
   @ApiResponse({
@@ -109,6 +115,7 @@ export class ArregloFlorController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Eliminar una arreglo flor' })
   @ApiParam({ name: 'id', description: 'ID de la arreglo flor', example: 1 })
   @ApiResponse({

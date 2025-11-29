@@ -21,6 +21,8 @@ import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { Empleado } from './entities/empleado.entity';
 import { FindEmpleadosDto } from './dto/find-empleados.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Empleados')
 @Controller('empleado')
@@ -28,6 +30,7 @@ export class EmpleadoController {
   constructor(private readonly empleadoService: EmpleadoService) {}
 
   @Post()
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Crear un nuevo empleado' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class EmpleadoController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor)
   @ApiOperation({ summary: 'Obtener todos los empleados con paginación' })
   @ApiResponse({
     status: 200,
@@ -69,6 +73,7 @@ export class EmpleadoController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor)
   @ApiOperation({ summary: 'Obtener un empleado por ID' })
   @ApiParam({ name: 'id', description: 'ID del empleado', example: 1 })
   @ApiResponse({
@@ -85,6 +90,7 @@ export class EmpleadoController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.conductor)
   @ApiOperation({ summary: 'Actualizar un empleado' })
   @ApiParam({ name: 'id', description: 'ID del empleado', example: 1 })
   @ApiResponse({
@@ -108,6 +114,7 @@ export class EmpleadoController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un empleado' })
   @ApiParam({ name: 'id', description: 'ID del empleado', example: 1 })
   @ApiResponse({

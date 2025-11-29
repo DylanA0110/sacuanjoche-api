@@ -40,7 +40,7 @@ export class AuthController {
   }
 
   @Get('check-status')
-  @Auth()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   checkAuthStatus(@GetUser() user: User) {
     return this.authService.checkAuthStatus(user);
   }
@@ -85,6 +85,7 @@ export class AuthController {
   // }
 
   @Patch('users/:id/roles')
+  @Auth(ValidRoles.admin)
   @ApiTags('Users')
   @ApiOperation({ summary: 'Actualizar roles de un usuario' })
   @ApiParam({

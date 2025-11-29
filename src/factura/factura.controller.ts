@@ -25,6 +25,8 @@ import { UpdateFacturaDto } from './dto/update-factura.dto';
 import { Factura } from './entities/factura.entity';
 import { FindFacturasDto } from './dto/find-facturas.dto';
 import { CrearFacturaDesdePedidoDto } from './dto/crear-factura-desde-pedido.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Facturas')
 @Controller('factura')
@@ -34,6 +36,7 @@ export class FacturaController {
   ) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear una nueva factura' })
   @ApiResponse({
     status: 201,
@@ -49,6 +52,7 @@ export class FacturaController {
   }
 
   @Post('desde-pedido/:idPedido')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Convertir un pedido pagado en factura',
     description:
@@ -84,6 +88,7 @@ export class FacturaController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todas las facturas con paginación' })
   @ApiResponse({
     status: 200,
@@ -111,6 +116,7 @@ export class FacturaController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener una factura por ID' })
   @ApiParam({ name: 'id', description: 'ID de la factura', example: 1 })
   @ApiResponse({
@@ -127,6 +133,7 @@ export class FacturaController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar una factura' })
   @ApiParam({ name: 'id', description: 'ID de la factura', example: 1 })
   @ApiResponse({
@@ -150,6 +157,7 @@ export class FacturaController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar una factura' })
   @ApiParam({ name: 'id', description: 'ID de la factura', example: 1 })
   @ApiResponse({

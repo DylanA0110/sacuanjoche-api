@@ -21,6 +21,8 @@ import { CreateCarritoDto } from './dto/create-carrito.dto';
 import { UpdateCarritoDto } from './dto/update-carrito.dto';
 import { Carrito } from './entities/carrito.entity';
 import { FindCarritosDto } from './dto/find-carritos.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Carritos')
 @Controller('carrito')
@@ -28,6 +30,7 @@ export class CarritoController {
   constructor(private readonly carritoService: CarritoService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo carrito' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class CarritoController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los carritos con paginación' })
   @ApiQuery({
     name: 'q',
@@ -69,6 +73,7 @@ export class CarritoController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un carrito por ID' })
   @ApiParam({ name: 'id', description: 'ID del carrito', example: 1 })
   @ApiResponse({
@@ -85,6 +90,7 @@ export class CarritoController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar un carrito' })
   @ApiParam({ name: 'id', description: 'ID del carrito', example: 1 })
   @ApiResponse({
@@ -108,6 +114,7 @@ export class CarritoController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ summary: 'Eliminar un carrito' })
   @ApiParam({ name: 'id', description: 'ID del carrito', example: 1 })
   @ApiResponse({

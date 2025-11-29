@@ -10,6 +10,7 @@ import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { FindArreglosDto } from './dto/find-arreglos.dto';
 import { FindArreglosPublicDto } from './dto/find-arreglos-public.dto';
 import { ArregloFlor } from 'src/arreglo-flor/entities/arreglo-flor.entity';
+import { ArregloPublicResponseDto } from './dto/arreglo-public-response.dto';
 
 @Injectable()
 export class ArregloService {
@@ -226,7 +227,32 @@ export class ArregloService {
 
     qb.take(limit).skip(offset);
 
-    return qb.getMany();
+    const arreglos = await qb.getMany();
+
+    // Mapear a respuesta pública con solo los campos necesarios
+    return arreglos.map((arreglo) => ({
+      idArreglo: arreglo.idArreglo,
+      nombre: arreglo.nombre,
+      descripcion: arreglo.descripcion,
+      precioUnitario: arreglo.precioUnitario,
+      url: arreglo.url,
+      formaArreglo: arreglo.formaArreglo
+        ? {
+            idFormaArreglo: arreglo.formaArreglo.idFormaArreglo,
+            descripcion: arreglo.formaArreglo.descripcion,
+          }
+        : null,
+      media: (arreglo.media || [])
+        .filter((m) => m.activo)
+        .map((m) => ({
+          idArregloMedia: m.idArregloMedia,
+          url: m.url,
+          orden: m.orden,
+          isPrimary: m.isPrimary,
+          altText: m.altText,
+        }))
+        .sort((a, b) => a.orden - b.orden),
+    })) as ArregloPublicResponseDto[];
   }
 
   /**

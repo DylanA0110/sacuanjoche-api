@@ -21,6 +21,8 @@ import { CreateDetallePedidoDto } from './dto/create-detalle-pedido.dto';
 import { UpdateDetallePedidoDto } from './dto/update-detalle-pedido.dto';
 import { DetallePedido } from './entities/detalle-pedido.entity';
 import { FindDetallesPedidoDto } from './dto/find-detalles-pedido.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Detalle Pedidos')
 @Controller('detalle-pedido')
@@ -28,6 +30,7 @@ export class DetallePedidoController {
   constructor(private readonly detallePedidoService: DetallePedidoService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo detalle de pedido' })
   @ApiResponse({
     status: 201,
@@ -39,6 +42,7 @@ export class DetallePedidoController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({
     summary: 'Obtener todos los detalles de pedido con paginación',
   })
@@ -55,6 +59,7 @@ export class DetallePedidoController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un detalle pedido por ID' })
   @ApiParam({ name: 'id', description: 'ID del detalle pedido', example: 1 })
   @ApiResponse({
@@ -67,6 +72,7 @@ export class DetallePedidoController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar un detalle pedido' })
   @ApiParam({ name: 'id', description: 'ID del detalle pedido', example: 1 })
   @ApiResponse({
@@ -82,6 +88,7 @@ export class DetallePedidoController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Eliminar un detalle pedido' })
   @ApiParam({ name: 'id', description: 'ID del detalle pedido', example: 1 })
   @ApiResponse({ status: 200, description: 'Eliminado exitosamente' })

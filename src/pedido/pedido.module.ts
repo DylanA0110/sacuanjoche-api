@@ -12,6 +12,7 @@ import { PedidoHistorialModule } from 'src/pedido-historial/pedido-historial.mod
 import { FolioModule } from 'src/folio/folio.module';
 import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
 import { Folio } from 'src/folio/entities/folio.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { Folio } from 'src/folio/entities/folio.entity';
     ]),
     PedidoHistorialModule,
     FolioModule,
+    AuthModule,
   ],
   controllers: [PedidoController],
   providers: [PedidoService],

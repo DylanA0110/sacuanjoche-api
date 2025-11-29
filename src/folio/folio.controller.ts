@@ -21,6 +21,8 @@ import { CreateFolioDto } from './dto/create-folio.dto';
 import { UpdateFolioDto } from './dto/update-folio.dto';
 import { Folio } from './entities/folio.entity';
 import { FindFoliosDto } from './dto/find-folios.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Folios')
 @Controller('folio')
@@ -28,6 +30,7 @@ export class FolioController {
   constructor(private readonly folioService: FolioService) {}
 
   @Post()
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Crear un nuevo folio' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class FolioController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener todos los folios con paginación' })
   @ApiQuery({
     name: 'limit',
@@ -72,6 +76,7 @@ export class FolioController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener un folio por ID' })
   @ApiParam({ name: 'id', description: 'ID del folio', example: 1 })
   @ApiResponse({
@@ -88,6 +93,7 @@ export class FolioController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Actualizar un folio' })
   @ApiParam({ name: 'id', description: 'ID del folio', example: 1 })
   @ApiResponse({
@@ -111,6 +117,7 @@ export class FolioController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un folio' })
   @ApiParam({ name: 'id', description: 'ID del folio', example: 1 })
   @ApiResponse({
@@ -126,6 +133,7 @@ export class FolioController {
   }
 
   @Get('siguiente/:documento')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Obtener el siguiente número de folio para un documento',
     description:

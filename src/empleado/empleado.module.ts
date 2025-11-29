@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmpleadoService } from './empleado.service';
 import { EmpleadoController } from './empleado.controller';
 import { Empleado } from './entities/empleado.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Empleado])],
+  imports: [TypeOrmModule.forFeature([Empleado]), AuthModule],
   controllers: [EmpleadoController],
   providers: [EmpleadoService],
   exports: [EmpleadoService],

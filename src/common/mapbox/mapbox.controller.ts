@@ -3,6 +3,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ForwardGeocodeQueryDto } from './dto/forward-geocode-query.dto';
 import { MapboxService } from './mapbox.service';
 import { ForwardGeocodeResponse } from './mapbox.interfaces';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Mapbox')
 @Controller('mapbox')
@@ -10,6 +12,7 @@ export class MapboxController {
   constructor(private readonly mapboxService: MapboxService) {}
 
   @Get('geocode')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Buscar direcciones usando Mapbox Geocoding.' })
   @ApiResponse({
     status: 200,

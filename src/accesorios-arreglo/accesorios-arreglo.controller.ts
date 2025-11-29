@@ -21,6 +21,8 @@ import { CreateAccesoriosArregloDto } from './dto/create-accesorios-arreglo.dto'
 import { UpdateAccesoriosArregloDto } from './dto/update-accesorios-arreglo.dto';
 import { AccesoriosArreglo } from './entities/accesorios-arreglo.entity';
 import { FindAccesoriosArregloDto } from './dto/find-accesorios-arreglo.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Accesorios Arreglos')
 @Controller('accesorios-arreglo')
@@ -30,6 +32,7 @@ export class AccesoriosArregloController {
   ) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear una nueva accesorios arreglo' })
   @ApiResponse({
     status: 201,
@@ -45,6 +48,7 @@ export class AccesoriosArregloController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Obtener todas las accesorios arreglos con paginación',
   })
@@ -74,6 +78,7 @@ export class AccesoriosArregloController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener una accesorios arreglo por ID' })
   @ApiParam({
     name: 'id',
@@ -94,6 +99,7 @@ export class AccesoriosArregloController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar una accesorios arreglo' })
   @ApiParam({
     name: 'id',
@@ -121,6 +127,7 @@ export class AccesoriosArregloController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Eliminar una accesorios arreglo' })
   @ApiParam({
     name: 'id',

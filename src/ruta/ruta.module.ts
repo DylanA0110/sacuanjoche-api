@@ -8,11 +8,13 @@ import { Pedido } from '../pedido/entities/pedido.entity';
 import { Empleado } from '../empleado/entities/empleado.entity';
 import { Envio } from '../envio/entities/envio.entity';
 import { MapboxModule } from '../common/mapbox/mapbox.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Ruta, RutaPedido, Pedido, Empleado, Envio]),
     MapboxModule,
+    AuthModule,
   ],
   controllers: [RutaController],
   providers: [RutaService],

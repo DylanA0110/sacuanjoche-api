@@ -21,6 +21,8 @@ import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { Cliente } from './entities/cliente.entity';
 import { FindClientesDto } from './dto/find-clientes.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Clientes')
 @Controller('cliente')
@@ -28,6 +30,7 @@ export class ClienteController {
   constructor(private readonly clienteService: ClienteService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo cliente' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class ClienteController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los clientes con paginación' })
   @ApiQuery({
     name: 'limit',
@@ -81,6 +85,7 @@ export class ClienteController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un cliente por ID' })
   @ApiParam({ name: 'id', description: 'ID del cliente', example: 1 })
   @ApiResponse({
@@ -97,6 +102,7 @@ export class ClienteController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar un cliente' })
   @ApiParam({ name: 'id', description: 'ID del cliente', example: 1 })
   @ApiResponse({
@@ -120,6 +126,7 @@ export class ClienteController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un cliente' })
   @ApiParam({ name: 'id', description: 'ID del cliente', example: 1 })
   @ApiResponse({

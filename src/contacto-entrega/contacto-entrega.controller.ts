@@ -21,6 +21,8 @@ import { CreateContactoEntregaDto } from './dto/create-contacto-entrega.dto';
 import { UpdateContactoEntregaDto } from './dto/update-contacto-entrega.dto';
 import { ContactoEntrega } from './entities/contacto-entrega.entity';
 import { FindContactosEntregaDto } from './dto/find-contactos-entrega.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Contactos de Entrega')
 @Controller('contacto-entrega')
@@ -30,6 +32,7 @@ export class ContactoEntregaController {
   ) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo contacto de entrega' })
   @ApiResponse({
     status: 201,
@@ -45,6 +48,7 @@ export class ContactoEntregaController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({
     summary: 'Obtener todos los contactos de entrega con paginación',
   })
@@ -74,6 +78,7 @@ export class ContactoEntregaController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un contacto de entrega por ID' })
   @ApiParam({
     name: 'id',
@@ -94,6 +99,7 @@ export class ContactoEntregaController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar un contacto de entrega' })
   @ApiParam({
     name: 'id',
@@ -121,6 +127,7 @@ export class ContactoEntregaController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Eliminar un contacto de entrega' })
   @ApiParam({
     name: 'id',

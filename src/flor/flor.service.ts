@@ -6,6 +6,7 @@ import { CreateFlorDto } from './dto/create-flor.dto';
 import { UpdateFlorDto } from './dto/update-flor.dto';
 import { handleDbException } from 'src/common/helpers/db-exception.helper';
 import { FindFloresDto } from './dto/find-flores.dto';
+import { ArticuloEstado } from 'src/common/enums';
 
 @Injectable()
 export class FlorService {
@@ -78,5 +79,19 @@ export class FlorService {
   async remove(id: number) {
     const flor = await this.findOne(id);
     await this.florRepository.remove(flor);
+  }
+
+  /**
+   * Obtener flores activas para catálogo público
+   * Solo retorna id, nombre y color
+   */
+  async findPublic() {
+    const flores = await this.florRepository.find({
+      where: { estado: ArticuloEstado.ACTIVO },
+      select: ['idFlor', 'nombre', 'color'],
+      order: { nombre: 'ASC' },
+    });
+
+    return flores;
   }
 }

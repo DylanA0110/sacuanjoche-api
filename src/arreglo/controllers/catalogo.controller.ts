@@ -1,6 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ArregloService } from '../arreglo.service';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Catálogo')
 @Controller('catalogo')
@@ -8,6 +10,7 @@ export class CatalogoController {
   constructor(private readonly arregloService: ArregloService) {}
 
   @Get('filtros')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({
     summary: 'Obtener opciones de filtros disponibles para el catálogo',
   })

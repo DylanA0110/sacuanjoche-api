@@ -21,6 +21,8 @@ import { CreatePedidoHistorialDto } from './dto/create-pedido-historial.dto';
 import { UpdatePedidoHistorialDto } from './dto/update-pedido-historial.dto';
 import { PedidoHistorial } from './entities/pedido-historial.entity';
 import { FindPedidosHistorialDto } from './dto/find-pedidos-historial.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Pedido Historial')
 @Controller('pedido-historial')
@@ -30,6 +32,7 @@ export class PedidoHistorialController {
   ) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo historial de pedido' })
   @ApiResponse({
     status: 201,
@@ -41,6 +44,7 @@ export class PedidoHistorialController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los historiales con paginación' })
   @ApiQuery({
     name: 'q',
@@ -54,6 +58,7 @@ export class PedidoHistorialController {
   }
 
   @Get('pedido/:idPedido')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Buscar historiales por pedido' })
   @ApiParam({ name: 'idPedido', description: 'ID del pedido', example: 1 })
   @ApiResponse({
@@ -66,6 +71,7 @@ export class PedidoHistorialController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un historial por ID' })
   @ApiParam({ name: 'id', description: 'ID del historial', example: 1 })
   @ApiResponse({
@@ -78,6 +84,7 @@ export class PedidoHistorialController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar un historial' })
   @ApiParam({ name: 'id', description: 'ID del historial', example: 1 })
   @ApiResponse({
@@ -93,6 +100,7 @@ export class PedidoHistorialController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Eliminar un historial' })
   @ApiParam({ name: 'id', description: 'ID del historial', example: 1 })
   @ApiResponse({ status: 200, description: 'Eliminado exitosamente' })

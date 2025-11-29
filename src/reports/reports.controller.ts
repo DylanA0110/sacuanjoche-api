@@ -20,6 +20,8 @@ import { FindPedidosDto } from '../pedido/dto/find-pedidos.dto';
 import { FindPedidosReporteDto } from '../pedido/dto/find-pedidos-reporte.dto';
 import { FindFacturasDto } from '../factura/dto/find-facturas.dto';
 import { FindArreglosDto } from '../arreglo/dto/find-arreglos.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -27,6 +29,7 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('factura/:idFactura/pdf')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({
     summary: 'Generar PDF de factura',
     description:
@@ -84,6 +87,7 @@ export class ReportsController {
   }
 
   @Get('pedido/:idPedido/orden-trabajo/pdf')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor)
   @ApiOperation({
     summary: 'Generar PDF de Orden de Trabajo',
     description:
@@ -141,6 +145,7 @@ export class ReportsController {
   }
 
   @Get('pedidos/pdf')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Generar PDF de reporte de pedidos',
     description:
@@ -190,6 +195,7 @@ export class ReportsController {
   }
 
   @Get('facturas/pdf')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Generar PDF de reporte de facturas',
     description:
@@ -239,6 +245,7 @@ export class ReportsController {
   }
 
   @Get('arreglos/pdf')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Generar PDF de reporte de arreglos',
     description:
@@ -288,6 +295,7 @@ export class ReportsController {
   }
 
   @Get('pedidos/detallado/pdf')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Generar PDF de reporte detallado de pedidos',
     description:

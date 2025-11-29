@@ -21,6 +21,8 @@ import { CreateAccesorioDto } from './dto/create-accesorio.dto';
 import { UpdateAccesorioDto } from './dto/update-accesorio.dto';
 import { Accesorio } from './entities/accesorio.entity';
 import { FindAccesoriosDto } from './dto/find-accesorios.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Accesorios')
 @Controller('accesorio')
@@ -28,6 +30,7 @@ export class AccesorioController {
   constructor(private readonly accesorioService: AccesorioService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear un nuevo accesorio' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class AccesorioController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener todos los accesorios con paginación' })
   @ApiQuery({
     name: 'q',
@@ -68,7 +72,29 @@ export class AccesorioController {
     return this.accesorioService.findAll(filters);
   }
 
+  @Get('public')
+  @ApiOperation({ summary: 'Obtener accesorios activos para catálogo público (sin autenticación)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de accesorios activos',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          idAccesorio: { type: 'number', example: 1 },
+          descripcion: { type: 'string', example: 'Cinta decorativa' },
+          categoria: { type: 'string', example: 'Decoración' },
+        },
+      },
+    },
+  })
+  findPublic() {
+    return this.accesorioService.findPublic();
+  }
+
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener un accesorio por ID' })
   @ApiParam({ name: 'id', description: 'ID del accesorio', example: 1 })
   @ApiResponse({
@@ -85,6 +111,7 @@ export class AccesorioController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar un accesorio' })
   @ApiParam({ name: 'id', description: 'ID del accesorio', example: 1 })
   @ApiResponse({
@@ -108,6 +135,7 @@ export class AccesorioController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un accesorio' })
   @ApiParam({ name: 'id', description: 'ID del accesorio', example: 1 })
   @ApiResponse({

@@ -4,9 +4,10 @@ import { CarritoService } from './carrito.service';
 import { CarritoController } from './carrito.controller';
 import { Carrito } from './entities/carrito.entity';
 import { User } from 'src/auth/entities/user.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Carrito, User])],
+  imports: [TypeOrmModule.forFeature([Carrito, User]), AuthModule],
   controllers: [CarritoController],
   providers: [CarritoService],
   exports: [CarritoService],

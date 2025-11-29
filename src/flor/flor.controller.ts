@@ -21,6 +21,8 @@ import { CreateFlorDto } from './dto/create-flor.dto';
 import { UpdateFlorDto } from './dto/update-flor.dto';
 import { Flor } from './entities/flor.entity';
 import { FindFloresDto } from './dto/find-flores.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Flores')
 @Controller('flor')
@@ -28,6 +30,7 @@ export class FlorController {
   constructor(private readonly florService: FlorService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear una nueva flor' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class FlorController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener todas las flores con paginación' })
   @ApiQuery({
     name: 'q',
@@ -68,7 +72,29 @@ export class FlorController {
     return this.florService.findAll(filters);
   }
 
+  @Get('public')
+  @ApiOperation({ summary: 'Obtener flores activas para catálogo público (sin autenticación)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de flores activas',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          idFlor: { type: 'number', example: 1 },
+          nombre: { type: 'string', example: 'Rosa' },
+          color: { type: 'string', example: 'Rojo' },
+        },
+      },
+    },
+  })
+  findPublic() {
+    return this.florService.findPublic();
+  }
+
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener una flor por ID' })
   @ApiParam({ name: 'id', description: 'ID de la flor', example: 1 })
   @ApiResponse({
@@ -85,6 +111,7 @@ export class FlorController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar una flor' })
   @ApiParam({ name: 'id', description: 'ID de la flor', example: 1 })
   @ApiResponse({
@@ -108,6 +135,7 @@ export class FlorController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar una flor' })
   @ApiParam({ name: 'id', description: 'ID de la flor', example: 1 })
   @ApiResponse({

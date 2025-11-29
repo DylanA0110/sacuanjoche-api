@@ -21,6 +21,8 @@ import { CreateClienteDireccionDto } from './dto/create-cliente-direccion.dto';
 import { UpdateClienteDireccionDto } from './dto/update-cliente-direccion.dto';
 import { ClienteDireccion } from './entities/cliente-direccion.entity';
 import { FindClienteDireccionesDto } from './dto/find-cliente-direcciones.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Cliente Direcciones')
 @Controller('cliente-direccion')
@@ -30,6 +32,7 @@ export class ClienteDireccionController {
   ) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear una nueva cliente dirección' })
   @ApiResponse({
     status: 201,
@@ -45,6 +48,7 @@ export class ClienteDireccionController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({
     summary: 'Obtener todas las cliente direcciones con paginación',
   })
@@ -74,6 +78,7 @@ export class ClienteDireccionController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener una cliente dirección por ID' })
   @ApiParam({
     name: 'id',
@@ -94,6 +99,7 @@ export class ClienteDireccionController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar una cliente dirección' })
   @ApiParam({
     name: 'id',
@@ -121,6 +127,7 @@ export class ClienteDireccionController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Eliminar una cliente dirección' })
   @ApiParam({
     name: 'id',

@@ -21,6 +21,8 @@ import { CreateFormaArregloDto } from './dto/create-forma-arreglo.dto';
 import { UpdateFormaArregloDto } from './dto/update-forma-arreglo.dto';
 import { FormaArreglo } from './entities/forma-arreglo.entity';
 import { FindFormasArregloDto } from './dto/find-formas-arreglo.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Formas de Arreglo')
 @Controller('forma-arreglo')
@@ -28,6 +30,7 @@ export class FormaArregloController {
   constructor(private readonly formaArregloService: FormaArregloService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear una nueva forma de arreglo' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class FormaArregloController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Obtener todas las formas de arreglo con paginación',
   })
@@ -71,6 +75,7 @@ export class FormaArregloController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Obtener una forma de arreglo por ID' })
   @ApiParam({
     name: 'id',
@@ -91,6 +96,7 @@ export class FormaArregloController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar una forma de arreglo' })
   @ApiParam({
     name: 'id',
@@ -118,6 +124,7 @@ export class FormaArregloController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar una forma de arreglo' })
   @ApiParam({
     name: 'id',

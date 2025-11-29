@@ -21,6 +21,8 @@ import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { Pedido } from './entities/pedido.entity';
 import { FindPedidosDto } from './dto/find-pedidos.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Pedidos')
 @Controller('pedido')
@@ -28,6 +30,7 @@ export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear un nuevo pedido' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class PedidoController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los pedidos con paginación' })
   @ApiQuery({
     name: 'q',
@@ -70,6 +74,7 @@ export class PedidoController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un pedido por ID' })
   @ApiParam({ name: 'id', description: 'ID del pedido', example: 1 })
   @ApiResponse({
@@ -86,6 +91,7 @@ export class PedidoController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar un pedido' })
   @ApiParam({ name: 'id', description: 'ID del pedido', example: 1 })
   @ApiResponse({
@@ -109,6 +115,7 @@ export class PedidoController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un pedido' })
   @ApiParam({ name: 'id', description: 'ID del pedido', example: 1 })
   @ApiResponse({
@@ -124,6 +131,7 @@ export class PedidoController {
   }
 
   @Post(':id/asociar-pago')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
     summary: 'Asociar un pago a un pedido existente (útil para canal interno)',
     description:

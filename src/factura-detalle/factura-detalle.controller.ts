@@ -21,6 +21,8 @@ import { CreateFacturaDetalleDto } from './dto/create-factura-detalle.dto';
 import { UpdateFacturaDetalleDto } from './dto/update-factura-detalle.dto';
 import { FacturaDetalle } from './entities/factura-detalle.entity';
 import { FindFacturasDetalleDto } from './dto/find-facturas-detalle.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Factura Detalle')
 @Controller('factura-detalle')
@@ -30,6 +32,7 @@ export class FacturaDetalleController {
   ) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Crear un nuevo detalle de factura' })
   @ApiResponse({
     status: 201,
@@ -45,6 +48,7 @@ export class FacturaDetalleController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los detalles de factura con paginación' })
   @ApiQuery({
     name: 'q',
@@ -62,6 +66,7 @@ export class FacturaDetalleController {
   }
 
   @Get('factura/:idFactura')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Buscar detalles por factura' })
   @ApiParam({ name: 'idFactura', description: 'ID de la factura', example: 1 })
   @ApiResponse({
@@ -74,6 +79,7 @@ export class FacturaDetalleController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un detalle de factura por ID' })
   @ApiParam({ name: 'id', description: 'ID del detalle de factura', example: 1 })
   @ApiResponse({
@@ -90,6 +96,7 @@ export class FacturaDetalleController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar un detalle de factura' })
   @ApiParam({ name: 'id', description: 'ID del detalle de factura', example: 1 })
   @ApiResponse({
@@ -113,6 +120,7 @@ export class FacturaDetalleController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Eliminar un detalle de factura' })
   @ApiParam({ name: 'id', description: 'ID del detalle de factura', example: 1 })
   @ApiResponse({

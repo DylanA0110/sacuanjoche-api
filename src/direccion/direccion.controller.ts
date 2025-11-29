@@ -21,6 +21,8 @@ import { CreateDireccionDto } from './dto/create-direccion.dto';
 import { UpdateDireccionDto } from './dto/update-direccion.dto';
 import { Direccion } from './entities/direccion.entity';
 import { FindDireccionesDto } from './dto/find-direcciones.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Direcciones')
 @Controller('direccion')
@@ -28,6 +30,7 @@ export class DireccionController {
   constructor(private readonly direccionService: DireccionService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Crear una nueva dirección' })
   @ApiResponse({
     status: 201,
@@ -43,6 +46,7 @@ export class DireccionController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todas las direcciones con paginación' })
   @ApiResponse({
     status: 200,
@@ -61,6 +65,7 @@ export class DireccionController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener una dirección por ID' })
   @ApiParam({ name: 'id', description: 'ID de la dirección', example: 1 })
   @ApiResponse({
@@ -77,6 +82,7 @@ export class DireccionController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar una dirección' })
   @ApiParam({ name: 'id', description: 'ID de la dirección', example: 1 })
   @ApiResponse({
@@ -100,6 +106,7 @@ export class DireccionController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Eliminar una dirección' })
   @ApiParam({ name: 'id', description: 'ID de la dirección', example: 1 })
   @ApiResponse({

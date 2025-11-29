@@ -22,6 +22,8 @@ import { CreateArregloMediaSimpleDto } from '../dto/create-arreglo-media-simple.
 import { CreateArregloMediaBatchDto } from '../dto/create-arreglo-media-batch.dto';
 import { UpdateArregloMediaSupabaseDto } from '../dto/update-arreglo-media-supabase.dto';
 import { ArregloMedia } from '../entities/arreglo-media.entity';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Arreglos Media')
 @Controller('arreglos')
@@ -29,6 +31,7 @@ export class ArreglosMediaController {
   constructor(private readonly mediaService: ArregloMediaService) {}
 
   @Post(':id/media')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Guardar una imagen de Supabase para un arreglo' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiBody({ type: CreateArregloMediaSimpleDto })
@@ -46,6 +49,7 @@ export class ArreglosMediaController {
   }
 
   @Post(':id/media/batch')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Guardar múltiples imágenes de Supabase para un arreglo' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiBody({ type: CreateArregloMediaBatchDto })
@@ -63,6 +67,7 @@ export class ArreglosMediaController {
   }
 
   @Get(':id/media')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todas las imágenes de un arreglo' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiResponse({
@@ -75,6 +80,7 @@ export class ArreglosMediaController {
   }
 
   @Patch(':id/media/:mediaId')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Actualizar orden, tipo, isPrimary o altText de una imagen' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiParam({ name: 'mediaId', description: 'ID del registro de media', example: 1 })
@@ -94,6 +100,7 @@ export class ArreglosMediaController {
   }
 
   @Delete(':id/media/:mediaId')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Eliminar una imagen específica' })
   @ApiParam({ name: 'id', description: 'ID del arreglo', example: 1 })
   @ApiParam({ name: 'mediaId', description: 'ID del registro de media', example: 1 })

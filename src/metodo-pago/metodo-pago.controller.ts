@@ -22,6 +22,8 @@ import { UpdateMetodoPagoDto } from './dto/update-metodo-pago.dto';
 import { MetodoPago } from './entities/metodo-pago.entity';
 import { FindMetodosPagoDto } from './dto/find-metodos-pago.dto';
 import { PedidoCanal } from 'src/common/enums';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Métodos de Pago')
 @Controller('metodo-pago')
@@ -29,6 +31,7 @@ export class MetodoPagoController {
   constructor(private readonly metodoPagoService: MetodoPagoService) {}
 
   @Post()
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Crear un nuevo método de pago' })
   @ApiResponse({
     status: 201,
@@ -44,6 +47,7 @@ export class MetodoPagoController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener todos los métodos de pago con paginación' })
   @ApiQuery({
     name: 'q',
@@ -70,6 +74,7 @@ export class MetodoPagoController {
   }
 
   @Get('por-canal/:canal')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({
     summary: 'Obtener métodos de pago disponibles para un canal específico',
     description:
@@ -91,6 +96,7 @@ export class MetodoPagoController {
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.cliente)
   @ApiOperation({ summary: 'Obtener un método de pago por ID' })
   @ApiParam({ name: 'id', description: 'ID del método de pago', example: 1 })
   @ApiResponse({
@@ -107,6 +113,7 @@ export class MetodoPagoController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Actualizar un método de pago' })
   @ApiParam({ name: 'id', description: 'ID del método de pago', example: 1 })
   @ApiResponse({
@@ -130,6 +137,7 @@ export class MetodoPagoController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Eliminar un método de pago' })
   @ApiParam({ name: 'id', description: 'ID del método de pago', example: 1 })
   @ApiResponse({

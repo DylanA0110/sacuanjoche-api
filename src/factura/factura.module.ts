@@ -8,6 +8,7 @@ import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity';
 import { FacturaDetalle } from 'src/factura-detalle/entities/factura-detalle.entity';
 import { FolioModule } from 'src/folio/folio.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { FolioModule } from 'src/folio/folio.module';
       FacturaDetalle,
     ]),
     FolioModule,
+    AuthModule,
   ],
   controllers: [FacturaController],
   providers: [FacturaService],

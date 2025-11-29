@@ -16,6 +16,8 @@ import {
 import { RutaService } from './ruta.service';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { Ruta } from './entities/ruta.entity';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Rutas')
 @Controller('rutas')
@@ -23,6 +25,7 @@ export class RutaController {
   constructor(private readonly rutaService: RutaService) {}
 
   @Post()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({ summary: 'Generar una ruta optimizada con Mapbox' })
   @ApiBody({
     description:
@@ -95,6 +98,7 @@ export class RutaController {
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor)
   @ApiOperation({ summary: 'Listar rutas optimizadas' })
   @ApiResponse({
     status: 200,
@@ -133,6 +137,7 @@ export class RutaController {
   }
 
   @Get(':idRuta')
+  @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor)
   @ApiOperation({ summary: 'Obtener detalle de una ruta' })
   @ApiParam({
     name: 'idRuta',
