@@ -31,7 +31,8 @@ export class PedidosReport {
       .leftJoinAndSelect('pedido.cliente', 'cliente')
       .leftJoinAndSelect('pedido.direccion', 'direccion')
       .leftJoinAndSelect('pedido.contactoEntrega', 'contactoEntrega')
-      .leftJoinAndSelect('pedido.pago', 'pago');
+      .leftJoinAndSelect('pedido.pago', 'pago')
+      .leftJoinAndSelect('pedido.envio', 'envio');
 
     // Aplicar filtros de búsqueda si existen
     if (filters?.q) {

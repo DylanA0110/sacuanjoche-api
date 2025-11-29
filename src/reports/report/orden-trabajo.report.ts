@@ -43,6 +43,7 @@ export class OrdenTrabajoReport {
         'pago',
         'pago.metodoPago',
         'factura',
+        'envio',
       ],
     });
 
@@ -82,20 +83,12 @@ export class OrdenTrabajoReport {
       return `${cantidad}x ${nombreArreglo}`;
     });
 
-    // Datos financieros
+    // Datos financieros (solo los necesarios)
     const valor = Number(pedidoCompleto.totalPedido || 0);
-    const transporte = 0; // Por ahora 0, se puede agregar después
+    const transporte = pedidoCompleto.envio?.costoEnvio 
+      ? Number(pedidoCompleto.envio.costoEnvio) 
+      : 0;
     const numFactura = pedidoCompleto.factura?.numFactura || '';
-    const retencion = 0; // Por ahora 0
-    const valorPagado = pedidoCompleto.pago ? Number(pedidoCompleto.pago.monto || 0) : 0;
-    const banco = pedidoCompleto.pago?.metodoPago?.descripcion || '';
-    const chequeNum = pedidoCompleto.pago?.referencia || '';
-    const fechaCobro = pedidoCompleto.pago?.fechaPago
-      ? new Date(pedidoCompleto.pago.fechaPago).toLocaleDateString('es-NI')
-      : '';
-    const efectivo = pedidoCompleto.pago?.estado === 'pagado' ? valorPagado : 0;
-    const anticipo = 0; // Por ahora 0
-    const fechaCancelacion = '';
 
     // Fecha de entrega
     const fechaEntrega = pedidoCompleto.fechaEntregaEstimada
@@ -261,7 +254,7 @@ export class OrdenTrabajoReport {
           margin: [0, 0, 0, 20],
         },
 
-        // DATOS FINANCIEROS
+        // DATOS FINANCIEROS (solo Valor, Transporte y Factura N°)
         {
           columns: [
             {
@@ -318,230 +311,30 @@ export class OrdenTrabajoReport {
                   ],
                   margin: [0, 0, 0, 8],
                 },
-                {
-                  columns: [
-                    {
-                      text: 'Retención C$',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: retencion.toFixed(2),
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'Valor Pagado: C$',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: valorPagado.toFixed(2),
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'Banco:',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: banco || '________________',
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'Cheque N°:',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: chequeNum || '________________',
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'Fecha Cobro:',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: fechaCobro || '________________',
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'Efectivo:',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: efectivo.toFixed(2),
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'Anticipo:',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: anticipo.toFixed(2),
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
-                {
-                  columns: [
-                    {
-                      text: 'F/Cancelación:',
-                      fontSize: 10,
-                      bold: true,
-                      width: 'auto',
-                    },
-                    {
-                      text: fechaCancelacion || '________________',
-                      fontSize: 10,
-                      alignment: 'right',
-                      width: '*',
-                    },
-                  ],
-                  margin: [0, 0, 0, 8],
-                },
               ],
             },
           ],
-          margin: [0, 0, 0, 20],
+          margin: [0, 0, 0, 30],
         },
 
-        // FOOTER
+        // FOOTER (sin líneas, solo texto con guiones bajos)
         {
           columns: [
             {
-              width: '33%',
-              stack: [
-                {
-                  text: 'Fecha Entrega:',
-                  fontSize: 10,
-                  bold: true,
-                },
-                {
-                  canvas: [
-                    {
-                      type: 'line',
-                      x1: 0,
-                      y1: 0,
-                      x2: 150,
-                      y2: 0,
-                      lineWidth: 1,
-                      lineColor: '#000000',
-                    },
-                  ],
-                  margin: [0, 5, 0, 0],
-                },
-              ],
+              width: '50%',
+              text: `Fecha Entrega: ${fechaEntrega || '________________'}`,
+              fontSize: 10,
+              bold: false,
             },
             {
-              width: '34%',
-              alignment: 'center',
-              stack: [
-                {
-                  text: fechaEntrega || '________________',
-                  fontSize: 10,
-                  alignment: 'center',
-                },
-                {
-                  canvas: [
-                    {
-                      type: 'line',
-                      x1: 0,
-                      y1: 0,
-                      x2: 150,
-                      y2: 0,
-                      lineWidth: 1,
-                      lineColor: '#000000',
-                    },
-                  ],
-                  margin: [0, 5, 0, 0],
-                  alignment: 'center',
-                },
-              ],
-            },
-            {
-              width: '33%',
+              width: '50%',
+              text: 'Recibí conforme: _________________________',
+              fontSize: 10,
+              bold: false,
               alignment: 'right',
-              stack: [
-                {
-                  text: 'Recibí Conforme',
-                  fontSize: 10,
-                  bold: true,
-                  alignment: 'right',
-                },
-                {
-                  canvas: [
-                    {
-                      type: 'line',
-                      x1: 0,
-                      y1: 0,
-                      x2: 150,
-                      y2: 0,
-                      lineWidth: 1,
-                      lineColor: '#000000',
-                    },
-                  ],
-                  margin: [0, 5, 0, 0],
-                  alignment: 'right',
-                },
-              ],
             },
           ],
-          margin: [0, 20, 0, 0],
+          margin: [0, 30, 0, 0],
         },
       ],
     };

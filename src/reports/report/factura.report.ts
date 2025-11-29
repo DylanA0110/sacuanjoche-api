@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { FacturaService } from '../../factura/factura.service';
 import { PrinterService } from '../../printer/printer.service';
+import { Factura } from '../../factura/entities/factura.entity';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -10,14 +13,26 @@ export class FacturaReport {
   constructor(
     private readonly facturaService: FacturaService,
     private readonly printerService: PrinterService,
+    @InjectRepository(Factura)
+    private readonly facturaRepository: Repository<Factura>,
   ) {}
 
   /**
    * Genera el PDF de una factura en formato exacto según el diseño proporcionado
    */
   async generarPDF(idFactura: number): Promise<PDFKit.PDFDocument> {
-    // Obtener la factura con todas sus relaciones
-    const factura = await this.facturaService.findOne(idFactura);
+    // Obtener la factura con todas sus relaciones, incluyendo pedido.envio
+    const factura = await this.facturaRepository.findOne({
+      where: { idFactura },
+      relations: [
+        'pedido',
+        'pedido.cliente',
+        'pedido.envio',
+        'empleado',
+        'detallesFactura',
+        'detallesFactura.arreglo',
+      ],
+    });
 
     if (!factura) {
       throw new NotFoundException(
@@ -85,8 +100,10 @@ export class FacturaReport {
       0,
     );
 
-    // Transporte (por ahora 0, se puede agregar después)
-    const transporte = 0;
+    // Transporte (obtenido de la tabla envio)
+    const transporte = factura.pedido?.envio?.costoEnvio
+      ? Number(factura.pedido.envio.costoEnvio)
+      : 0;
 
     // Total
     const total = Number(factura.montoTotal || subtotal);
