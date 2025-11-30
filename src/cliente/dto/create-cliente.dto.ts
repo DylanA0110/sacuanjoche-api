@@ -5,6 +5,7 @@ import { AllowedCharacters } from '../../common/validators/allowed-characters.de
 import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
 import { NoRandomString } from '../../common/validators/no-random-string.decorator';
 import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
+import { NicaraguanPhone } from '../../common/validators/nicaraguan-phone.decorator';
 
 export class CreateClienteDto {
   @ApiProperty({
@@ -34,14 +35,15 @@ export class CreateClienteDto {
   primerApellido: string;
 
   @ApiProperty({
-    description: 'Número de teléfono del cliente',
-    example: '+1234567890',
+    description: 'Número de teléfono del cliente (formato: 505 seguido de 8 dígitos)',
+    example: '50512345678',
     required: false,
-    maxLength: 20
+    maxLength: 11
   })
   @IsOptional()
   @IsString()
-  @MaxLength(20)
+  @MaxLength(11)
+  @NicaraguanPhone()
   @NoSqlInjection()
   telefono?: string;
 
