@@ -56,8 +56,8 @@ export class Pedido {
   })
   fechaActualizacion: Date;
 
-  @Column({ name: 'fecha_entrega_estimada', type: 'timestamp' })
-  fechaEntregaEstimada: Date;
+  @Column({ name: 'fecha_entrega_estimada', type: 'timestamp', nullable: true })
+  fechaEntregaEstimada?: Date;
 
   @Column({ name: 'direccion_txt', type: 'text' })
   direccionTxt: string;

@@ -79,10 +79,11 @@ export class CreatePedidoDto {
   @ApiProperty({
     description: 'Fecha estimada de entrega',
     example: '2024-12-25T10:00:00.000Z',
+    required: false,
   })
-  @IsNotEmpty({ message: 'La fecha de entrega estimada es requerida' })
+  @IsOptional()
   @IsDateString({}, { message: 'La fecha de entrega estimada debe ser una fecha válida' })
-  fechaEntregaEstimada: Date;
+  fechaEntregaEstimada?: Date;
 
   @ApiProperty({
     description: 'Dirección de entrega en texto',
