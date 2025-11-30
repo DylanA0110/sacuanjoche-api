@@ -79,6 +79,23 @@ export class CarritosArregloController {
     return this.carritosArregloService.findAll(filters);
   }
 
+  @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.cliente)
+  @ApiOperation({ summary: 'Obtener un carrito arreglo por ID' })
+  @ApiParam({ name: 'id', description: 'ID del carrito arreglo', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Carrito arreglo obtenido exitosamente',
+    type: CarritosArreglo,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Carrito arreglo no encontrado',
+  })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.carritosArregloService.findOne(id);
+  }
+
   @Patch(':id')
   @Auth(ValidRoles.admin, ValidRoles.cliente)
   @ApiOperation({ summary: 'Actualizar un carrito arreglo' })

@@ -83,10 +83,13 @@ export class CarritosArregloService {
   }
 
   async findOne(id: number) {
-    const line = await this.carritosArregloRepository.findOne({
-      where: { idCarritoArreglo: id },
-      relations: ['carrito', 'arreglo'],
-    });
+    const line = await this.carritosArregloRepository
+      .createQueryBuilder('carritoArreglo')
+      .leftJoinAndSelect('carritoArreglo.carrito', 'carrito')
+      .leftJoinAndSelect('carrito.user', 'user')
+      .leftJoinAndSelect('carritoArreglo.arreglo', 'arreglo')
+      .where('carritoArreglo.idCarritoArreglo = :id', { id })
+      .getOne();
 
     if (!line) {
       throw new NotFoundException(
