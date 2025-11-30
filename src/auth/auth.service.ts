@@ -50,11 +50,17 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const { password, clienteId, empleadoId, ...userData } = createUserDto;
+      const { password, clienteId, empleadoId, clienteData, ...userData } = createUserDto;
 
       if (clienteId && empleadoId) {
         throw new BadRequestException(
           'Solo puede asociar el usuario a un cliente o a un empleado, no a ambos.',
+        );
+      }
+
+      if (clienteId && clienteData) {
+        throw new BadRequestException(
+          'No puede proporcionar clienteId y clienteData al mismo tiempo. Use clienteId para asociar un cliente existente o clienteData para crear uno nuevo.',
         );
       }
 
@@ -66,7 +72,18 @@ export class AuthService {
         password: this.encryptionService.encrypt(password),
       });
 
-      if (clienteId !== undefined) {
+      // Si se proporciona clienteData, crear un nuevo cliente
+      if (clienteData) {
+        const nuevoCliente = this.clienteRepository.create({
+          primerNombre: clienteData.primerNombre,
+          primerApellido: clienteData.primerApellido,
+          telefono: clienteData.telefono,
+        });
+
+        const clienteGuardado = await this.clienteRepository.save(nuevoCliente);
+        newUser.cliente = clienteGuardado;
+      } else if (clienteId !== undefined) {
+        // Si se proporciona clienteId, asociar el cliente existente
         const cliente = await this.clienteRepository.findOne({
           where: { idCliente: clienteId },
         });

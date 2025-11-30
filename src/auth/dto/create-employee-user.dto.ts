@@ -12,17 +12,25 @@ import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorat
 
 export class CreateEmployeeUserDto {
   @ApiProperty({
-    description: 'Email del usuario',
-    example: 'empleado@flori.com',
+    description: 'Email institucional del empleado',
+    example: 'empleado@empresa.com',
   })
   @IsString()
-  @IsEmail()
+  @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  @MaxLength(100, { message: 'El email no puede exceder 100 caracteres' })
+  @Matches(
+    /^[a-zA-Z0-9._%+-]{6,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    {
+      message: 'El correo debe tener al menos 6 caracteres antes del @'
+    }
+  )
   @NoSqlInjection()
+  // No aplicamos NoRandomString ni NoExcessiveRepetition porque el email ya tiene validación estricta
   email: string;
 
   @ApiProperty({
-    description: 'Contraseña del usuario',
-    example: 'Empleado1234',
+    description: 'Contraseña temporal para el empleado',
+    example: 'ClaveTemporal123',
   })
   @IsString()
   @MinLength(6)
@@ -34,11 +42,10 @@ export class CreateEmployeeUserDto {
   password: string;
 
   @ApiProperty({
-    description: 'ID del empleado',
-    example: 1,
+    description: 'ID del empleado previamente registrado',
+    example: 7,
   })
   @IsInt()
   @IsPositive()
   empleadoId: number;
 }
-
