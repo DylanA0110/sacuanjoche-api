@@ -232,6 +232,11 @@ export class PagoService {
    * Después de confirmar, se puede crear el pedido asociado a este pago.
    */
   async confirmPayPalPayment(idPago: number, orderId: string) {
+    // Validar que orderId no sea undefined, null o vacío
+    if (!orderId || typeof orderId !== 'string' || orderId.trim() === '') {
+      throw new BadRequestException('El orderId es requerido y no puede estar vacío');
+    }
+
     const pago = await this.pagoRepository.findOne({
       where: { idPago },
       relations: ['metodoPago'],

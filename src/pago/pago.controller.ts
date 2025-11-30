@@ -24,6 +24,7 @@ import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
 import { Pago } from './entities/pago.entity';
 import { FindPagosDto } from './dto/find-pagos.dto';
+import { ConfirmPayPalPaymentDto } from './dto/confirm-paypal-payment.dto';
 import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
@@ -167,19 +168,7 @@ export class PagoController {
     description: 'Confirma un pago de PayPal después de que el usuario lo aprueba. Cambia el estado del pago a PAGADO. Después de confirmar, se puede crear el pedido asociado a este pago usando el idPago.',
   })
   @ApiParam({ name: 'idPago', description: 'ID del pago a confirmar (obtenido al crear el pago)', example: 1 })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        orderId: {
-          type: 'string',
-          description: 'ID de la orden de PayPal (obtenido de la respuesta de PayPal después de la aprobación)',
-          example: '5O190127TN364715T',
-        },
-      },
-      required: ['orderId'],
-    },
-  })
+  @ApiBody({ type: ConfirmPayPalPaymentDto })
   @ApiResponse({
     status: 200,
     description: 'Pago confirmado exitosamente. El pago ahora está en estado PAGADO y puede usarse para crear un pedido.',
@@ -191,13 +180,13 @@ export class PagoController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Pago ya confirmado, orderId no coincide, o error al capturar orden en PayPal',
+    description: 'Pago ya confirmado, orderId no coincide, orderId inválido o error al capturar orden en PayPal',
   })
   confirmPayPalPayment(
     @Param('idPago', ParseIntPipe) idPago: number,
-    @Body('orderId') orderId: string,
+    @Body() confirmDto: ConfirmPayPalPaymentDto,
   ) {
-    return this.pagoService.confirmPayPalPayment(idPago, orderId);
+    return this.pagoService.confirmPayPalPayment(idPago, confirmDto.orderId);
   }
 
   @Post('paypal/webhook')

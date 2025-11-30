@@ -27,8 +27,8 @@ export class Pedido {
   @PrimaryGeneratedColumn({ name: 'id_pedido' })
   idPedido: number;
 
-  @Column({ name: 'id_empleado' })
-  idEmpleado: number;
+  @Column({ name: 'id_empleado', nullable: true })
+  idEmpleado?: number;
 
   @Column({ name: 'id_cliente' })
   idCliente: number;

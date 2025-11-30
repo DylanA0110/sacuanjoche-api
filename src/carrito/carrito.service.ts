@@ -285,12 +285,17 @@ export class CarritoService {
       } = crearPedidoDto;
 
       // Validar y obtener las entidades necesarias
+      // Si idEmpleado está presente, validar que exista; si no, será null
+      const empleadoPromise = idEmpleado
+        ? findEntityOrFail(
+            this.empleadoRepository,
+            { idEmpleado },
+            'El empleado no fue encontrado o no existe',
+          )
+        : Promise.resolve(null);
+
       const [empleado, direccion, contactoEntrega, folio] = await Promise.all([
-        findEntityOrFail(
-          this.empleadoRepository,
-          { idEmpleado },
-          'El empleado no fue encontrado o no existe',
-        ),
+        empleadoPromise,
         findEntityOrFail(
           this.direccionRepository,
           { idDireccion },
@@ -345,8 +350,7 @@ export class CarritoService {
       }
 
       // Crear el pedido
-      const newPedido = this.pedidoRepository.create({
-        idEmpleado,
+      const pedidoData: Partial<Pedido> = {
         idCliente: carrito.user.cliente.idCliente,
         idDireccion,
         idContactoEntrega,
@@ -359,13 +363,20 @@ export class CarritoService {
         numeroPedido,
         totalProductos: 0, // Se calculará automáticamente cuando se agreguen las líneas
         totalPedido: 0, // Se calculará automáticamente cuando se agreguen las líneas
-        empleado,
         cliente: carrito.user.cliente,
         direccion,
         contactoEntrega,
         pago: carrito.pago,
         folio,
-      });
+      };
+
+      // Solo incluir idEmpleado y empleado si están definidos
+      if (idEmpleado !== undefined && empleado !== null) {
+        pedidoData.idEmpleado = idEmpleado;
+        pedidoData.empleado = empleado;
+      }
+
+      const newPedido = this.pedidoRepository.create(pedidoData);
 
       await this.pedidoRepository.save(newPedido);
 
