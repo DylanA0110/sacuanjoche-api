@@ -85,4 +85,18 @@ export class FormaArregloService {
     const formaArreglo = await this.findOne(id);
     await this.formaArregloRepository.remove(formaArreglo);
   }
+
+  /**
+   * Obtener formas de arreglo activas para catálogo público
+   * Solo retorna id y descripción
+   */
+  async findPublic() {
+    const formasArreglo = await this.formaArregloRepository.find({
+      where: { activo: true },
+      select: ['idFormaArreglo', 'descripcion'],
+      order: { descripcion: 'ASC' },
+    });
+
+    return formasArreglo;
+  }
 }

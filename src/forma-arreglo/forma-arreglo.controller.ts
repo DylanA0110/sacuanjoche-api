@@ -45,6 +45,26 @@ export class FormaArregloController {
     return this.formaArregloService.create(createFormaArregloDto);
   }
 
+  @Get('public')
+  @ApiOperation({ summary: 'Obtener formas de arreglo activas para catálogo público (sin autenticación)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de formas de arreglo activas',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          idFormaArreglo: { type: 'number', example: 1 },
+          descripcion: { type: 'string', example: 'Bouquet' },
+        },
+      },
+    },
+  })
+  findPublic() {
+    return this.formaArregloService.findPublic();
+  }
+
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.vendedor)
   @ApiOperation({
