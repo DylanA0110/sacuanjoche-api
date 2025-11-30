@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FolioService } from './folio.service';
 import { CreateFolioDto } from './dto/create-folio.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Folios')
+@ApiBearerAuth('JWT-auth')
 @Controller('folio')
 export class FolioController {
   constructor(private readonly folioService: FolioService) {}

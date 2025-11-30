@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ArregloFlorService } from './arreglo-flor.service';
 import { CreateArregloFlorDto } from './dto/create-arreglo-flor.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Arreglo Flores')
+@ApiBearerAuth('JWT-auth')
 @Controller('arreglo-flor')
 export class ArregloFlorController {
   constructor(private readonly arregloFlorService: ArregloFlorService) {}

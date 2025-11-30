@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { DireccionService } from './direccion.service';
 import { CreateDireccionDto } from './dto/create-direccion.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Direcciones')
+@ApiBearerAuth('JWT-auth')
 @Controller('direccion')
 export class DireccionController {
   constructor(private readonly direccionService: DireccionService) {}

@@ -1,10 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ArregloService } from '../arreglo.service';
 import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Catálogo')
+@ApiBearerAuth('JWT-auth')
 @Controller('catalogo')
 export class CatalogoController {
   constructor(private readonly arregloService: ArregloService) {}

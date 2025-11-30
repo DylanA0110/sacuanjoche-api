@@ -12,6 +12,7 @@ import {
   ApiParam,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { RutaService } from './ruta.service';
 import { CreateRutaDto } from './dto/create-ruta.dto';
@@ -20,6 +21,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Rutas')
+@ApiBearerAuth('JWT-auth')
 @Controller('rutas')
 export class RutaController {
   constructor(private readonly rutaService: RutaService) {}

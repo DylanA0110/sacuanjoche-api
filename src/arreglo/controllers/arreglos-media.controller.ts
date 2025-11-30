@@ -16,6 +16,7 @@ import {
   ApiParam,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ArregloMediaService } from '../services/arreglo-media.service';
 import { CreateArregloMediaSimpleDto } from '../dto/create-arreglo-media-simple.dto';
@@ -26,6 +27,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Arreglos Media')
+@ApiBearerAuth('JWT-auth')
 @Controller('arreglos')
 export class ArreglosMediaController {
   constructor(private readonly mediaService: ArregloMediaService) {}

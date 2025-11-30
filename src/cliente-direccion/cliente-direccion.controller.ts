@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ClienteDireccionService } from './cliente-direccion.service';
 import { CreateClienteDireccionDto } from './dto/create-cliente-direccion.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Cliente Direcciones')
+@ApiBearerAuth('JWT-auth')
 @Controller('cliente-direccion')
 export class ClienteDireccionController {
   constructor(

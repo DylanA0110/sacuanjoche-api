@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { PedidoHistorialService } from './pedido-historial.service';
 import { CreatePedidoHistorialDto } from './dto/create-pedido-historial.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Pedido Historial')
+@ApiBearerAuth('JWT-auth')
 @Controller('pedido-historial')
 export class PedidoHistorialController {
   constructor(

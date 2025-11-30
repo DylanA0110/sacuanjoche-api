@@ -18,6 +18,7 @@ import {
   ApiQuery,
   ApiBody,
   ApiHeader,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { PagoService } from './pago.service';
 import { CreatePagoDto } from './dto/create-pago.dto';
@@ -29,6 +30,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Pagos')
+@ApiBearerAuth('JWT-auth')
 @Controller('pago')
 export class PagoController {
   constructor(private readonly pagoService: PagoService) {}

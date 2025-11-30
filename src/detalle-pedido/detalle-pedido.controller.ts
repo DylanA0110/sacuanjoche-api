@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { DetallePedidoService } from './detalle-pedido.service';
 import { CreateDetallePedidoDto } from './dto/create-detalle-pedido.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Detalle Pedidos')
+@ApiBearerAuth('JWT-auth')
 @Controller('detalle-pedido')
 export class DetallePedidoController {
   constructor(private readonly detallePedidoService: DetallePedidoService) {}

@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { EnvioService } from './envio.service';
 import { CreateEnvioDto } from './dto/create-envio.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Envíos')
+@ApiBearerAuth('JWT-auth')
 @Controller('envio')
 export class EnvioController {
   constructor(private readonly envioService: EnvioService) {}

@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FormaArregloService } from './forma-arreglo.service';
 import { CreateFormaArregloDto } from './dto/create-forma-arreglo.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Formas de Arreglo')
+@ApiBearerAuth('JWT-auth')
 @Controller('forma-arreglo')
 export class FormaArregloController {
   constructor(private readonly formaArregloService: FormaArregloService) {}

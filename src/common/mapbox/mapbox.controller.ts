@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ForwardGeocodeQueryDto } from './dto/forward-geocode-query.dto';
 import { MapboxService } from './mapbox.service';
 import { ForwardGeocodeResponse } from './mapbox.interfaces';
@@ -7,6 +7,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Mapbox')
+@ApiBearerAuth('JWT-auth')
 @Controller('mapbox')
 export class MapboxController {
   constructor(private readonly mapboxService: MapboxService) {}

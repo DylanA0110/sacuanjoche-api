@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ContactoEntregaService } from './contacto-entrega.service';
 import { CreateContactoEntregaDto } from './dto/create-contacto-entrega.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Contactos de Entrega')
+@ApiBearerAuth('JWT-auth')
 @Controller('contacto-entrega')
 export class ContactoEntregaController {
   constructor(

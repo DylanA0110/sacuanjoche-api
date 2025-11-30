@@ -17,6 +17,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import { FacturaService } from './factura.service';
@@ -29,6 +30,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Facturas')
+@ApiBearerAuth('JWT-auth')
 @Controller('factura')
 export class FacturaController {
   constructor(

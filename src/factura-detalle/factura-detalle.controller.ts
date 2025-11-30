@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FacturaDetalleService } from './factura-detalle.service';
 import { CreateFacturaDetalleDto } from './dto/create-factura-detalle.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Factura Detalle')
+@ApiBearerAuth('JWT-auth')
 @Controller('factura-detalle')
 export class FacturaDetalleController {
   constructor(
