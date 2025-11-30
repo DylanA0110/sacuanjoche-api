@@ -366,7 +366,6 @@ export class CarritoService {
         idFolio,
         canal: PedidoCanal.WEB,
         estado: PedidoEstado.PROCESANDO, // El pedido se crea ya pagado, pasa a procesando
-        fechaEntregaEstimada,
         direccionTxt,
         numeroPedido,
         totalProductos: 0, // Se calculará automáticamente cuando se agreguen las líneas
@@ -382,6 +381,11 @@ export class CarritoService {
       if (idEmpleado !== undefined && empleado !== null) {
         pedidoData.idEmpleado = idEmpleado;
         pedidoData.empleado = empleado;
+      }
+
+      // Solo incluir fechaEntregaEstimada si está definida
+      if (fechaEntregaEstimada !== undefined) {
+        pedidoData.fechaEntregaEstimada = fechaEntregaEstimada;
       }
 
       const newPedido = this.pedidoRepository.create(pedidoData);

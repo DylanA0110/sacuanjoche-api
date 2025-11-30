@@ -38,13 +38,13 @@ export class CrearPedidoDesdeCarritoDto {
   @IsNumber({}, { message: 'El ID del folio debe ser un número' })
   idFolio: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Fecha estimada de entrega',
     example: '2024-12-25T10:00:00.000Z',
   })
-  @IsNotEmpty({ message: 'La fecha de entrega estimada es requerida' })
+  @IsOptional()
   @IsDateString({}, { message: 'La fecha de entrega estimada debe ser una fecha válida' })
-  fechaEntregaEstimada: Date;
+  fechaEntregaEstimada?: Date;
 
   @ApiProperty({
     description: 'Dirección de entrega en texto',
