@@ -7,11 +7,6 @@ import {
   MaxLength,
   IsOptional,
 } from 'class-validator';
-import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
-import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
-import { NoRandomString } from '../../common/validators/no-random-string.decorator';
-import { NoRandomAddress } from '../../common/validators/no-random-address.decorator';
-import { NoExcessiveRepetition } from '../../common/validators/no-excessive-repetition.decorator';
 
 export class CreateDireccionDto {
   @ApiProperty({
@@ -21,8 +16,7 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @NoSqlInjection()
-  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   formattedAddress: string;
 
   @ApiProperty({
@@ -34,8 +28,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @NoSqlInjection()
-  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   country: string;
 
   @ApiProperty({
@@ -47,8 +40,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @NoSqlInjection()
-  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   stateProv: string;
 
   @ApiProperty({
@@ -60,8 +52,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @NoSqlInjection()
-  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   city: string;
 
   @ApiProperty({
@@ -73,10 +64,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @AllowedCharacters()
-  @NoSqlInjection()
-  @NoRandomString()
-  @NoExcessiveRepetition(3)
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   neighborhood?: string;
 
   @ApiProperty({
@@ -88,10 +76,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
-  @AllowedCharacters()
-  @NoSqlInjection()
-  @NoRandomAddress()
-  @NoExcessiveRepetition(4)
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   street: string;
 
   @ApiProperty({
@@ -103,7 +88,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(20)
-  @NoSqlInjection()
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   houseNumber: string;
 
   @ApiProperty({
@@ -115,7 +100,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(20)
-  @NoSqlInjection()
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   postalCode: string;
 
   @ApiProperty({
@@ -125,10 +110,7 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @AllowedCharacters()
-  @NoSqlInjection()
-  @NoRandomString()
-  @NoExcessiveRepetition(4)
+  // Sin validaciones personalizadas - campo opcional de referencia
   referencia?: string;
 
   @ApiProperty({
@@ -156,7 +138,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  @NoSqlInjection()
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   provider: string;
 
   @ApiProperty({
@@ -168,7 +150,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
-  @NoSqlInjection()
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   placeId?: string;
 
   @ApiProperty({
@@ -180,7 +162,7 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  @NoSqlInjection()
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   accuracy?: string;
 
   @ApiProperty({
@@ -190,7 +172,7 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @NoSqlInjection()
+  // Sin validaciones personalizadas - se rellena automáticamente desde Mapbox
   geolocation?: string;
 
   @ApiProperty({
