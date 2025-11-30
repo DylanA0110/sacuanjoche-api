@@ -70,12 +70,12 @@ class CreateUserClienteDto {
     description: 'Teléfono de contacto (formato: 505 seguido de 8 dígitos)',
     example: '50512345678',
   })
-  @IsString()
   @IsOptional()
-  @MaxLength(11)
+  @IsString({ message: 'El teléfono debe ser una cadena de texto' })
   @NicaraguanPhone()
+  @MaxLength(11, { message: 'El teléfono no puede exceder 11 caracteres' })
   @NoSqlInjection()
-  // No aplicamos otras validaciones porque tiene formato específico
+  // No aplicamos AllowedCharacters porque solo debe contener números
   telefono?: string;
 
   @ApiPropertyOptional({

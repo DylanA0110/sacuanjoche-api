@@ -74,10 +74,15 @@ export class AuthService {
 
       // Si se proporciona clienteData, crear un nuevo cliente
       if (clienteData) {
+        // Normalizar el teléfono (eliminar espacios)
+        const telefonoNormalizado = clienteData.telefono
+          ? clienteData.telefono.trim().replace(/\s+/g, '')
+          : undefined;
+
         const nuevoCliente = this.clienteRepository.create({
           primerNombre: clienteData.primerNombre,
           primerApellido: clienteData.primerApellido,
-          telefono: clienteData.telefono,
+          telefono: telefonoNormalizado,
         });
 
         const clienteGuardado = await this.clienteRepository.save(nuevoCliente);
