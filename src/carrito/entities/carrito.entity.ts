@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 import { CarritosArreglo } from '../../carritos-arreglo/entities/carritos-arreglo.entity';
+import { Pago } from '../../pago/entities/pago.entity';
 import { CarritoEstado } from '../../common/enums';
 
 @Entity('carrito')
@@ -10,6 +11,9 @@ export class Carrito {
 
   @Column({ name: 'id_user' })
   idUser: number;
+
+  @Column({ name: 'id_pago', nullable: true })
+  idPago?: number;
 
   @CreateDateColumn({ name: 'fecha_creacion', type: 'timestamp' })
   fechaCreacion: Date;
@@ -30,6 +34,10 @@ export class Carrito {
   @OneToOne(() => User, user => user.carrito)
   @JoinColumn({ name: 'id_user' })
   user: User;
+
+  @ManyToOne(() => Pago, { nullable: true })
+  @JoinColumn({ name: 'id_pago' })
+  pago?: Pago;
 
   @OneToMany(() => CarritosArreglo, carritosArreglo => carritosArreglo.carrito)
   carritosArreglo: CarritosArreglo[];

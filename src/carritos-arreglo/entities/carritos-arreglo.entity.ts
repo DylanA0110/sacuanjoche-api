@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Carrito } from '../../carrito/entities/carrito.entity';
 import { Arreglo } from '../../arreglo/entities/arreglo.entity';
 
@@ -30,5 +30,19 @@ export class CarritosArreglo {
   @ManyToOne(() => Arreglo, arreglo => arreglo.carritosArreglo)
   @JoinColumn({ name: 'id_arreglo' })
   arreglo: Arreglo;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  private updateTotalLinea(): void {
+    const cantidad = Number(this.cantidad);
+    const precio = Number(this.precioUnitario);
+
+    const totalLinea =
+      Number.isFinite(cantidad) && Number.isFinite(precio)
+        ? cantidad * precio
+        : 0;
+
+    this.totalLinea = Number(totalLinea.toFixed(2));
+  }
 }
 
