@@ -16,7 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Empleado } from 'src/empleado/entities/empleado.entity';
 import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
-import { UserEstado } from 'src/common/enums';
+import { UserEstado, ClienteEstado } from 'src/common/enums';
 import { EncryptionService } from './services/encryption.service';
 
 @Injectable()
@@ -83,6 +83,7 @@ export class AuthService {
           primerNombre: clienteData.primerNombre,
           primerApellido: clienteData.primerApellido,
           telefono: telefonoNormalizado,
+          estado: clienteData.estado || ClienteEstado.ACTIVO,
         });
 
         const clienteGuardado = await this.clienteRepository.save(nuevoCliente);

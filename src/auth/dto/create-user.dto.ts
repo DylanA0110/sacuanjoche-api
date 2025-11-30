@@ -9,6 +9,7 @@ import {
   MaxLength,
   MinLength,
   ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { NoSqlInjection } from '../../common/validators/no-sql-injection.decorator';
@@ -17,6 +18,7 @@ import { NoRandomString } from '../../common/validators/no-random-string.decorat
 import { AllowedCharacters } from '../../common/validators/allowed-characters.decorator';
 import { NoRandomAddress } from '../../common/validators/no-random-address.decorator';
 import { NicaraguanPhone } from '../../common/validators/nicaraguan-phone.decorator';
+import { ClienteEstado } from '../../common/enums';
 
 class CreateUserClienteDto {
   @ApiProperty({ description: 'Primer nombre del cliente', example: 'Juan' })
@@ -56,7 +58,15 @@ class CreateUserClienteDto {
   // No aplicamos AllowedCharacters porque solo debe contener números
   telefono?: string;
 
-  
+  @ApiPropertyOptional({
+    description: 'Estado del cliente',
+    example: ClienteEstado.ACTIVO,
+    enum: ClienteEstado,
+    default: ClienteEstado.ACTIVO,
+  })
+  @IsOptional()
+  @IsEnum(ClienteEstado)
+  estado?: ClienteEstado;
 }
 
 export class CreateUserDto {
