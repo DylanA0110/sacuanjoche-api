@@ -106,7 +106,7 @@ export class CarritoService {
   async findOne(id: number) {
     const carrito = await this.carritoRepository.findOne({
       where: { idCarrito: id },
-      relations: ['user', 'carritosArreglo'],
+      relations: ['user', 'carritosArreglo', 'pago'],
     });
 
     if (!carrito) {

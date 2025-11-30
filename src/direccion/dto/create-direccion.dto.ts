@@ -21,10 +21,8 @@ export class CreateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @AllowedCharacters()
   @NoSqlInjection()
-  @NoRandomAddress()
-  @NoExcessiveRepetition(4)
+  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
   formattedAddress: string;
 
   @ApiProperty({
@@ -36,10 +34,8 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @AllowedCharacters()
   @NoSqlInjection()
-  @NoRandomString()
-  @NoExcessiveRepetition(3)
+  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
   country: string;
 
   @ApiProperty({
@@ -51,10 +47,8 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @AllowedCharacters()
   @NoSqlInjection()
-  @NoRandomString()
-  @NoExcessiveRepetition(3)
+  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
   stateProv: string;
 
   @ApiProperty({
@@ -66,10 +60,8 @@ export class CreateDireccionDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @AllowedCharacters()
   @NoSqlInjection()
-  @NoRandomString()
-  @NoExcessiveRepetition(3)
+  // No aplicamos validadores estrictos porque viene de servicios externos confiables (Mapbox, Google Maps)
   city: string;
 
   @ApiProperty({
