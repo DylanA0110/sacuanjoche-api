@@ -57,7 +57,7 @@ export class CarritoService {
 
       const user = await findEntityOrFail(
         this.userRepository,
-        { id: idUser as unknown as any },
+        { id: idUser },
         'El usuario no fue encontrado o no existe',
       );
 
@@ -124,7 +124,7 @@ export class CarritoService {
         idUser !== undefined
           ? await findEntityOrFail(
               this.userRepository,
-              { id: idUser as unknown as any },
+              { id: idUser },
               'El usuario no fue encontrado o no existe',
             )
           : undefined;

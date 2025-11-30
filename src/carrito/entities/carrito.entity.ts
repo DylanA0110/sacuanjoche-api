@@ -9,8 +9,8 @@ export class Carrito {
   @PrimaryGeneratedColumn({ name: 'id_carrito' })
   idCarrito: number;
 
-  @Column({ name: 'id_user' })
-  idUser: number;
+  @Column({ name: 'id_user', type: 'uuid' })
+  idUser: string;
 
   @Column({ name: 'id_pago', nullable: true })
   idPago?: number;
