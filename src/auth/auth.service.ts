@@ -112,12 +112,9 @@ export class AuthService {
         newUser.empleado = empleado;
       }
 
-      // Asignar roles por defecto según el tipo de usuario
-      if (newUser.empleado) {
-        newUser.roles = ['empleado'];
-      } else if (newUser.cliente) {
-        newUser.roles = ['cliente'];
-      }
+      // Siempre asignar rol 'cliente' por defecto
+      // Los roles se pueden modificar después desde el admin panel usando el endpoint de actualizar roles
+      newUser.roles = ['cliente'];
 
       await this.userRepository.save(newUser);
 

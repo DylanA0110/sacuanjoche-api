@@ -42,29 +42,7 @@ class CreateUserClienteDto {
   @NoRandomString()
   primerApellido: string;
 
-  @ApiPropertyOptional({
-    description: 'RUC o documento del cliente',
-    example: '1234567-8',
-  })
-  @IsString()
-  @MinLength(1)
-  @IsOptional()
-  @NoSqlInjection()
-  // No aplicamos NoRandomString ni NoExcessiveRepetition a RUC porque puede tener formato específico
-  ruc?: string;
 
-  @ApiPropertyOptional({
-    description: 'Dirección del cliente',
-    example: 'Av. Principal 123',
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(300, { message: 'La dirección no puede exceder 300 caracteres' })
-  @AllowedCharacters()
-  @NoSqlInjection()
-  @NoExcessiveRepetition(3)
-  @NoRandomAddress()
-  direccion?: string;
 
   @ApiPropertyOptional({
     description: 'Teléfono de contacto (formato: 505 seguido de 8 dígitos)',
@@ -78,18 +56,7 @@ class CreateUserClienteDto {
   // No aplicamos AllowedCharacters porque solo debe contener números
   telefono?: string;
 
-  @ApiPropertyOptional({
-    description: 'Notas adicionales',
-    example: 'Prefiere contacto por email',
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(400, { message: 'Las notas no pueden exceder 400 caracteres' })
-  @AllowedCharacters()
-  @NoSqlInjection()
-  @NoExcessiveRepetition(3)
-  @NoRandomString()
-  notas?: string;
+  
 }
 
 export class CreateUserDto {
