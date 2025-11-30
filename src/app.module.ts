@@ -32,6 +32,7 @@ import { RutaModule } from './ruta/ruta.module';
 import { MapboxModule } from './common/mapbox/mapbox.module';
 import { PrinterModule } from './printer/printer.module';
 import { ReportsModule } from './reports/reports.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { ReportsModule } from './reports/reports.module';
     MapboxModule,
     PrinterModule,
     ReportsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

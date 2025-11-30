@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AccesorioService } from './accesorio.service';
 import { CreateAccesorioDto } from './dto/create-accesorio.dto';
@@ -25,6 +26,7 @@ import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
 
 @ApiTags('Accesorios')
+@ApiBearerAuth('JWT-auth')
 @Controller('accesorio')
 export class AccesorioController {
   constructor(private readonly accesorioService: AccesorioService) {}

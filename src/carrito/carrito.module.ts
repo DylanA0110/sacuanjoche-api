@@ -15,6 +15,7 @@ import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity
 import { CarritosArreglo } from 'src/carritos-arreglo/entities/carritos-arreglo.entity';
 import { Folio } from 'src/folio/entities/folio.entity';
 import { DetallePedidoModule } from 'src/detalle-pedido/detalle-pedido.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { DetallePedidoModule } from 'src/detalle-pedido/detalle-pedido.module';
     ]),
     AuthModule,
     DetallePedidoModule,
+    NotificationsModule,
   ],
   controllers: [CarritoController],
   providers: [CarritoService],

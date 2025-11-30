@@ -12,7 +12,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto, LoginUserDto, UpdateUserRolesDto } from './dto';
+import { CreateUserDto, LoginUserDto, UpdateUserRolesDto, CreateEmployeeUserDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from './decorators/get-user.decorator';
 import { User } from './entities/user.entity';
@@ -22,7 +22,7 @@ import { UserRoleGuard } from './guards/user-role/user-role.guard';
 import { RoleProtected } from './decorators/role-protected.decorator';
 import { ValidRoles } from './interfaces';
 import { Auth } from './decorators';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -39,14 +39,26 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
+  @Post('register/employee')
+  @Auth(ValidRoles.admin)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Registrar un usuario interno para un empleado' })
+  @ApiResponse({ status: 201, description: 'Usuario creado correctamente' })
+  @ApiResponse({ status: 400, description: 'Solicitud inválida' })
+  createEmployeeUser(@Body() dto: CreateEmployeeUserDto) {
+    return this.authService.createEmployeeUser(dto);
+  }
+
   @Get('check-status')
   @Auth(ValidRoles.admin, ValidRoles.vendedor, ValidRoles.conductor, ValidRoles.cliente)
+  @ApiBearerAuth('JWT-auth')
   checkAuthStatus(@GetUser() user: User) {
     return this.authService.checkAuthStatus(user);
   }
 
   @Get('private')
   @UseGuards(AuthGuard())
+  @ApiBearerAuth('JWT-auth')
   testingPrivateRoute(
     //@Req() request: Express.Request
     @GetUser() user: User,
@@ -86,6 +98,7 @@ export class AuthController {
 
   @Patch('users/:id/roles')
   @Auth(ValidRoles.admin)
+  @ApiBearerAuth('JWT-auth')
   @ApiTags('Users')
   @ApiOperation({ summary: 'Actualizar roles de un usuario' })
   @ApiParam({

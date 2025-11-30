@@ -20,6 +20,7 @@ import { DetallePedido } from 'src/detalle-pedido/entities/detalle-pedido.entity
 import { CarritosArreglo } from 'src/carritos-arreglo/entities/carritos-arreglo.entity';
 import { Folio } from 'src/folio/entities/folio.entity';
 import { EstadoActivo } from 'src/common/enums';
+import { NotificationsService } from 'src/notifications/notifications.service';
 import { DetallePedidoService } from 'src/detalle-pedido/detalle-pedido.service';
 
 @Injectable()
@@ -47,6 +48,7 @@ export class CarritoService {
     private readonly carritosArregloRepository: Repository<CarritosArreglo>,
     @InjectRepository(Folio)
     private readonly folioRepository: Repository<Folio>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createCarritoDto: CreateCarritoDto) {
@@ -412,8 +414,8 @@ export class CarritoService {
         totalPedido: roundedTotal,
       });
 
-      // Retornar el pedido completo con todas sus relaciones
-      return this.pedidoRepository.findOne({
+      // Obtener el pedido completo con todas sus relaciones
+      const pedidoCompleto = await this.pedidoRepository.findOne({
         where: { idPedido: newPedido.idPedido },
         relations: [
           'empleado',
@@ -427,6 +429,28 @@ export class CarritoService {
           'detallesPedido.arreglo',
         ],
       });
+
+      // Emitir notificación a los administradores sobre el nuevo pedido web
+      if (pedidoCompleto) {
+        this.notificationsService.emitAdminNotification({
+          tipo: 'nuevo_pedido_web',
+          id_registro: pedidoCompleto.idPedido,
+          nombre_cliente: pedidoCompleto.cliente
+            ? `${pedidoCompleto.cliente.primerNombre} ${pedidoCompleto.cliente.primerApellido}`
+            : undefined,
+          timestamp: new Date().toISOString(),
+          data: {
+            numeroPedido: pedidoCompleto.numeroPedido,
+            totalPedido: pedidoCompleto.totalPedido,
+            estado: pedidoCompleto.estado,
+            canal: pedidoCompleto.canal,
+            fechaEntregaEstimada: pedidoCompleto.fechaEntregaEstimada,
+            cantidadProductos: pedidoCompleto.detallesPedido?.length || 0,
+          },
+        });
+      }
+
+      return pedidoCompleto;
     } catch (error) {
       if (
         error instanceof NotFoundException ||

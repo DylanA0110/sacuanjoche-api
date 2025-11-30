@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CarritoService } from './carrito.service';
 import { CreateCarritoDto } from './dto/create-carrito.dto';
@@ -27,6 +28,7 @@ import { ValidRoles } from 'src/auth/interfaces';
 import { Pedido } from 'src/pedido/entities/pedido.entity';
 
 @ApiTags('Carritos')
+@ApiBearerAuth('JWT-auth')
 @Controller('carrito')
 export class CarritoController {
   constructor(private readonly carritoService: CarritoService) {}

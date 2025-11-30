@@ -23,10 +23,25 @@ async function bootstrap() {
     .setTitle('Flori RESTFul API')
     .setDescription('Flori endpoints')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Ingresa el token JWT',
+        in: 'header',
+      },
+      'JWT-auth', // Este nombre se usará en los decoradores @ApiBearerAuth()
+    )
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // Mantiene el token después de refrescar la página
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
