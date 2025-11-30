@@ -181,7 +181,11 @@ export class CarritoService {
       }
 
       // Validar que el pago esté completado (PAGADO)
-      if (pago.estado !== PagoEstado.PAGADO) {
+      // Normalizar la comparación porque TypeORM puede devolver el enum como string desde la base de datos
+      const estadoPago = String(pago.estado).toLowerCase().trim();
+      const estadoPagadoEsperado = String(PagoEstado.PAGADO).toLowerCase().trim();
+      
+      if (estadoPago !== estadoPagadoEsperado) {
         throw new BadRequestException(
           `El pago con id ${idPago} no está completado. Estado actual: ${pago.estado}. Solo se pueden asociar pagos completados (${PagoEstado.PAGADO}).`,
         );
@@ -251,7 +255,11 @@ export class CarritoService {
       }
 
       // Validar que el pago esté completado (PAGADO)
-      if (carrito.pago.estado !== PagoEstado.PAGADO) {
+      // Normalizar la comparación porque TypeORM puede devolver el enum como string desde la relación
+      const estadoPago = String(carrito.pago.estado).toLowerCase().trim();
+      const estadoPagadoEsperado = String(PagoEstado.PAGADO).toLowerCase().trim();
+      
+      if (estadoPago !== estadoPagadoEsperado) {
         throw new BadRequestException(
           `El pago asociado al carrito no está completado. Estado actual: ${carrito.pago.estado}. Solo se pueden crear pedidos con pagos completados (${PagoEstado.PAGADO}).`,
         );
